@@ -125,10 +125,10 @@ function ConfirmEmailContent() {
 export default function ConfirmEmailPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center">
+      <div className="min-h-screen bg-theme-secondary flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-12 w-12 text-green-600 animate-spin mx-auto" />
-          <p className="mt-4 text-gray-600">Chargement...</p>
+          <p className="mt-4 text-theme-secondary">Chargement...</p>
         </div>
       </div>
     }>
