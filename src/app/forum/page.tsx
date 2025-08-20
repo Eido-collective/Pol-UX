@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { MessageSquare, ThumbsUp, ThumbsDown, Plus, Filter, Search } from 'lucide-react'
+import Link from 'next/link'
 
 interface ForumPost {
   id: string
@@ -47,6 +48,7 @@ export default function ForumPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [sortBy, setSortBy] = useState<string>('newest')
+  const [userVotes, setUserVotes] = useState<{[key: string]: number}>({})
 
   useEffect(() => {
     fetchPosts()
@@ -144,6 +146,31 @@ export default function ForumPage() {
     return votes?.reduce((sum, vote) => sum + vote.value, 0) || 0
   }
 
+  const handleVote = async (postId: string, value: number) => {
+    try {
+      const response = await fetch(`/api/forum/posts/${postId}/vote`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ value }),
+      })
+
+      if (response.ok) {
+        // Mettre à jour le vote local
+        setUserVotes(prev => ({
+          ...prev,
+          [postId]: prev[postId] === value ? 0 : value
+        }))
+        
+        // Recharger les posts pour mettre à jour les compteurs
+        fetchPosts()
+      }
+    } catch (error) {
+      console.error('Erreur lors du vote:', error)
+    }
+  }
+
   return (
     <div className="bg-gray-50">
       {/* Page Header */}
@@ -222,21 +249,42 @@ export default function ForumPage() {
             </div>
           ) : (
             filteredPosts.map((post) => (
-              <div
+              <Link
                 key={post.id}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+                href={`/forum/${post.id}`}
+                className="block bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer"
               >
                 <div className="flex items-start gap-4">
                   {/* Votes */}
-                  <div className="flex flex-col items-center gap-2">
-                    <button className="p-1 hover:bg-gray-100 rounded">
-                      <ThumbsUp className="h-4 w-4 text-gray-400 hover:text-green-600" />
+                  <div className="flex flex-col items-center gap-2" onClick={(e) => e.preventDefault()}>
+                    <button 
+                      className={`p-1 rounded transition-colors ${
+                        userVotes[post.id] === 1 
+                          ? 'text-green-600 bg-green-50' 
+                          : 'text-gray-400 hover:text-green-600 hover:bg-gray-100'
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleVote(post.id, 1)
+                      }}
+                    >
+                      <ThumbsUp className="h-4 w-4" />
                     </button>
                     <span className="text-sm font-medium text-gray-900">
                       {getVoteCount(post.votes)}
                     </span>
-                    <button className="p-1 hover:bg-gray-100 rounded">
-                      <ThumbsDown className="h-4 w-4 text-gray-400 hover:text-red-600" />
+                    <button 
+                      className={`p-1 rounded transition-colors ${
+                        userVotes[post.id] === -1 
+                          ? 'text-red-600 bg-red-50' 
+                          : 'text-gray-400 hover:text-red-600 hover:bg-gray-100'
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleVote(post.id, -1)
+                      }}
+                    >
+                      <ThumbsDown className="h-4 w-4" />
                     </button>
                   </div>
 
@@ -267,16 +315,13 @@ export default function ForumPage() {
                         <MessageSquare className="h-4 w-4" />
                         {post._count?.comments || 0} commentaires
                       </div>
-                      <button className="hover:text-green-600 transition-colors">
-                        Répondre
-                      </button>
-                      <button className="hover:text-green-600 transition-colors">
-                        Partager
-                      </button>
+                      <span className="hover:text-green-600 transition-colors">
+                        Voir les détails →
+                      </span>
                     </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))
           )}
         </div>

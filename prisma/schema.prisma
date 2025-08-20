@@ -151,6 +151,12 @@ model ForumComment {
   author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   postId    String
   post      ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  // Relations pour les réponses (max 2 niveaux)
+  parentId  String?
+  parent    ForumComment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   ForumComment[] @relation("CommentReplies")
+  
   votes     Vote[]
 }
 
