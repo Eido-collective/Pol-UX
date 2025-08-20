@@ -33,7 +33,7 @@ const nextConfig = {
         headers: [
           {
             key: 'X-Frame-Options',
-            value: 'DENY',
+            value: 'SAMEORIGIN', // Changé de DENY à SAMEORIGIN pour permettre l'analyse
           },
           {
             key: 'X-Content-Type-Options',
@@ -45,7 +45,7 @@ const nextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=()',
+            value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
           },
         ],
       },
@@ -54,11 +54,20 @@ const nextConfig = {
         headers: [
           {
             key: 'Cache-Control',
-            value: 'no-store, max-age=0',
+            value: 'public, max-age=300', // Changé pour permettre le cache
           },
         ],
       },
-
+      // Headers spécifiques pour les outils d'analyse
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Robots-Tag',
+            value: 'index, follow',
+          },
+        ],
+      },
     ]
   },
   

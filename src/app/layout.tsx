@@ -21,12 +21,25 @@ export const metadata: Metadata = {
   description: "Découvrez et participez aux initiatives écologiques partout en France",
   keywords: "écologie, environnement, initiatives, France, développement durable",
   authors: [{ name: "Pol-UX Team" }],
-  robots: "index, follow",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   openGraph: {
     title: "Pol-UX - Plateforme Collaborative Écologique",
     description: "Découvrez et participez aux initiatives écologiques partout en France",
     type: "website",
     locale: "fr_FR",
+  },
+  other: {
+    'X-Robots-Tag': 'index, follow',
   },
 };
 

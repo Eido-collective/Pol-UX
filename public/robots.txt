@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+
+User-agent: EcoIndex
+Allow: /
+
+User-agent: WebsiteCarbon
+Allow: /
+
+User-agent: Lighthouse
+Allow: /
+
+User-agent: PageSpeed
+Allow: /
+
+User-agent: GTmetrix
+Allow: /
+
+Sitemap: https://pol-ux-sigma.vercel.app/sitemap.xml
+
