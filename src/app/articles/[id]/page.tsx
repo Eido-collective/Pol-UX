@@ -131,12 +131,12 @@ export default function ArticlePage() {
       case 'CLIMATE_CHANGE': return 'bg-orange-100 text-orange-800'
       case 'BIODIVERSITY': return 'bg-purple-100 text-purple-800'
       case 'RENEWABLE_ENERGY': return 'bg-yellow-100 text-yellow-800'
-      case 'CIRCULAR_ECONOMY': return 'bg-cyan-100 text-cyan-800'
-      case 'GREEN_TECHNOLOGY': return 'bg-emerald-100 text-emerald-800'
-      case 'CONSERVATION': return 'bg-indigo-100 text-indigo-800'
-      case 'EDUCATION': return 'bg-pink-100 text-pink-800'
-      case 'POLICY': return 'bg-gray-100 text-gray-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'CIRCULAR_ECONOMY': return 'bg-indigo-100 text-indigo-800'
+      case 'GREEN_TECHNOLOGY': return 'bg-teal-100 text-teal-800'
+      case 'CONSERVATION': return 'bg-pink-100 text-pink-800'
+      case 'EDUCATION': return 'bg-cyan-100 text-cyan-800'
+      case 'POLICY': return 'bg-theme-tertiary text-theme-secondary'
+      default: return 'bg-theme-tertiary text-theme-secondary'
     }
   }
 
@@ -154,11 +154,9 @@ export default function ArticlePage() {
 
   if (loading) {
     return (
-      <div className="bg-gray-50 min-h-screen">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="text-center py-12">
-            <div className="text-gray-500">Chargement de l&apos;article...</div>
-          </div>
+      <div className="bg-theme-secondary min-h-screen">
+        <div className="max-w-4xl mx-auto px-4 py-12">
+          <div className="text-theme-secondary">Chargement de l&apos;article...</div>
         </div>
       </div>
     )
@@ -166,33 +164,24 @@ export default function ArticlePage() {
 
   if (!article) {
     return (
-      <div className="bg-gray-50 min-h-screen">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="text-center py-12">
-            <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Article non trouvé</h3>
-            <p className="text-gray-500">L&apos;article que vous recherchez n&apos;existe pas ou a été supprimé.</p>
-            <Link 
-              href="/articles"
-              className="inline-flex items-center mt-4 text-green-600 hover:text-green-700 font-medium"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Retour aux articles
-            </Link>
-          </div>
+      <div className="bg-theme-secondary min-h-screen">
+        <div className="max-w-4xl mx-auto px-4 py-12 text-center">
+          <BookOpen className="h-12 w-12 text-theme-secondary mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-theme-primary mb-2">Article non trouvé</h3>
+          <p className="text-theme-secondary">L&apos;article que vous recherchez n&apos;existe pas ou a été supprimé.</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-theme-secondary min-h-screen">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Header avec bouton retour */}
         <div className="mb-6">
           <Link
             href="/articles"
-            className="inline-flex items-center space-x-2 text-gray-600 hover:text-green-600 transition-colors mb-4"
+            className="inline-flex items-center space-x-2 text-theme-secondary hover:text-green-600 transition-colors mb-4"
           >
             <ArrowLeft className="h-4 w-4" />
             <span>Retour aux articles</span>
@@ -200,7 +189,7 @@ export default function ArticlePage() {
         </div>
 
         {/* Article principal */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-theme-card rounded-lg shadow-theme-sm border border-theme-primary overflow-hidden">
           {/* Image de l'article */}
           <div className="w-full h-80 md:h-96">
             <ArticleImage
@@ -229,14 +218,13 @@ export default function ArticlePage() {
                     className={`p-2 rounded-lg transition-colors ${
                       userVotes[article.id] === 1 
                         ? 'text-orange-500 bg-orange-50 border border-orange-200' 
-                        : 'text-gray-400 hover:text-orange-500 hover:bg-gray-50 border border-gray-200'
+                        : 'text-theme-secondary hover:text-orange-500 hover:bg-theme-tertiary border border-theme-primary'
                     }`}
                   >
                     <ChevronUp className="h-4 w-4" />
                   </button>
-                  <span className={`text-sm font-medium ${
-                    getVoteCount(article.votes) > 0 ? 'text-orange-500' : 
-                    getVoteCount(article.votes) < 0 ? 'text-blue-500' : 'text-gray-900'
+                  <span className={`text-lg font-bold ${
+                    getVoteCount(article.votes) < 0 ? 'text-blue-500' : 'text-theme-primary'
                   }`}>
                     {getVoteCount(article.votes)}
                   </span>
@@ -245,7 +233,7 @@ export default function ArticlePage() {
                     className={`p-2 rounded-lg transition-colors ${
                       userVotes[article.id] === -1 
                         ? 'text-blue-500 bg-blue-50 border border-blue-200' 
-                        : 'text-gray-400 hover:text-blue-500 hover:bg-gray-50 border border-gray-200'
+                        : 'text-theme-secondary hover:text-blue-500 hover:bg-theme-tertiary border border-theme-primary'
                     }`}
                   >
                     <ChevronDown className="h-4 w-4" />
@@ -253,17 +241,17 @@ export default function ArticlePage() {
                 </div>
               </div>
 
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">
+              <h1 className="text-3xl font-bold text-theme-primary mb-4">
                 {article.title}
               </h1>
 
               {article.excerpt && (
-                <p className="text-lg text-gray-600 mb-4 italic">
+                <p className="text-lg text-theme-secondary mb-4 italic">
                   {article.excerpt}
                 </p>
               )}
 
-              <div className="flex items-center space-x-4 text-sm text-gray-500">
+              <div className="flex items-center space-x-4 text-sm text-theme-secondary">
                 <div className="flex items-center space-x-1">
                   <User className="h-4 w-4" />
                   <span>{article.author.name || article.author.username}</span>
@@ -277,15 +265,15 @@ export default function ArticlePage() {
 
             {/* Contenu de l'article */}
             <div className="prose max-w-none">
-              <div className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+              <div className="text-theme-secondary leading-relaxed whitespace-pre-wrap">
                 {article.content}
               </div>
             </div>
 
             {/* Source de l'article */}
             {article.source && (
-              <div className="mt-8 pt-6 border-t border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Source</h3>
+              <div className="mt-8 pt-6 border-t border-theme-primary">
+                <h3 className="text-lg font-semibold text-theme-primary mb-3">Source</h3>
                 <a 
                   href={article.source} 
                   target="_blank" 

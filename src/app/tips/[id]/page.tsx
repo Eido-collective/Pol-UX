@@ -121,14 +121,14 @@ export default function TipPage() {
 
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case 'WASTE_REDUCTION': return 'bg-green-100 text-green-800'
-      case 'ENERGY_SAVING': return 'bg-yellow-100 text-yellow-800'
+      case 'ENERGY': return 'bg-yellow-100 text-yellow-800'
+      case 'WASTE': return 'bg-orange-100 text-orange-800'
       case 'TRANSPORT': return 'bg-blue-100 text-blue-800'
-      case 'FOOD': return 'bg-orange-100 text-orange-800'
+      case 'FOOD': return 'bg-green-100 text-green-800'
       case 'WATER': return 'bg-cyan-100 text-cyan-800'
-      case 'CONSUMPTION': return 'bg-purple-100 text-purple-800'
-      case 'OTHER': return 'bg-gray-100 text-gray-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'DIGITAL': return 'bg-purple-100 text-purple-800'
+      case 'OTHER': return 'bg-theme-tertiary text-theme-secondary'
+      default: return 'bg-theme-tertiary text-theme-secondary'
     }
   }
 
@@ -146,11 +146,9 @@ export default function TipPage() {
 
   if (loading) {
     return (
-      <div className="bg-gray-50 min-h-screen">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center py-12">
-            <div className="text-gray-500">Chargement du conseil...</div>
-          </div>
+      <div className="bg-theme-secondary min-h-screen">
+        <div className="max-w-4xl mx-auto px-4 py-12">
+          <div className="text-theme-secondary">Chargement du conseil...</div>
         </div>
       </div>
     )
@@ -158,32 +156,23 @@ export default function TipPage() {
 
   if (!tip) {
     return (
-      <div className="bg-gray-50 min-h-screen">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center py-12">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Conseil non trouvé</h1>
-            <p className="text-gray-600 mb-6">Le conseil que vous recherchez n&apos;existe pas ou a été supprimé.</p>
-            <Link
-              href="/tips"
-              className="inline-flex items-center space-x-2 text-green-600 hover:text-green-700 font-medium"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span>Retour aux conseils</span>
-            </Link>
-          </div>
+      <div className="bg-theme-secondary min-h-screen">
+        <div className="max-w-4xl mx-auto px-4 py-12 text-center">
+          <h1 className="text-2xl font-bold text-theme-primary mb-4">Conseil non trouvé</h1>
+          <p className="text-theme-secondary mb-6">Le conseil que vous recherchez n&apos;existe pas ou a été supprimé.</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-theme-secondary min-h-screen">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header avec bouton retour */}
         <div className="mb-6">
           <Link
             href="/tips"
-            className="inline-flex items-center space-x-2 text-gray-600 hover:text-green-600 transition-colors mb-4"
+            className="inline-flex items-center space-x-2 text-theme-secondary hover:text-green-600 transition-colors mb-4"
           >
             <ArrowLeft className="h-4 w-4" />
             <span>Retour aux conseils</span>
@@ -191,7 +180,7 @@ export default function TipPage() {
         </div>
 
         {/* Conseil principal */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-theme-card rounded-lg shadow-theme-sm border border-theme-primary overflow-hidden">
           {/* Image du conseil */}
           <div className="w-full h-80 md:h-96">
             <TipImage
@@ -220,14 +209,13 @@ export default function TipPage() {
                     className={`p-2 rounded-lg transition-colors ${
                       userVotes[tip.id] === 1 
                         ? 'text-orange-500 bg-orange-50 border border-orange-200' 
-                        : 'text-gray-400 hover:text-orange-500 hover:bg-gray-50 border border-gray-200'
+                        : 'text-theme-secondary hover:text-orange-500 hover:bg-theme-tertiary border border-theme-primary'
                     }`}
                   >
                     <ThumbsUp className="h-4 w-4" />
                   </button>
-                  <span className={`text-sm font-medium ${
-                    getVoteCount(tip.votes) > 0 ? 'text-orange-500' : 
-                    getVoteCount(tip.votes) < 0 ? 'text-blue-500' : 'text-gray-900'
+                  <span className={`text-lg font-bold ${
+                    getVoteCount(tip.votes) < 0 ? 'text-blue-500' : 'text-theme-primary'
                   }`}>
                     {getVoteCount(tip.votes)}
                   </span>
@@ -236,7 +224,7 @@ export default function TipPage() {
                     className={`p-2 rounded-lg transition-colors ${
                       userVotes[tip.id] === -1 
                         ? 'text-blue-500 bg-blue-50 border border-blue-200' 
-                        : 'text-gray-400 hover:text-blue-500 hover:bg-gray-50 border border-gray-200'
+                        : 'text-theme-secondary hover:text-blue-500 hover:bg-theme-tertiary border border-theme-primary'
                     }`}
                   >
                     <ThumbsDown className="h-4 w-4" />
@@ -244,11 +232,11 @@ export default function TipPage() {
                 </div>
               </div>
 
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">
+              <h1 className="text-3xl font-bold text-theme-primary mb-4">
                 {tip.title}
               </h1>
 
-              <div className="flex items-center space-x-4 text-sm text-gray-500">
+              <div className="flex items-center space-x-4 text-sm text-theme-secondary">
                 <div className="flex items-center space-x-1">
                   <User className="h-4 w-4" />
                   <span>{tip.author.name || tip.author.username}</span>
@@ -261,16 +249,14 @@ export default function TipPage() {
             </div>
 
             {/* Contenu du conseil */}
-            <div className="prose max-w-none">
-              <div className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                {tip.content}
-              </div>
+            <div className="text-theme-secondary leading-relaxed whitespace-pre-wrap">
+              {tip.content}
             </div>
 
             {/* Source du conseil */}
             {tip.source && (
-              <div className="mt-8 pt-6 border-t border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Source</h3>
+              <div className="mt-8 pt-6 border-t border-theme-primary">
+                <h3 className="text-lg font-semibold text-theme-primary mb-3">Source</h3>
                 <a 
                   href={tip.source} 
                   target="_blank" 

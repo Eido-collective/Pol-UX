@@ -1,8 +1,13 @@
+'use client'
+
 import Link from 'next/link'
 import { Leaf, MapPin, MessageSquare, Lightbulb, Mail, Heart, BookOpen } from 'lucide-react'
+import Image from 'next/image'
+import { useTheme } from '@/hooks/useTheme'
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
+  useTheme()
 
   const navigation = {
     main: [
@@ -22,16 +27,21 @@ export default function Footer() {
   }
 
   return (
-    <footer className="bg-white border-t border-gray-200">
+    <footer className="bg-theme-card border-t border-theme-primary">
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         <div className="xl:grid xl:grid-cols-3 xl:gap-8">
           {/* Logo et description */}
           <div className="space-y-8 xl:col-span-1">
             <div className="flex items-center space-x-2">
-              <Leaf className="h-8 w-8 text-green-600" />
-              <span className="text-xl font-bold text-gray-900">Pol-UX</span>
+              <Image 
+                src='/logo-black.svg'
+                id='logo-footer'
+                alt="Pol-UX" 
+                width={110} 
+                height={110}
+              />
             </div>
-            <p className="text-gray-500 text-base">
+            <p className="text-theme-secondary text-base">
               Plateforme collaborative pour promouvoir les initiatives écologiques 
               et connecter les acteurs du développement durable en France.
             </p>
@@ -42,7 +52,7 @@ export default function Footer() {
                   <a
                     key={item.name}
                     href={item.href}
-                    className="text-gray-400 hover:text-green-600 transition-colors"
+                    className="text-theme-tertiary hover:text-green-500 transition-colors"
                   >
                     <span className="sr-only">{item.name}</span>
                     <Icon className="h-6 w-6" />
@@ -56,7 +66,7 @@ export default function Footer() {
           <div className="mt-12 grid grid-cols-2 gap-8 xl:mt-0 xl:col-span-2">
             <div className="md:grid md:grid-cols-2 md:gap-8">
               <div>
-                <h3 className="text-sm font-semibold text-gray-400 tracking-wider uppercase">
+                <h3 className="text-sm font-semibold text-theme-tertiary tracking-wider uppercase">
                   Navigation
                 </h3>
                 <ul className="mt-4 space-y-4">
@@ -66,7 +76,7 @@ export default function Footer() {
                       <li key={item.name}>
                         <Link
                           href={item.href}
-                          className="flex items-center space-x-2 text-base text-gray-500 hover:text-green-600 transition-colors"
+                          className="flex items-center space-x-2 text-base text-theme-secondary hover:text-green-500 transition-colors"
                         >
                           <Icon className="h-4 w-4" />
                           <span>{item.name}</span>
@@ -77,14 +87,14 @@ export default function Footer() {
                 </ul>
               </div>
               <div className="mt-12 md:mt-0">
-                <h3 className="text-sm font-semibold text-gray-400 tracking-wider uppercase">
+                <h3 className="text-sm font-semibold text-theme-tertiary tracking-wider uppercase">
                   Ressources
                 </h3>
                 <ul className="mt-4 space-y-4">
                   <li>
                     <Link
                       href="/about"
-                      className="text-base text-gray-500 hover:text-green-600 transition-colors"
+                      className="text-base text-theme-secondary hover:text-green-500 transition-colors"
                     >
                       À propos
                     </Link>
@@ -92,7 +102,7 @@ export default function Footer() {
                   <li>
                     <Link
                       href="/contact"
-                      className="text-base text-gray-500 hover:text-green-600 transition-colors"
+                      className="text-base text-theme-secondary hover:text-green-500 transition-colors"
                     >
                       Contact
                     </Link>
@@ -100,15 +110,15 @@ export default function Footer() {
                   <li>
                     <Link
                       href="/privacy"
-                      className="text-base text-gray-500 hover:text-green-600 transition-colors"
+                      className="text-base text-theme-secondary hover:text-green-500 transition-colors"
                     >
-                      Confidentialité
+                      Politique de confidentialité
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/terms"
-                      className="text-base text-gray-500 hover:text-green-600 transition-colors"
+                      className="text-base text-theme-secondary hover:text-green-500 transition-colors"
                     >
                       Conditions d&apos;utilisation
                     </Link>
@@ -116,7 +126,7 @@ export default function Footer() {
                   <li>
                     <Link
                       href="/legals"
-                      className="text-base text-gray-500 hover:text-green-600 transition-colors"
+                      className="text-base text-theme-secondary hover:text-green-500 transition-colors"
                     >
                       Mentions légales
                     </Link>
@@ -128,15 +138,15 @@ export default function Footer() {
         </div>
 
         {/* Copyright */}
-        <div className="mt-12 border-t border-gray-200 pt-8">
+        <div className="mt-12 pt-8 border-t border-theme-primary">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-base text-gray-400">
+            <p className="text-theme-secondary text-sm">
               © {currentYear} Pol-UX. Tous droits réservés.
             </p>
-            <div className="mt-4 md:mt-0 flex items-center space-x-1 text-gray-400">
-              <span className="text-sm">Fait avec</span>
+            <div className="flex items-center space-x-2 mt-4 md:mt-0">
+              <span className="text-theme-secondary text-sm">Fait avec</span>
               <Heart className="h-4 w-4 text-red-500" />
-              <span className="text-sm">pour la planète</span>
+              <span className="text-theme-secondary text-sm">pour la planète</span>
             </div>
           </div>
         </div>

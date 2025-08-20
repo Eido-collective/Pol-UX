@@ -122,14 +122,14 @@ export default function TipsPage() {
 
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case 'WASTE_REDUCTION': return 'bg-green-100 text-green-800'
-      case 'ENERGY_SAVING': return 'bg-yellow-100 text-yellow-800'
+      case 'ENERGY': return 'bg-yellow-100 text-yellow-800'
+      case 'WASTE': return 'bg-orange-100 text-orange-800'
       case 'TRANSPORT': return 'bg-blue-100 text-blue-800'
-      case 'FOOD': return 'bg-orange-100 text-orange-800'
+      case 'FOOD': return 'bg-green-100 text-green-800'
       case 'WATER': return 'bg-cyan-100 text-cyan-800'
-      case 'CONSUMPTION': return 'bg-purple-100 text-purple-800'
-      case 'OTHER': return 'bg-gray-100 text-gray-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'DIGITAL': return 'bg-purple-100 text-purple-800'
+      case 'OTHER': return 'bg-theme-tertiary text-theme-secondary'
+      default: return 'bg-theme-tertiary text-theme-secondary'
     }
   }
 
@@ -284,14 +284,14 @@ export default function TipsPage() {
   }
 
   return (
-    <div className="bg-gray-50">
+    <div className="bg-theme-secondary">
       {/* Page Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
+      <div className="bg-theme-card shadow-theme-sm border-b border-theme-primary">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Conseils Écologiques</h1>
-              <p className="text-gray-600">Découvrez des astuces pour réduire votre impact environnemental</p>
+              <h1 className="text-2xl font-bold text-theme-primary">Conseils Écologiques</h1>
+              <p className="text-theme-secondary">Découvrez des astuces pour réduire votre impact environnemental</p>
             </div>
             <button 
               onClick={handleCreateTip}
@@ -306,17 +306,17 @@ export default function TipsPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Filtres */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="bg-theme-card rounded-lg shadow-sm border border-theme-primary p-6 mb-6">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-theme-secondary h-4 w-4" />
                 <input
                   type="text"
                   placeholder="Rechercher un conseil..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full pl-10 pr-4 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 />
               </div>
             </div>
@@ -325,7 +325,7 @@ export default function TipsPage() {
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
               >
                 <option value="all">Toutes les catégories</option>
                 {availableCategories.map((category: { value: string; label: string; count: number }) => (
@@ -338,7 +338,7 @@ export default function TipsPage() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
               >
                 <option value="mostVoted">Plus populaires</option>
                 <option value="newest">Plus récents</option>
@@ -351,20 +351,20 @@ export default function TipsPage() {
         {/* Grille des conseils */}
         {isLoading ? (
           <div className="text-center py-12">
-            <div className="text-gray-500">Chargement des conseils...</div>
+            <div className="text-theme-secondary">Chargement des conseils...</div>
           </div>
         ) : tips.length === 0 ? (
           <div className="text-center py-12">
-            <Lightbulb className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun conseil trouvé</h3>
-            <p className="text-gray-500">Essayez de modifier vos filtres !</p>
+            <Lightbulb className="h-12 w-12 text-theme-secondary mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-theme-primary mb-2">Aucun conseil trouvé</h3>
+            <p className="text-theme-secondary">Essayez de modifier vos filtres !</p>
           </div>
                  ) : (
            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
              {tips.map((tip: Tip) => (
               <div
                 key={tip.id}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+                className="bg-theme-card rounded-lg shadow-sm border border-theme-primary overflow-hidden hover:shadow-md transition-shadow"
               >
                 <TipImage
                   src={tip.imageUrl}
@@ -385,7 +385,7 @@ export default function TipsPage() {
                   </div>
 
                   <Link href={`/tips/${tip.id}`}>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2 hover:text-green-600 transition-colors">
+                    <h3 className="text-lg font-semibold text-theme-primary mb-2 hover:text-green-600 transition-colors">
                       {tip.title.length > 60 
                         ? `${tip.title.substring(0, 60)}...` 
                         : tip.title
@@ -393,7 +393,7 @@ export default function TipsPage() {
                     </h3>
                   </Link>
 
-                  <p className="text-gray-600 mb-4 line-clamp-4">
+                  <p className="text-theme-secondary mb-4 line-clamp-4">
                     {tip.content.length > 120 
                       ? `${tip.content.substring(0, 120)}...` 
                       : tip.content
@@ -402,7 +402,7 @@ export default function TipsPage() {
 
 
 
-                  <div className="flex items-center justify-between text-sm text-gray-500">
+                  <div className="flex items-center justify-between text-sm text-theme-secondary">
                     <div className="flex items-center gap-4">
                       <span>Par {tip.author.name}</span>
                     </div>
@@ -415,7 +415,7 @@ export default function TipsPage() {
                         className={`p-2 rounded-lg transition-colors ${
                           userVotes[tip.id] === 1 
                             ? 'text-orange-500 bg-orange-50 border border-orange-200' 
-                            : 'text-gray-400 hover:text-orange-500 hover:bg-gray-50 border border-gray-200'
+                            : 'text-theme-secondary hover:text-orange-500 hover:bg-theme-primary border border-theme-primary'
                         }`}
                         onClick={() => handleVote(tip.id, 1)}
                       >
@@ -423,7 +423,7 @@ export default function TipsPage() {
                       </button>
                       <span className={`text-sm font-medium ${
                         getVoteCount(tip.votes) > 0 ? 'text-orange-500' : 
-                        getVoteCount(tip.votes) < 0 ? 'text-blue-500' : 'text-gray-900'
+                        getVoteCount(tip.votes) < 0 ? 'text-blue-500' : 'text-theme-primary'
                       }`}>
                         {getVoteCount(tip.votes)}
                       </span>
@@ -431,7 +431,7 @@ export default function TipsPage() {
                         className={`p-2 rounded-lg transition-colors ${
                           userVotes[tip.id] === -1 
                             ? 'text-blue-500 bg-blue-50 border border-blue-200' 
-                            : 'text-gray-400 hover:text-blue-500 hover:bg-gray-50 border border-gray-200'
+                            : 'text-theme-secondary hover:text-blue-500 hover:bg-theme-primary border border-theme-primary'
                         }`}
                         onClick={() => handleVote(tip.id, -1)}
                       >
@@ -459,14 +459,14 @@ export default function TipsPage() {
 
        {/* Modal de création de conseil */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-gray-900/20 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white/95 backdrop-blur-sm rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-theme-overlay backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-theme-card/95 backdrop-blur-sm rounded-lg shadow-theme-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900">Nouveau Conseil</h2>
+                <h2 className="text-xl font-bold text-theme-primary">Nouveau Conseil</h2>
                 <button
                   onClick={closeModal}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  className="text-theme-secondary hover:text-theme-primary transition-colors"
                 >
                   <X className="h-6 w-6" />
                 </button>
@@ -474,7 +474,7 @@ export default function TipsPage() {
 
               <form onSubmit={handleSubmitTip} className="space-y-4">
                                  <div>
-                   <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+                   <label htmlFor="title" className="block text-sm font-medium text-theme-secondary mb-2">
                      Titre *
                    </label>
                    <input
@@ -486,7 +486,7 @@ export default function TipsPage() {
                         validateField('title', e.target.value)
                       }}
                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
-                       errors.title ? 'border-red-500' : 'border-gray-300'
+                       errors.title ? 'border-red-500' : 'border-theme-primary'
                      }`}
                      placeholder="Titre de votre conseil..."
                      required
@@ -497,14 +497,14 @@ export default function TipsPage() {
                  </div>
 
                 <div>
-                  <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="category" className="block text-sm font-medium text-theme-secondary mb-2">
                     Catégorie *
                   </label>
                   <select
                     id="category"
                     value={newTip.category}
                     onChange={(e) => setNewTip(prev => ({ ...prev, category: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                     required
                   >
                     <option value="WASTE_REDUCTION">Réduction des déchets</option>
@@ -518,7 +518,7 @@ export default function TipsPage() {
                 </div>
 
                                  <div>
-                   <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
+                   <label htmlFor="content" className="block text-sm font-medium text-theme-secondary mb-2">
                      Contenu *
                    </label>
                    <textarea
@@ -530,7 +530,7 @@ export default function TipsPage() {
                       }}
                      rows={6}
                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none ${
-                       errors.content ? 'border-red-500' : 'border-gray-300'
+                       errors.content ? 'border-red-500' : 'border-theme-primary'
                      }`}
                      placeholder="Contenu de votre conseil..."
                      required
@@ -541,7 +541,7 @@ export default function TipsPage() {
                  </div>
 
                 <div>
-                  <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="imageUrl" className="block text-sm font-medium text-theme-secondary mb-2">
                     URL de l&apos;image (optionnel)
                   </label>
                   <input
@@ -549,13 +549,13 @@ export default function TipsPage() {
                     id="imageUrl"
                     value={newTip.imageUrl}
                     onChange={(e) => setNewTip(prev => ({ ...prev, imageUrl: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                     placeholder="https://..."
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="source" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="source" className="block text-sm font-medium text-theme-secondary mb-2">
                     URL de la source (optionnel)
                   </label>
                   <input
@@ -563,7 +563,7 @@ export default function TipsPage() {
                     id="source"
                     value={newTip.source}
                     onChange={(e) => setNewTip(prev => ({ ...prev, source: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                     placeholder="https://..."
                   />
                 </div>
@@ -572,14 +572,14 @@ export default function TipsPage() {
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                    className="px-4 py-2 text-theme-secondary bg-theme-primary hover:bg-theme-secondary rounded-lg transition-colors"
                   >
                     Annuler
                   </button>
                                      <button
                      type="submit"
                      disabled={isSubmitting || Object.keys(errors).length > 0}
-                     className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center gap-2"
+                     className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 disabled:bg-theme-secondary disabled:cursor-not-allowed rounded-lg transition-colors flex items-center gap-2"
                    >
                      {isSubmitting ? (
                        <>

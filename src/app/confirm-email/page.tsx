@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { Leaf, CheckCircle, XCircle, Loader2 } from 'lucide-react'
+import { CheckCircle, XCircle, Loader2, Mail } from 'lucide-react'
 
 function ConfirmEmailContent() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
@@ -52,68 +52,70 @@ function ConfirmEmailContent() {
   }, [token, router])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-theme-secondary flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="flex justify-center">
-            <Leaf className="h-12 w-12 text-green-600" />
+            <Mail className="h-12 w-12 text-green-600" />
           </div>
-          <h2 className="mt-6 text-3xl font-bold text-gray-900">
-            Confirmation de l&apos;email
+          <h2 className="mt-6 text-3xl font-bold text-theme-primary">
+            Confirmation d&apos;email
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Finalisation de votre inscription
+          <p className="mt-2 text-sm text-theme-secondary">
+            Vérification de votre adresse email
           </p>
         </div>
 
-        <div className="bg-white py-8 px-6 shadow-lg rounded-lg border border-green-100">
-          <div className="text-center">
-            {status === 'loading' && (
-              <div className="space-y-4">
-                <Loader2 className="h-12 w-12 text-green-600 animate-spin mx-auto" />
-                <p className="text-gray-600">Confirmation de votre email en cours...</p>
-              </div>
-            )}
+        <div className="bg-theme-card py-8 px-6 shadow-theme-lg rounded-lg border border-theme-primary">
+          {status === 'loading' && (
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto mb-4"></div>
+              <p className="text-theme-secondary">Confirmation de votre email en cours...</p>
+            </div>
+          )}
 
-            {status === 'success' && (
-              <div className="space-y-4">
-                <CheckCircle className="h-12 w-12 text-green-600 mx-auto" />
-                <h3 className="text-lg font-medium text-gray-900">Email confirmé !</h3>
-                <p className="text-gray-600">{message}</p>
-                <p className="text-sm text-gray-500">
-                  Redirection vers la page de connexion dans quelques secondes...
-                </p>
-              </div>
-            )}
+          {status === 'success' && (
+            <div className="text-center">
+              <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-theme-primary">Email confirmé !</h3>
+              <p className="text-theme-secondary">{message}</p>
+              <p className="text-sm text-theme-secondary mt-2">
+                Vous pouvez maintenant vous connecter à votre compte.
+              </p>
+              <Link
+                href="/login"
+                className="mt-4 inline-block bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
+              >
+                Se connecter
+              </Link>
+            </div>
+          )}
 
-            {status === 'error' && (
-              <div className="space-y-4">
-                <XCircle className="h-12 w-12 text-red-600 mx-auto" />
-                <h3 className="text-lg font-medium text-gray-900">Erreur de confirmation</h3>
-                <p className="text-gray-600">{message}</p>
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-500">
-                    Le lien de confirmation peut &apos;être expiré ou invalide.
-                  </p>
-                  <Link 
-                    href="/register" 
-                    className="inline-block text-green-600 hover:text-green-500 font-medium"
-                  >
-                    Créer un nouveau compte
-                  </Link>
-                </div>
-              </div>
-            )}
-          </div>
+          {status === 'error' && (
+            <div className="text-center">
+              <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-theme-primary">Erreur de confirmation</h3>
+              <p className="text-theme-secondary">{message}</p>
+              <p className="text-sm text-theme-secondary mt-2">
+                Veuillez vérifier le lien ou contacter le support.
+              </p>
+              <Link
+                href="/"
+                className="mt-4 inline-block bg-theme-primary text-theme-secondary hover:bg-theme-secondary hover:text-theme-primary px-6 py-2 rounded-lg transition-colors"
+              >
+                Retour à l&apos;accueil
+              </Link>
+            </div>
+          )}
+        </div>
 
-          <div className="mt-8 text-center">
-            <Link 
-              href="/login" 
-              className="text-sm text-gray-600 hover:text-gray-500"
-            >
-              ← Retour à la connexion
-            </Link>
-          </div>
+        <div className="text-center">
+          <Link
+            href="/login"
+            className="text-sm text-theme-secondary hover:text-theme-primary transition-colors"
+          >
+            Déjà un compte ? Se connecter
+          </Link>
         </div>
       </div>
     </div>

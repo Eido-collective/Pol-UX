@@ -1,6 +1,5 @@
 'use client'
 
-import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface PaginationProps {
   currentPage: number
@@ -43,63 +42,59 @@ export default function Pagination({
     return rangeWithDots
   }
 
-  const handlePageChange = (page: number) => {
-    onPageChange(page)
-    // Scroll vers le haut de la page
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
 
   return (
     <div className={`flex items-center justify-center ${className}`}>
-      <nav className="flex items-center gap-2 bg-white rounded-xl shadow-lg border border-gray-200 p-2" aria-label="Pagination">
+      <nav className="flex items-center gap-2 bg-theme-card rounded-xl shadow-theme-lg border border-theme-primary p-2" aria-label="Pagination">
         {/* Bouton Précédent */}
         <button
-          onClick={() => handlePageChange(currentPage - 1)}
+          onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${
+          className={`px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ${
             currentPage === 1
-              ? 'text-gray-400 bg-gray-50 cursor-not-allowed'
-              : 'text-gray-700 bg-white hover:bg-green-50 hover:text-green-700 hover:shadow-md border border-gray-200 hover:border-green-300'
+              ? 'text-theme-secondary bg-theme-tertiary cursor-not-allowed'
+              : 'text-theme-secondary bg-theme-card hover:bg-green-50 hover:text-green-700 hover:shadow-theme-md border border-theme-primary hover:border-green-300'
           }`}
         >
-          <ChevronLeft className="h-4 w-4" />
           Précédent
         </button>
 
-        {/* Numéros de pages */}
+        {/* Numéros de page */}
         <div className="flex items-center gap-1">
-          {getVisiblePages().map((page, index) => (
-            <div key={index}>
-              {page === '...' ? (
-                <span className="px-3 py-2.5 text-gray-400 font-medium">...</span>
-              ) : (
-                <button
-                  onClick={() => handlePageChange(page as number)}
-                  className={`px-4 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${
-                    currentPage === page
-                      ? 'bg-green-600 text-white shadow-lg shadow-green-200 border border-green-600'
-                      : 'text-gray-700 bg-white hover:bg-green-50 hover:text-green-700 hover:shadow-md border border-gray-200 hover:border-green-300'
-                  }`}
-                >
-                  {page}
-                </button>
-              )}
-            </div>
-          ))}
+          {getVisiblePages().map((page) => {
+            if (page === '...') {
+              return (
+                <span key={page} className="px-3 py-2.5 text-theme-secondary font-medium">...</span>
+              )
+            }
+
+            return (
+              <button
+                key={page}
+                onClick={() => onPageChange(page as number)}
+                className={`px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ${
+                  currentPage === page
+                    ? 'text-white bg-green-600 shadow-theme-md'
+                    : 'text-theme-secondary bg-theme-card hover:bg-green-50 hover:text-green-700 hover:shadow-theme-md border border-theme-primary hover:border-green-300'
+                }`}
+              >
+                {page}
+              </button>
+            )
+          })}
         </div>
 
         {/* Bouton Suivant */}
         <button
-          onClick={() => handlePageChange(currentPage + 1)}
+          onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${
+          className={`px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ${
             currentPage === totalPages
-              ? 'text-gray-400 bg-gray-50 cursor-not-allowed'
-              : 'text-gray-700 bg-white hover:bg-green-50 hover:text-green-700 hover:shadow-md border border-gray-200 hover:border-green-300'
+              ? 'text-theme-secondary bg-theme-tertiary cursor-not-allowed'
+              : 'text-theme-secondary bg-theme-card hover:bg-green-50 hover:text-green-700 hover:shadow-theme-md border border-theme-primary hover:border-green-300'
           }`}
         >
           Suivant
-          <ChevronRight className="h-4 w-4" />
         </button>
       </nav>
     </div>

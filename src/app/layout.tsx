@@ -54,8 +54,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr">
-      <body className={`${geist.variable} ${geistMono.variable} antialiased`}>
+    <html lang="fr" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const savedTheme = localStorage.getItem('theme');
+                  const theme = savedTheme || 'black';
+                  document.documentElement.setAttribute('data-theme', theme);
+                  document.documentElement.classList.add('theme-' + theme);
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
+      <body className={`${geist.variable} ${geistMono.variable} antialiased bg-theme-primary text-theme-primary min-h-screen`}>
         <Providers>
           <div className="min-h-screen flex flex-col">
             <Navbar />
@@ -69,21 +85,22 @@ export default function RootLayout({
             toastOptions={{
               duration: 4000,
               style: {
-                background: '#363636',
-                color: '#fff',
+                background: 'var(--bg-card)',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--border-primary)',
               },
               success: {
                 duration: 3000,
                 iconTheme: {
-                  primary: '#10b981',
-                  secondary: '#fff',
+                  primary: 'var(--accent-primary)',
+                  secondary: 'var(--text-primary)',
                 },
               },
               error: {
                 duration: 5000,
                 iconTheme: {
                   primary: '#ef4444',
-                  secondary: '#fff',
+                  secondary: 'var(--text-primary)',
                 },
               },
             }}

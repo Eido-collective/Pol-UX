@@ -1,301 +1,187 @@
 'use client'
 
-import { Shield, Eye, Lock, Database, Mail, Globe, Calendar } from 'lucide-react'
+import Link from 'next/link'
+import { Shield, Mail, Building, User } from 'lucide-react'
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 py-12">
+    <div className="min-h-screen bg-theme-secondary">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Politique de confidentialité</h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Protection de vos données personnelles et respect de votre vie privée
-          </p>
+        <div className="text-center mb-8">
+          <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-green-100 mb-4">
+            <Shield className="h-6 w-6 text-green-600" />
+          </div>
+          <h1 className="text-3xl font-bold text-theme-primary mb-4">Politique de Confidentialité</h1>
+          <p className="text-theme-secondary">Dernière mise à jour : {new Date().toLocaleDateString('fr-FR')}</p>
         </div>
 
-        {/* Introduction */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Shield className="h-6 w-6 text-blue-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900">Notre engagement</h2>
-          </div>
-          <p className="text-gray-700 leading-relaxed">
-            PolUX s&apos;engage à protéger la confidentialité et la sécurité de vos données personnelles. 
-            Cette politique de confidentialité décrit comment nous collectons, utilisons et protégeons 
-            vos informations lorsque vous utilisez notre plateforme.
-          </p>
-        </div>
+        {/* Contenu */}
+        <div className="bg-theme-card rounded-lg shadow-theme-lg border border-theme-primary p-8">
+          <div className="prose prose-lg max-w-none">
+            <div className="space-y-8">
+              {/* Introduction */}
+              <section>
+                <h2 className="text-2xl font-semibold text-theme-primary mb-4">1. Introduction</h2>
+                <p className="text-theme-secondary leading-relaxed">
+                  Pol-UX s'engage à protéger votre vie privée et vos données personnelles. Cette politique de confidentialité 
+                  explique comment nous collectons, utilisons et protégeons vos informations lorsque vous utilisez notre plateforme.
+                </p>
+              </section>
 
-        {/* Responsable du traitement */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Responsable du traitement</h2>
-          <div className="space-y-4">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <Mail className="h-5 w-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Contact</p>
-                <p className="text-gray-900 font-medium">solene@pol-ux.fr</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Globe className="h-5 w-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Site web</p>
-                <p className="text-gray-900 font-medium">www.pol-ux.fr</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Calendar className="h-5 w-5 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Dernière mise à jour</p>
-                <p className="text-gray-900 font-medium">Janvier 2025</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Données collectées */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-              <Database className="h-6 w-6 text-orange-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900">Données collectées</h2>
-          </div>
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Données d&apos;identification</h3>
-              <ul className="space-y-2 text-gray-700">
-                <li>• Nom et prénom</li>
-                <li>• Adresse email</li>
-                <li>• Nom d&apos;utilisateur</li>
-                <li>• Mot de passe (chiffré)</li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Données de navigation</h3>
-              <ul className="space-y-2 text-gray-700">
-                <li>• Adresse IP</li>
-                <li>• Type de navigateur</li>
-                <li>• Pages consultées</li>
-                <li>• Horodatage des connexions</li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Données de contenu</h3>
-              <ul className="space-y-2 text-gray-700">
-                <li>• Initiatives créées</li>
-                <li>• Commentaires et contributions</li>
-                <li>• Préférences et interactions</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        {/* Finalités du traitement */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Finalités du traitement</h2>
-          <div className="space-y-4 text-gray-700">
-            <div className="flex items-start gap-3">
-              <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-green-600 text-sm font-bold">1</span>
-              </div>
-              <p>
-                <strong>Gestion des comptes utilisateurs :</strong> Création, authentification et administration 
-                des comptes utilisateurs pour accéder aux fonctionnalités de la plateforme.
-              </p>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-blue-600 text-sm font-bold">2</span>
-              </div>
-              <p>
-                <strong>Publication d&apos;initiatives :</strong> Permettre aux utilisateurs de créer, modifier 
-                et gérer leurs initiatives sur la carte interactive.
-              </p>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-purple-600 text-sm font-bold">3</span>
-              </div>
-              <p>
-                <strong>Communication :</strong> Envoi d&apos;informations importantes, notifications et 
-                communications relatives au service.
-              </p>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-orange-600 text-sm font-bold">4</span>
-              </div>
-              <p>
-                <strong>Amélioration du service :</strong> Analyse des données d&apos;usage pour améliorer 
-                la qualité et les fonctionnalités de la plateforme.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Base légale */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Base légale</h2>
-          <div className="space-y-4 text-gray-700">
-            <p>
-              Le traitement de vos données personnelles est fondé sur les bases légales suivantes :
-            </p>
-            <ul className="space-y-2 ml-4">
-              <li>• <strong>Exécution du contrat :</strong> Pour la fourniture des services demandés</li>
-              <li>• <strong>Intérêt légitime :</strong> Pour l&apos;amélioration de nos services et la sécurité</li>
-              <li>• <strong>Consentement :</strong> Pour les communications marketing (si applicable)</li>
-              <li>• <strong>Obligation légale :</strong> Pour respecter nos obligations réglementaires</li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Destinataires */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Destinataires des données</h2>
-          <div className="space-y-4 text-gray-700">
-            <p>
-              Vos données personnelles peuvent être partagées avec :
-            </p>
-            <ul className="space-y-2 ml-4">
-              <li>• <strong>Notre équipe :</strong> Personnel autorisé de PolUX pour la gestion du service</li>
-              <li>• <strong>Prestataires techniques :</strong> Vercel (hébergement) et Supabase (base de données)</li>
-              <li>• <strong>Autorités :</strong> En cas d&apos;obligation légale ou de demande judiciaire</li>
-              <li>• <strong>Utilisateurs :</strong> Informations publiques des initiatives (nom, description, localisation)</li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Durée de conservation */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Durée de conservation</h2>
-          <div className="space-y-4 text-gray-700">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Données de compte</h3>
-              <p>Conservées pendant toute la durée de votre inscription, puis 3 ans après la dernière activité.</p>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Données de navigation</h3>
-              <p>Conservées pendant 13 mois maximum.</p>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Contenu publié</h3>
-              <p>Conservé pendant toute la durée de vie de la plateforme, sauf suppression demandée.</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Vos droits */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <Eye className="h-6 w-6 text-green-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900">Vos droits</h2>
-          </div>
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center">
-                  <span className="text-blue-600 text-xs font-bold">1</span>
+              {/* Collecte des données */}
+              <section>
+                <h2 className="text-2xl font-semibold text-theme-primary mb-4">2. Collecte des Données</h2>
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-medium text-theme-primary mb-2">Données que vous nous fournissez :</h3>
+                    <ul className="list-disc list-inside text-theme-secondary space-y-1 ml-4">
+                      <li>Informations de compte (nom, prénom, email, nom d'utilisateur)</li>
+                      <li>Contenu que vous publiez (initiatives, articles, conseils, posts forum)</li>
+                      <li>Messages et communications</li>
+                      <li>Préférences et paramètres</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-theme-primary mb-2">Données collectées automatiquement :</h3>
+                    <ul className="list-disc list-inside text-theme-secondary space-y-1 ml-4">
+                      <li>Adresse IP et informations de localisation</li>
+                      <li>Données de navigation et d'utilisation</li>
+                      <li>Cookies et technologies similaires</li>
+                      <li>Informations sur votre appareil</li>
+                    </ul>
+                  </div>
                 </div>
-                <span className="text-gray-700 font-medium">Droit d&apos;accès</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-green-100 rounded-full flex items-center justify-center">
-                  <span className="text-green-600 text-xs font-bold">2</span>
+              </section>
+
+              {/* Utilisation des données */}
+              <section>
+                <h2 className="text-2xl font-semibold text-theme-primary mb-4">3. Utilisation des Données</h2>
+                <p className="text-theme-secondary leading-relaxed mb-4">
+                  Nous utilisons vos données pour :
+                </p>
+                <ul className="list-disc list-inside text-theme-secondary space-y-1 ml-4">
+                  <li>Fournir et améliorer nos services</li>
+                  <li>Personnaliser votre expérience</li>
+                  <li>Communiquer avec vous</li>
+                  <li>Assurer la sécurité de la plateforme</li>
+                  <li>Respecter nos obligations légales</li>
+                </ul>
+              </section>
+
+              {/* Partage des données */}
+              <section>
+                <h2 className="text-2xl font-semibold text-theme-primary mb-4">4. Partage des Données</h2>
+                <p className="text-theme-secondary leading-relaxed mb-4">
+                  Nous ne vendons, ne louons ni ne partageons vos données personnelles avec des tiers, sauf :
+                </p>
+                <ul className="list-disc list-inside text-theme-secondary space-y-1 ml-4">
+                  <li>Avec votre consentement explicite</li>
+                  <li>Pour respecter des obligations légales</li>
+                  <li>Avec nos prestataires de services (hébergement, email)</li>
+                  <li>Pour protéger nos droits et la sécurité des utilisateurs</li>
+                </ul>
+              </section>
+
+              {/* Sécurité */}
+              <section>
+                <h2 className="text-2xl font-semibold text-theme-primary mb-4">5. Sécurité des Données</h2>
+                <p className="text-theme-secondary leading-relaxed">
+                  Nous mettons en place des mesures de sécurité appropriées pour protéger vos données contre 
+                  l'accès non autorisé, la modification, la divulgation ou la destruction. Ces mesures incluent 
+                  le chiffrement, l'authentification sécurisée et la surveillance continue de nos systèmes.
+                </p>
+              </section>
+
+              {/* Vos droits */}
+              <section>
+                <h2 className="text-2xl font-semibold text-theme-primary mb-4">6. Vos Droits</h2>
+                <p className="text-theme-secondary leading-relaxed mb-4">
+                  Conformément au RGPD, vous avez les droits suivants :
+                </p>
+                <ul className="list-disc list-inside text-theme-secondary space-y-1 ml-4">
+                  <li>Droit d'accès à vos données personnelles</li>
+                  <li>Droit de rectification des données inexactes</li>
+                  <li>Droit d'effacement de vos données</li>
+                  <li>Droit à la limitation du traitement</li>
+                  <li>Droit à la portabilité de vos données</li>
+                  <li>Droit d'opposition au traitement</li>
+                </ul>
+              </section>
+
+              {/* Cookies */}
+              <section>
+                <h2 className="text-2xl font-semibold text-theme-primary mb-4">7. Cookies</h2>
+                <p className="text-theme-secondary leading-relaxed mb-4">
+                  Nous utilisons des cookies pour améliorer votre expérience sur notre site. Vous pouvez 
+                  contrôler l'utilisation des cookies via les paramètres de votre navigateur.
+                </p>
+                <div className="bg-theme-tertiary rounded-lg p-4">
+                  <h4 className="font-medium text-theme-primary mb-2">Types de cookies utilisés :</h4>
+                  <ul className="list-disc list-inside text-theme-secondary space-y-1 ml-4">
+                    <li>Cookies de session (nécessaires au fonctionnement)</li>
+                    <li>Cookies de préférences (thème, langue)</li>
+                    <li>Cookies analytiques (statistiques d'utilisation)</li>
+                  </ul>
                 </div>
-                <span className="text-gray-700 font-medium">Droit de rectification</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-purple-100 rounded-full flex items-center justify-center">
-                  <span className="text-purple-600 text-xs font-bold">3</span>
+              </section>
+
+              {/* Conservation */}
+              <section>
+                <h2 className="text-2xl font-semibold text-theme-primary mb-4">8. Conservation des Données</h2>
+                <p className="text-theme-secondary leading-relaxed">
+                  Nous conservons vos données personnelles aussi longtemps que nécessaire pour fournir nos services 
+                  ou pour respecter nos obligations légales. Les données sont supprimées ou anonymisées lorsque 
+                  elles ne sont plus nécessaires.
+                </p>
+              </section>
+
+              {/* Modifications */}
+              <section>
+                <h2 className="text-2xl font-semibold text-theme-primary mb-4">9. Modifications de cette Politique</h2>
+                <p className="text-theme-secondary leading-relaxed">
+                  Nous pouvons mettre à jour cette politique de confidentialité de temps à autre. Les modifications 
+                  importantes seront notifiées via notre plateforme ou par email. Nous vous encourageons à consulter 
+                  régulièrement cette page.
+                </p>
+              </section>
+
+              {/* Contact */}
+              <section>
+                <h2 className="text-2xl font-semibold text-theme-primary mb-4">10. Contact</h2>
+                <div className="bg-theme-tertiary rounded-lg p-6">
+                  <p className="text-theme-secondary mb-4">
+                    Pour toute question concernant cette politique de confidentialité ou pour exercer vos droits, 
+                    contactez-nous :
+                  </p>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-4 w-4 text-green-600" />
+                      <span className="text-theme-secondary">Email : solene@pol-ux.fr</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Building className="h-4 w-4 text-green-600" />
+                      <span className="text-theme-secondary">Entreprise : WGC Concept – Entreprise Individuelle</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4 text-green-600" />
+                      <span className="text-theme-secondary">Responsable : Solène Zulfiqar</span>
+                    </div>
+                  </div>
                 </div>
-                <span className="text-gray-700 font-medium">Droit à l&apos;effacement</span>
-              </div>
+              </section>
             </div>
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-orange-100 rounded-full flex items-center justify-center">
-                  <span className="text-orange-600 text-xs font-bold">4</span>
-                </div>
-                <span className="text-gray-700 font-medium">Droit à la portabilité</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-red-100 rounded-full flex items-center justify-center">
-                  <span className="text-red-600 text-xs font-bold">5</span>
-                </div>
-                <span className="text-gray-700 font-medium">Droit d&apos;opposition</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-indigo-100 rounded-full flex items-center justify-center">
-                  <span className="text-indigo-600 text-xs font-bold">6</span>
-                </div>
-                <span className="text-gray-700 font-medium">Droit de limitation</span>
-              </div>
-            </div>
-          </div>
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-blue-800 text-sm">
-              Pour exercer vos droits, contactez-nous à <strong>solene@pol-ux.fr</strong>. 
-              Nous répondrons dans un délai maximum de 30 jours.
-            </p>
           </div>
         </div>
 
-        {/* Sécurité */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-              <Lock className="h-6 w-6 text-red-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900">Sécurité des données</h2>
-          </div>
-          <div className="space-y-4 text-gray-700">
-            <p>
-              Nous mettons en œuvre des mesures techniques et organisationnelles appropriées pour 
-              protéger vos données personnelles contre :
-            </p>
-            <ul className="space-y-2 ml-4">
-              <li>• L&apos;accès non autorisé</li>
-              <li>• La divulgation accidentelle</li>
-              <li>• La modification ou destruction non autorisée</li>
-              <li>• La perte accidentelle</li>
-            </ul>
-            <p>
-              Ces mesures incluent le chiffrement des données, l&apos;authentification sécurisée, 
-              les sauvegardes régulières et la formation de notre personnel.
-            </p>
-          </div>
-        </div>
-
-        {/* Contact DPO */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Contact et réclamations</h2>
-          <div className="space-y-4 text-gray-700">
-            <p>
-              Pour toute question concernant cette politique de confidentialité ou pour exercer vos droits, 
-              vous pouvez nous contacter :
-            </p>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="font-medium">Email : solene@pol-ux.fr</p>
-              <p className="text-sm text-gray-600 mt-1">
-                Vous avez également le droit de déposer une réclamation auprès de la CNIL 
-                (Commission Nationale de l&apos;Informatique et des Libertés) si vous estimez que 
-                vos droits ne sont pas respectés.
-              </p>
-            </div>
-          </div>
+        {/* Navigation */}
+        <div className="mt-8 text-center">
+          <Link 
+            href="/"
+            className="inline-flex items-center gap-2 text-green-600 hover:text-green-700 font-medium"
+          >
+            ← Retour à l'accueil
+          </Link>
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Mail, Globe, Building, User, MapPin, Clock, Send } from 'lucide-react'
+import { Mail, Globe, Building, User, Clock, Send, Target } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 export default function ContactPage() {
@@ -73,12 +73,12 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-theme-secondary">
       <div className="max-w-4xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Contact</h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <h1 className="text-4xl font-bold text-theme-primary mb-4">Contact</h1>
+          <p className="text-xl text-theme-secondary max-w-2xl mx-auto">
             Nous sommes là pour vous accompagner dans votre démarche de numérique écoresponsable. 
             N&apos;hésitez pas à nous contacter !
           </p>
@@ -87,18 +87,18 @@ export default function ContactPage() {
         {/* Informations de contact */}
         <div className="grid md:grid-cols-2 gap-8 mb-12">
           {/* Contact principal */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Nous contacter</h2>
+          <div className="bg-theme-card rounded-xl shadow-theme-sm border border-theme-primary p-8">
+            <h2 className="text-2xl font-bold text-theme-primary mb-6">Nous contacter</h2>
             <div className="space-y-6">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
                   <Mail className="h-5 w-5 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Email</p>
+                  <p className="text-sm text-theme-secondary">Email</p>
                   <a 
                     href="mailto:solene@pol-ux.fr" 
-                    className="text-green-600 hover:text-green-700 font-medium text-lg"
+                    className="text-theme-primary hover:text-green-600 transition-colors"
                   >
                     solene@pol-ux.fr
                   </a>
@@ -110,12 +110,12 @@ export default function ContactPage() {
                   <Globe className="h-5 w-5 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Site web</p>
+                  <p className="text-sm text-theme-secondary">Site web</p>
                   <a 
                     href="https://www.pol-ux.fr" 
-                    className="text-blue-600 hover:text-blue-700 font-medium text-lg"
-                    target="_blank"
+                    target="_blank" 
                     rel="noopener noreferrer"
+                    className="text-theme-primary hover:text-green-600 transition-colors"
                   >
                     www.pol-ux.fr
                   </a>
@@ -123,29 +123,29 @@ export default function ContactPage() {
               </div>
 
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <Clock className="h-5 w-5 text-purple-600" />
+                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                  <Clock className="h-5 w-5 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Réponse</p>
-                  <p className="text-gray-900 font-medium">Sous 24-48h</p>
+                  <p className="text-sm text-theme-secondary">Réponse</p>
+                  <p className="text-theme-primary font-medium">Sous 24-48h</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Informations entreprise */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Informations</h2>
+          <div className="bg-theme-card rounded-xl shadow-theme-sm border border-theme-primary p-8">
+            <h2 className="text-2xl font-bold text-theme-primary mb-6">Informations</h2>
             <div className="space-y-6">
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-                  <Building className="h-5 w-5 text-indigo-600" />
+                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <Building className="h-5 w-5 text-purple-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Entreprise</p>
-                  <p className="text-gray-900 font-medium">WGC Concept</p>
-                  <p className="text-gray-600 text-sm">Entreprise Individuelle</p>
+                  <p className="text-sm text-theme-secondary">Entreprise</p>
+                  <p className="text-theme-primary font-medium">WGC Concept</p>
+                  <p className="text-theme-secondary text-sm">Entreprise Individuelle</p>
                 </div>
               </div>
 
@@ -154,20 +154,20 @@ export default function ContactPage() {
                   <User className="h-5 w-5 text-orange-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Responsable</p>
-                  <p className="text-gray-900 font-medium">Solène Zulfiqar</p>
-                  <p className="text-gray-600 text-sm">Fondatrice de PolUX</p>
+                  <p className="text-sm text-theme-secondary">Responsable</p>
+                  <p className="text-theme-primary font-medium">Solène Zulfiqar</p>
+                  <p className="text-theme-secondary text-sm">Fondatrice de PolUX</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                  <MapPin className="h-5 w-5 text-red-600" />
+                <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
+                  <Target className="h-5 w-5 text-teal-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Domaine</p>
-                  <p className="text-gray-900 font-medium">Numérique écoresponsable</p>
-                  <p className="text-gray-600 text-sm">Transition écologique</p>
+                  <p className="text-sm text-theme-secondary">Domaine</p>
+                  <p className="text-theme-primary font-medium">Numérique écoresponsable</p>
+                  <p className="text-theme-secondary text-sm">Transition écologique</p>
                 </div>
               </div>
             </div>
@@ -175,104 +175,100 @@ export default function ContactPage() {
         </div>
 
         {/* Formulaire de contact */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Envoyez-nous un message</h2>
+        <div className="bg-theme-card rounded-xl shadow-theme-sm border border-theme-primary p-8">
+          <h2 className="text-2xl font-bold text-theme-primary mb-6">Envoyez-nous un message</h2>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="name" className="block text-sm font-medium text-theme-primary mb-2">
                   Nom complet *
                 </label>
                 <input
                   type="text"
                   id="name"
                   name="name"
+                  required
                   value={formData.name}
                   onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   placeholder="Votre nom"
-                  disabled={isSubmitting}
                 />
               </div>
+
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  Email *
+                <label htmlFor="email" className="block text-sm font-medium text-theme-primary mb-2">
+                  Adresse email *
                 </label>
                 <input
                   type="email"
                   id="email"
                   name="email"
+                  required
                   value={formData.email}
                   onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   placeholder="votre@email.com"
-                  disabled={isSubmitting}
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="subject" className="block text-sm font-medium text-theme-primary mb-2">
                 Sujet *
               </label>
               <input
                 type="text"
                 id="subject"
                 name="subject"
+                required
                 value={formData.subject}
                 onChange={handleInputChange}
-                required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 placeholder="Sujet de votre message"
-                disabled={isSubmitting}
               />
             </div>
 
             <div>
-              <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="message" className="block text-sm font-medium text-theme-primary mb-2">
                 Message *
               </label>
               <textarea
                 id="message"
                 name="message"
+                required
+                rows={6}
                 value={formData.message}
                 onChange={handleInputChange}
-                rows={6}
-                required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 placeholder="Votre message..."
-                disabled={isSubmitting}
               />
             </div>
 
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-600">
-                * Champs obligatoires
-              </p>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className={`flex items-center gap-2 px-8 py-3 rounded-lg font-medium transition-colors ${
-                  isSubmitting
-                    ? 'bg-gray-400 text-white cursor-not-allowed'
-                    : 'bg-green-600 text-white hover:bg-green-700'
-                }`}
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Envoi en cours...
-                  </>
-                ) : (
-                  <>
-                    <Send className="h-4 w-4" />
-                    Envoyer le message
-                  </>
-                )}
-              </button>
-            </div>
+            <p className="text-sm text-theme-secondary">
+              * Champs obligatoires. Nous vous répondrons dans les plus brefs délais.
+            </p>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={`w-full py-3 px-6 rounded-lg font-semibold transition-colors ${
+                isSubmitting
+                  ? 'bg-theme-secondary text-theme-primary cursor-not-allowed'
+                  : 'bg-green-600 text-white hover:bg-green-700'
+              }`}
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Envoi en cours...
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4" />
+                  Envoyer le message
+                </>
+              )}
+            </button>
           </form>
         </div>
 
