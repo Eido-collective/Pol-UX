@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { Search, Plus, ChevronUp, ChevronDown, Calendar, User, BookOpen, X } from 'lucide-react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
@@ -8,26 +8,7 @@ import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import ArticleImage from '@/components/ArticleImage'
 import Pagination from '@/components/Pagination'
-
-interface Article {
-  id: string
-  title: string
-  content: string
-  excerpt?: string
-  category: string
-  imageUrl?: string
-  source?: string
-  publishedAt?: string
-  createdAt: string
-  author: {
-    name: string
-    username: string
-  }
-  votes: Vote[]
-  _count: {
-    votes: number
-  }
-}
+import { useArticles } from '@/hooks/useArticles'
 
 interface Vote {
   id: string
@@ -38,13 +19,17 @@ interface Vote {
 export default function ArticlesPage() {
   const { data: session } = useSession()
   const router = useRouter()
-  const [articles, setArticles] = useState<Article[]>([])
-  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [userVotes, setUserVotes] = useState<{[key: string]: number}>({})
   const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
+  
+  // Utilisation de SWR pour récupérer les articles
+  const { articles, pagination, isLoading, error, mutate } = useArticles({
+    page: currentPage,
+    search: searchTerm || undefined,
+    category: selectedCategory !== 'all' ? selectedCategory : undefined
+  })
   
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -90,53 +75,31 @@ export default function ArticlesPage() {
     }
   }, [isModalOpen])
 
-  const fetchArticles = useCallback(async () => {
-    try {
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: '10'
-      })
-
-      if (searchTerm) {
-        params.append('search', searchTerm)
-      }
-
-      if (selectedCategory !== 'all') {
-        params.append('category', selectedCategory)
-      }
-
-      const response = await fetch(`/api/articles?${params}`)
-      if (response.ok) {
-        const data = await response.json()
-        setArticles(data.articles)
-        setTotalPages(data.pagination.pages)
-        
-        // Charger les votes de l'utilisateur connecté
-        if (session?.user?.id) {
-          const userVotesData: {[key: string]: number} = {}
-          
-          data.articles.forEach((article: Article) => {
-            if (article.votes) {
-              const userVote = article.votes.find((vote: Vote) => vote.userId === session.user.id)
-              if (userVote) {
-                userVotesData[article.id] = userVote.value
-              }
-            }
-          })
-          
-          setUserVotes(userVotesData)
-        }
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des articles:', error)
-    } finally {
-      setLoading(false)
-    }
-  }, [currentPage, searchTerm, selectedCategory, session?.user?.id])
-
+  // Charger les votes utilisateur quand les articles changent
   useEffect(() => {
-    fetchArticles()
-  }, [fetchArticles])
+    if (articles && session?.user?.id) {
+      const userVotesData: {[key: string]: number} = {}
+      
+      articles.forEach((article) => {
+        if (article.votes) {
+          const userVote = article.votes.find((vote) => vote.userId === session.user.id)
+          if (userVote) {
+            userVotesData[article.id] = userVote.value
+          }
+        }
+      })
+      
+      setUserVotes(userVotesData)
+    }
+  }, [articles, session?.user?.id])
+
+  // Gestion des erreurs SWR
+  useEffect(() => {
+    if (error) {
+      console.error('Erreur lors du chargement des articles:', error)
+      toast.error('Erreur lors du chargement des articles')
+    }
+  }, [error])
 
   const handleCreateArticle = () => {
     if (!session) {
@@ -245,7 +208,7 @@ export default function ArticlesPage() {
           source: ''
         })
         setErrors({})
-        fetchArticles() // Recharger les articles
+        mutate() // Revalider le cache SWR
         toast.success('Article créé avec succès ! Il sera visible après modération.')
       } else {
         const errorData = await response.json()
@@ -295,8 +258,8 @@ export default function ArticlesPage() {
           [articleId]: prev[articleId] === value ? 0 : value
         }))
         
-        // Recharger les articles pour mettre à jour les compteurs
-        fetchArticles()
+        // Revalider le cache SWR pour mettre à jour les compteurs
+        mutate()
       } else {
         const errorData = await response.json()
         toast.error(errorData.error || 'Erreur lors du vote')
@@ -412,7 +375,7 @@ export default function ArticlesPage() {
         </div>
 
         {/* Liste des articles */}
-        {loading ? (
+                    {isLoading ? (
           <div className="text-center py-12">
             <div className="text-gray-500">Chargement des articles...</div>
           </div>
@@ -531,11 +494,11 @@ export default function ArticlesPage() {
         )}
 
         {/* Pagination */}
-        {totalPages > 1 && (
+        {pagination && pagination.totalPages > 1 && (
           <div className="mt-8">
             <Pagination
               currentPage={currentPage}
-              totalPages={totalPages}
+              totalPages={pagination.totalPages}
               onPageChange={setCurrentPage}
             />
           </div>
