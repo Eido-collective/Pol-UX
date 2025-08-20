@@ -298,12 +298,12 @@ export default function ArticlesPage() {
       case 'CLIMATE_CHANGE': return 'bg-orange-100 text-orange-800'
       case 'BIODIVERSITY': return 'bg-purple-100 text-purple-800'
       case 'RENEWABLE_ENERGY': return 'bg-yellow-100 text-yellow-800'
-      case 'CIRCULAR_ECONOMY': return 'bg-cyan-100 text-cyan-800'
-      case 'GREEN_TECHNOLOGY': return 'bg-emerald-100 text-emerald-800'
-      case 'CONSERVATION': return 'bg-indigo-100 text-indigo-800'
-      case 'EDUCATION': return 'bg-pink-100 text-pink-800'
-      case 'POLICY': return 'bg-gray-100 text-gray-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'CIRCULAR_ECONOMY': return 'bg-indigo-100 text-indigo-800'
+      case 'GREEN_TECHNOLOGY': return 'bg-teal-100 text-teal-800'
+      case 'CONSERVATION': return 'bg-pink-100 text-pink-800'
+      case 'EDUCATION': return 'bg-cyan-100 text-cyan-800'
+      case 'POLICY': return 'bg-theme-tertiary text-theme-secondary'
+      default: return 'bg-theme-tertiary text-theme-secondary'
     }
   }
 
@@ -320,14 +320,14 @@ export default function ArticlesPage() {
   }
 
   return (
-    <div className="bg-gray-50">
+    <div className="bg-theme-secondary">
       {/* Page Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
+      <div className="bg-theme-card shadow-theme-sm border-b border-theme-primary">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Articles Écologiques</h1>
-              <p className="text-gray-600">Découvrez des articles approfondis sur l&apos;écologie et le développement durable</p>
+              <h1 className="text-2xl font-bold text-theme-primary">Articles Écologiques</h1>
+              <p className="text-theme-secondary">Découvrez des articles approfondis sur l&apos;écologie et le développement durable</p>
             </div>
             <button 
               onClick={handleCreateArticle}
@@ -342,17 +342,17 @@ export default function ArticlesPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Filtres */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="bg-theme-card rounded-lg shadow-sm border border-theme-primary p-6 mb-6">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-theme-secondary h-4 w-4" />
                 <input
                   type="text"
                   placeholder="Rechercher un article..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full pl-10 pr-4 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 />
               </div>
             </div>
@@ -361,7 +361,7 @@ export default function ArticlesPage() {
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
               >
                 <option value="all">Toutes les catégories</option>
                 {availableCategories.map((category: { value: string; label: string; count: number }) => (
@@ -377,20 +377,20 @@ export default function ArticlesPage() {
         {/* Liste des articles */}
                     {isLoading ? (
           <div className="text-center py-12">
-            <div className="text-gray-500">Chargement des articles...</div>
+            <div className="text-theme-secondary">Chargement des articles...</div>
           </div>
         ) : articles.length === 0 ? (
           <div className="text-center py-12">
-            <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun article trouvé</h3>
-            <p className="text-gray-500">Essayez de modifier vos filtres ou créez le premier article !</p>
+            <BookOpen className="h-12 w-12 text-theme-secondary mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-theme-primary mb-2">Aucun article trouvé</h3>
+            <p className="text-theme-secondary">Essayez de modifier vos filtres ou créez le premier article !</p>
           </div>
         ) : (
           <div className="space-y-6">
             {articles.map((article) => (
               <div
                 key={article.id}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+                className="bg-theme-card rounded-lg shadow-sm border border-theme-primary overflow-hidden hover:shadow-md transition-shadow"
               >
                                                  <div className="flex flex-col md:flex-row h-full">
                   {/* Image de l'article */}
@@ -415,7 +415,7 @@ export default function ArticlesPage() {
                         </div>
                         
                         <Link href={`/articles/${article.id}`}>
-                          <h2 className="text-xl font-semibold text-gray-900 mb-2 hover:text-green-600 transition-colors">
+                          <h2 className="text-xl font-semibold text-theme-primary mb-2 hover:text-green-600 transition-colors">
                             {article.title.length > 80 
                               ? `${article.title.substring(0, 80)}...` 
                               : article.title
@@ -424,7 +424,7 @@ export default function ArticlesPage() {
                         </Link>
 
                         {article.excerpt && (
-                          <p className="text-gray-600 mb-4 line-clamp-3">
+                          <p className="text-theme-secondary mb-4 line-clamp-3">
                             {article.excerpt.length > 150 
                               ? `${article.excerpt.substring(0, 150)}...` 
                               : article.excerpt
@@ -432,7 +432,7 @@ export default function ArticlesPage() {
                           </p>
                         )}
 
-                        <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
+                        <div className="flex items-center gap-4 text-sm text-theme-secondary mb-4">
                           <div className="flex items-center gap-1">
                             <User className="h-4 w-4" />
                             <span>{article.author.name || article.author.username}</span>
@@ -452,7 +452,7 @@ export default function ArticlesPage() {
                           className={`p-2 rounded-lg transition-colors ${
                             userVotes[article.id] === 1 
                               ? 'text-orange-500 bg-orange-50 border border-orange-200' 
-                              : 'text-gray-400 hover:text-orange-500 hover:bg-gray-50 border border-gray-200'
+                              : 'text-theme-secondary hover:text-orange-500 hover:bg-theme-primary border border-theme-primary'
                           }`}
                           onClick={() => handleVote(article.id, 1)}
                         >
@@ -460,7 +460,7 @@ export default function ArticlesPage() {
                         </button>
                         <span className={`text-sm font-medium ${
                           getVoteCount(article.votes) > 0 ? 'text-orange-500' : 
-                          getVoteCount(article.votes) < 0 ? 'text-blue-500' : 'text-gray-900'
+                          getVoteCount(article.votes) < 0 ? 'text-blue-500' : 'text-theme-primary'
                         }`}>
                           {getVoteCount(article.votes)}
                         </span>
@@ -468,7 +468,7 @@ export default function ArticlesPage() {
                           className={`p-2 rounded-lg transition-colors ${
                             userVotes[article.id] === -1 
                               ? 'text-blue-500 bg-blue-50 border border-blue-200' 
-                              : 'text-gray-400 hover:text-blue-500 hover:bg-gray-50 border border-gray-200'
+                              : 'text-theme-secondary hover:text-blue-500 hover:bg-theme-primary border border-theme-primary'
                           }`}
                           onClick={() => handleVote(article.id, -1)}
                         >
@@ -507,19 +507,19 @@ export default function ArticlesPage() {
         {/* Modal de création d'article */}
         {isModalOpen && (
           <div 
-            className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-theme-overlay backdrop-blur-sm z-50 flex items-center justify-center p-4"
             onClick={closeModal} // Fermer en cliquant sur le backdrop
           >
             <div 
-              className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+              className="bg-theme-card rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()} // Empêcher la fermeture en cliquant sur la modale
             >
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-gray-900">Nouvel Article</h2>
+                  <h2 className="text-xl font-bold text-theme-primary">Nouvel Article</h2>
                   <button
                     onClick={closeModal}
-                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                    className="text-theme-secondary hover:text-theme-primary transition-colors"
                   >
                     <X className="h-6 w-6" />
                   </button>
@@ -527,7 +527,7 @@ export default function ArticlesPage() {
 
                 <form onSubmit={handleSubmitArticle} className="space-y-6">
                   <div>
-                    <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="title" className="block text-sm font-medium text-theme-secondary mb-2">
                       Titre *
                     </label>
                     <input
@@ -539,7 +539,7 @@ export default function ArticlesPage() {
                         validateField('title', e.target.value)
                       }}
                       className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
-                        errors.title ? 'border-red-500' : 'border-gray-300'
+                        errors.title ? 'border-red-500' : 'border-theme-primary'
                       }`}
                       placeholder="Titre de votre article..."
                       required
@@ -550,14 +550,14 @@ export default function ArticlesPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="category" className="block text-sm font-medium text-theme-secondary mb-2">
                       Catégorie *
                     </label>
                     <select
                       id="category"
                       value={newArticle.category}
                       onChange={(e) => setNewArticle(prev => ({ ...prev, category: e.target.value as 'ENVIRONMENT' | 'SUSTAINABILITY' | 'CLIMATE_CHANGE' | 'BIODIVERSITY' | 'RENEWABLE_ENERGY' | 'CIRCULAR_ECONOMY' | 'GREEN_TECHNOLOGY' | 'CONSERVATION' | 'EDUCATION' | 'POLICY' }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       required
                     >
                       <option value="ENVIRONMENT">Environnement</option>
@@ -574,7 +574,7 @@ export default function ArticlesPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="excerpt" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="excerpt" className="block text-sm font-medium text-theme-secondary mb-2">
                       Extrait *
                     </label>
                     <textarea
@@ -586,7 +586,7 @@ export default function ArticlesPage() {
                       }}
                       rows={3}
                       className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none ${
-                        errors.excerpt ? 'border-red-500' : 'border-gray-300'
+                        errors.excerpt ? 'border-red-500' : 'border-theme-primary'
                       }`}
                       placeholder="Résumé court de votre article..."
                       required
@@ -597,7 +597,7 @@ export default function ArticlesPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="content" className="block text-sm font-medium text-theme-secondary mb-2">
                       Contenu *
                     </label>
                     <textarea
@@ -609,7 +609,7 @@ export default function ArticlesPage() {
                       }}
                       rows={8}
                       className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none ${
-                        errors.content ? 'border-red-500' : 'border-gray-300'
+                        errors.content ? 'border-red-500' : 'border-theme-primary'
                       }`}
                       placeholder="Contenu détaillé de votre article..."
                       required
@@ -620,7 +620,7 @@ export default function ArticlesPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="imageUrl" className="block text-sm font-medium text-theme-secondary mb-2">
                       URL de l&apos;image (optionnel)
                     </label>
                     <input
@@ -628,13 +628,13 @@ export default function ArticlesPage() {
                       id="imageUrl"
                       value={newArticle.imageUrl}
                       onChange={(e) => setNewArticle(prev => ({ ...prev, imageUrl: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       placeholder="https://..."
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="source" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="source" className="block text-sm font-medium text-theme-secondary mb-2">
                       URL de la source (optionnel)
                     </label>
                     <input
@@ -642,7 +642,7 @@ export default function ArticlesPage() {
                       id="source"
                       value={newArticle.source}
                       onChange={(e) => setNewArticle(prev => ({ ...prev, source: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       placeholder="https://..."
                     />
                   </div>
@@ -651,14 +651,14 @@ export default function ArticlesPage() {
                     <button
                       type="button"
                       onClick={closeModal}
-                      className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                      className="px-4 py-2 text-theme-secondary bg-theme-primary hover:bg-theme-secondary rounded-lg transition-colors"
                     >
                       Annuler
                     </button>
                     <button
                       type="submit"
                       disabled={isSubmitting || Object.keys(errors).length > 0}
-                      className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center gap-2"
+                      className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 disabled:bg-theme-secondary disabled:cursor-not-allowed rounded-lg transition-colors flex items-center gap-2"
                     >
                       {isSubmitting ? (
                         <>

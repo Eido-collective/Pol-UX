@@ -138,13 +138,23 @@ export default function ForumPage() {
 
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case 'GENERAL': return 'bg-gray-100 text-gray-800'
-      case 'EVENTS': return 'bg-blue-100 text-blue-800'
-      case 'PROJECTS': return 'bg-green-100 text-green-800'
-      case 'TIPS': return 'bg-yellow-100 text-yellow-800'
-      case 'NEWS': return 'bg-purple-100 text-purple-800'
-      case 'DISCUSSION': return 'bg-orange-100 text-orange-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'ENVIRONMENT': return 'bg-green-100 text-green-800'
+      case 'SUSTAINABILITY': return 'bg-blue-100 text-blue-800'
+      case 'CLIMATE_CHANGE': return 'bg-orange-100 text-orange-800'
+      case 'BIODIVERSITY': return 'bg-purple-100 text-purple-800'
+      case 'RENEWABLE_ENERGY': return 'bg-yellow-100 text-yellow-800'
+      case 'CIRCULAR_ECONOMY': return 'bg-indigo-100 text-indigo-800'
+      case 'GREEN_TECHNOLOGY': return 'bg-teal-100 text-teal-800'
+      case 'CONSERVATION': return 'bg-pink-100 text-pink-800'
+      case 'EDUCATION': return 'bg-cyan-100 text-cyan-800'
+      case 'POLICY': return 'bg-theme-tertiary text-theme-secondary'
+      case 'GENERAL': return 'bg-theme-tertiary text-theme-secondary'
+      case 'QUESTIONS': return 'bg-purple-100 text-purple-800'
+      case 'DISCUSSIONS': return 'bg-blue-100 text-blue-800'
+      case 'EVENTS': return 'bg-orange-100 text-orange-800'
+      case 'RESOURCES': return 'bg-green-100 text-green-800'
+      case 'NEWS': return 'bg-red-100 text-red-800'
+      default: return 'bg-theme-tertiary text-theme-secondary'
     }
   }
 
@@ -163,6 +173,12 @@ export default function ForumPage() {
   }
 
   const handleVote = async (postId: string, value: number) => {
+    if (!session) {
+      toast.error('Vous devez être connecté pour voter')
+      window.location.href = '/login'
+      return
+    }
+
     try {
       const response = await fetch(`/api/forum/posts/${postId}/vote`, {
         method: 'POST',
@@ -290,14 +306,14 @@ export default function ForumPage() {
   }
 
   return (
-    <div className="bg-gray-50">
+    <div className="bg-theme-secondary">
       {/* Page Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
+      <div className="bg-theme-card shadow-theme-sm border-b border-theme-primary">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Forum Collaboratif</h1>
-              <p className="text-gray-600">Échangez avec la communauté écologique</p>
+              <h1 className="text-2xl font-bold text-theme-primary">Forum Collaboratif</h1>
+              <p className="text-theme-secondary">Échangez avec la communauté sur les sujets écologiques</p>
             </div>
             <button 
               onClick={handleCreatePost}
@@ -311,48 +327,54 @@ export default function ForumPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Filtres */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <input
-                  type="text"
-                  placeholder="Rechercher dans le forum..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                />
-              </div>
+        {/* Section de recherche et filtres */}
+        <div className="bg-theme-card rounded-lg shadow-theme-sm border border-theme-primary p-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Barre de recherche */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-theme-secondary h-4 w-4" />
+              <input
+                type="text"
+                placeholder="Rechercher dans le forum..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              />
             </div>
 
-            <div className="flex gap-4">
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-              >
-                <option value="all">Toutes les catégories</option>
-                <option value="GENERAL">Général</option>
-                <option value="EVENTS">Événements</option>
-                <option value="PROJECTS">Projets</option>
-                <option value="TIPS">Conseils</option>
-                <option value="NEWS">Actualités</option>
-                <option value="DISCUSSION">Discussion</option>
-              </select>
+            {/* Filtre par catégorie */}
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            >
+              <option value="">Toutes les catégories</option>
+              <option value="GENERAL">Général</option>
+              <option value="ENVIRONMENT">Environnement</option>
+              <option value="SUSTAINABILITY">Développement durable</option>
+              <option value="CLIMATE_CHANGE">Changement climatique</option>
+              <option value="BIODIVERSITY">Biodiversité</option>
+              <option value="RENEWABLE_ENERGY">Énergies renouvelables</option>
+              <option value="CIRCULAR_ECONOMY">Économie circulaire</option>
+              <option value="GREEN_TECHNOLOGY">Technologies vertes</option>
+              <option value="CONSERVATION">Conservation</option>
+              <option value="EDUCATION">Éducation</option>
+              <option value="POLICY">Politique</option>
+            </select>
 
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-              >
-                <option value="mostVoted">Plus populaires</option>
-                <option value="newest">Plus récents</option>
-                <option value="oldest">Plus anciens</option>
-                <option value="mostCommented">Plus commentés</option>
-              </select>
-            </div>
+            {/* Filtre par tri */}
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            >
+              <option value="newest">Plus récents</option>
+              <option value="oldest">Plus anciens</option>
+              <option value="mostVoted">Plus votés</option>
+              <option value="mostCommented">Plus commentés</option>
+            </select>
+
+
           </div>
         </div>
 
@@ -360,20 +382,20 @@ export default function ForumPage() {
         <div className="space-y-4">
           {isLoading ? (
             <div className="text-center py-12">
-              <div className="text-gray-500">Chargement des posts...</div>
+              <div className="text-theme-secondary">Chargement des posts...</div>
             </div>
           ) : posts.length === 0 ? (
             <div className="text-center py-12">
-              <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun post trouvé</h3>
-              <p className="text-gray-500">Essayez de modifier vos filtres ou créez le premier post !</p>
+              <MessageSquare className="h-12 w-12 text-theme-secondary mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-theme-primary mb-2">Aucun post trouvé</h3>
+              <p className="text-theme-secondary">Essayez de modifier vos filtres ou créez le premier post !</p>
             </div>
           ) : (
             posts.map((post: ForumPost) => (
               <Link
                 key={post.id}
                 href={`/forum/${post.id}`}
-                className="block bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer"
+                className="block bg-theme-card rounded-lg shadow-theme-sm border border-theme-primary p-6 hover:shadow-theme-md transition-shadow cursor-pointer"
               >
                 <div className="flex items-start gap-4">
                   {/* Votes */}
@@ -382,7 +404,7 @@ export default function ForumPage() {
                       className={`p-1 rounded transition-colors ${
                         userVotes[post.id] === 1 
                           ? 'text-orange-500 bg-orange-50' 
-                          : 'text-gray-400 hover:text-orange-500 hover:bg-gray-100'
+                          : 'text-theme-secondary hover:text-orange-500 hover:bg-theme-tertiary'
                       }`}
                       onClick={(e) => {
                         e.preventDefault()
@@ -394,7 +416,7 @@ export default function ForumPage() {
                     </button>
                     <span className={`text-sm font-medium ${
                       getVoteCount(post.votes) > 0 ? 'text-orange-500' : 
-                      getVoteCount(post.votes) < 0 ? 'text-blue-500' : 'text-gray-900'
+                      getVoteCount(post.votes) < 0 ? 'text-blue-500' : 'text-theme-primary'
                     }`}>
                       {getVoteCount(post.votes)}
                     </span>
@@ -402,7 +424,7 @@ export default function ForumPage() {
                       className={`p-1 rounded transition-colors ${
                         userVotes[post.id] === -1 
                           ? 'text-blue-500 bg-blue-50' 
-                          : 'text-gray-400 hover:text-blue-500 hover:bg-gray-100'
+                          : 'text-theme-secondary hover:text-blue-500 hover:bg-theme-tertiary'
                       }`}
                       onClick={(e) => {
                         e.preventDefault()
@@ -420,23 +442,23 @@ export default function ForumPage() {
                       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(post.category)}`}>
                         {getCategoryLabel(post.category)}
                       </span>
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-theme-secondary">
                         par {post.author.name}
                       </span>
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-theme-secondary">
                         {formatDate(post.createdAt)}
                       </span>
                     </div>
 
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    <h3 className="text-lg font-semibold text-theme-primary mb-2">
                       {post.title}
                     </h3>
 
-                    <p className="text-gray-600 mb-4 line-clamp-3">
+                    <p className="text-theme-secondary mb-4 line-clamp-3">
                       {post.content}
                     </p>
 
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                    <div className="flex items-center gap-4 text-sm text-theme-secondary">
                       <div className="flex items-center gap-1">
                         <MessageSquare className="h-4 w-4" />
                         {post._count?.comments || 0} commentaires
@@ -462,124 +484,135 @@ export default function ForumPage() {
             />
           </div>
         )}
-      </div>
 
-      {/* Modal de création de post */}
-      {isModalOpen && (
-        <div 
-          className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          onClick={closeModal} // Fermer en cliquant sur le backdrop
-        >
+        {/* Modal de création de post */}
+        {isModalOpen && (
           <div 
-            className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()} // Empêcher la fermeture en cliquant sur la modale
+            className="fixed inset-0 bg-theme-overlay backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={closeModal}
           >
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900">Nouveau Post</h2>
-                <button
-                  onClick={closeModal}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <X className="h-6 w-6" />
-                </button>
-              </div>
+            <div 
+              className="bg-theme-card rounded-lg shadow-theme-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-bold text-theme-primary">Nouveau Post</h2>
+                  <button
+                    onClick={closeModal}
+                    className="text-theme-secondary hover:text-theme-primary transition-colors"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
 
-              <form onSubmit={handleSubmitPost} className="space-y-6">
-                                 <div>
-                   <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
-                     Titre *
-                   </label>
-                   <input
-                     type="text"
-                     id="title"
-                     value={newPost.title}
-                                           onChange={(e) => {
+                <form onSubmit={handleSubmitPost} className="space-y-6">
+                  <div>
+                    <label htmlFor="title" className="block text-sm font-medium text-theme-primary mb-2">
+                      Titre *
+                    </label>
+                    <input
+                      type="text"
+                      id="title"
+                      value={newPost.title}
+                      onChange={(e) => {
                         setNewPost(prev => ({ ...prev, title: e.target.value }))
                         validateField('title', e.target.value)
                       }}
-                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
-                       errors.title ? 'border-red-500' : 'border-gray-300'
-                     }`}
-                     placeholder="Titre de votre post..."
-                     required
-                   />
-                   {errors.title && (
-                     <p className="mt-1 text-sm text-red-600">{errors.title}</p>
-                   )}
-                 </div>
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                        errors.title ? 'border-red-500' : 'border-theme-primary'
+                      }`}
+                      placeholder="Titre de votre post"
+                      required
+                    />
+                    {errors.title && (
+                      <p className="text-red-500 text-sm mt-1">{errors.title}</p>
+                    )}
+                  </div>
 
-                <div>
-                  <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
-                    Catégorie *
-                  </label>
-                  <select
-                    id="category"
-                    value={newPost.category}
-                    onChange={(e) => setNewPost(prev => ({ ...prev, category: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    required
-                  >
-                    <option value="GENERAL">Général</option>
-                    <option value="EVENTS">Événements</option>
-                    <option value="PROJECTS">Projets</option>
-                    <option value="TIPS">Conseils</option>
-                    <option value="NEWS">Actualités</option>
-                    <option value="DISCUSSION">Discussion</option>
-                  </select>
-                </div>
+                  <div>
+                    <label htmlFor="category" className="block text-sm font-medium text-theme-primary mb-2">
+                      Catégorie *
+                    </label>
+                    <select
+                      id="category"
+                      value={newPost.category}
+                      onChange={(e) => setNewPost(prev => ({ ...prev, category: e.target.value }))}
+                      className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      required
+                    >
+                      <option value="">Sélectionnez une catégorie</option>
+                      <option value="GENERAL">Général</option>
+                      <option value="ENVIRONMENT">Environnement</option>
+                      <option value="SUSTAINABILITY">Développement durable</option>
+                      <option value="CLIMATE_CHANGE">Changement climatique</option>
+                      <option value="BIODIVERSITY">Biodiversité</option>
+                      <option value="RENEWABLE_ENERGY">Énergies renouvelables</option>
+                      <option value="CIRCULAR_ECONOMY">Économie circulaire</option>
+                      <option value="GREEN_TECHNOLOGY">Technologies vertes</option>
+                      <option value="CONSERVATION">Conservation</option>
+                      <option value="EDUCATION">Éducation</option>
+                      <option value="POLICY">Politique</option>
+                    </select>
+                  </div>
 
-                                 <div>
-                   <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
-                     Contenu *
-                   </label>
-                   <textarea
-                     id="content"
-                     value={newPost.content}
-                                           onChange={(e) => {
+                  <div>
+                    <label htmlFor="content" className="block text-sm font-medium text-theme-primary mb-2">
+                      Contenu *
+                    </label>
+                    <textarea
+                      id="content"
+                      value={newPost.content}
+                      onChange={(e) => {
                         setNewPost(prev => ({ ...prev, content: e.target.value }))
                         validateField('content', e.target.value)
                       }}
-                     rows={6}
-                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none ${
-                       errors.content ? 'border-red-500' : 'border-gray-300'
-                     }`}
-                     placeholder="Contenu de votre post..."
-                     required
-                   />
-                   {errors.content && (
-                     <p className="mt-1 text-sm text-red-600">{errors.content}</p>
-                   )}
-                 </div>
+                      rows={6}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none ${
+                        errors.content ? 'border-red-500' : 'border-theme-primary'
+                      }`}
+                      placeholder="Contenu de votre post..."
+                      required
+                    />
+                    {errors.content && (
+                      <p className="text-red-500 text-sm mt-1">{errors.content}</p>
+                    )}
+                  </div>
 
-                <div className="flex items-center justify-end gap-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={closeModal}
-                    className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                  >
-                    Annuler
-                  </button>
-                                     <button
-                     type="submit"
-                     disabled={isSubmitting || Object.keys(errors).length > 0}
-                     className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center gap-2"
-                   >
-                     {isSubmitting ? (
-                       <>
-                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                         Publication...
-                       </>
-                     ) : (
-                       'Publier le post'
-                     )}
-                   </button>
-                </div>
-              </form>
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={closeModal}
+                      className="px-4 py-2 text-theme-secondary bg-theme-tertiary hover:bg-theme-primary rounded-lg transition-colors"
+                    >
+                      Annuler
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting || Object.keys(errors).length > 0}
+                      className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 disabled:bg-theme-secondary disabled:cursor-not-allowed rounded-lg transition-colors flex items-center gap-2"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Publication...
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="h-4 w-4" />
+                          Publier le post
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }
+
+

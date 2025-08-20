@@ -98,21 +98,27 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-theme-secondary flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="flex justify-center">
             <Leaf className="h-12 w-12 text-green-600" />
           </div>
-          <h2 className="mt-6 text-3xl font-bold text-gray-900">
+          <h2 className="mt-6 text-3xl font-bold text-theme-primary">
             Créer un compte Pol-UX
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-sm text-theme-secondary">
             Rejoignez la communauté écologique
+          </p>
+          <p className="mt-2 text-center text-sm text-theme-secondary">
+            Ou{' '}
+            <Link href="/login" className="font-medium text-green-600 hover:text-green-500">
+              connectez-vous à votre compte
+            </Link>
           </p>
         </div>
 
-        <div className="bg-white py-8 px-6 shadow-lg rounded-lg border border-green-100">
+        <div className="bg-theme-card py-8 px-6 shadow-theme-lg rounded-lg border border-theme-primary">
           <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
@@ -128,7 +134,7 @@ export default function RegisterPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="firstName" className="block text-sm font-medium text-theme-primary">
                   Prénom
                 </label>
                 <input
@@ -139,13 +145,13 @@ export default function RegisterPage() {
                   required
                   value={formData.firstName}
                   onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="mt-1 block w-full px-3 py-2 border border-theme-primary rounded-lg shadow-theme-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   placeholder="Votre prénom"
                 />
               </div>
 
               <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="lastName" className="block text-sm font-medium text-theme-primary">
                   Nom
                 </label>
                 <input
@@ -156,14 +162,14 @@ export default function RegisterPage() {
                   required
                   value={formData.lastName}
                   onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="mt-1 block w-full px-3 py-2 border border-theme-primary rounded-lg shadow-theme-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   placeholder="Votre nom"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="block text-sm font-medium text-theme-primary">
                 Adresse email
               </label>
               <input
@@ -174,13 +180,13 @@ export default function RegisterPage() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="mt-1 block w-full px-3 py-2 border border-theme-primary rounded-lg shadow-theme-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 placeholder="votre@email.com"
               />
             </div>
 
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="username" className="block text-sm font-medium text-theme-primary">
                 Nom d&apos;utilisateur
               </label>
               <input
@@ -191,13 +197,13 @@ export default function RegisterPage() {
                 required
                 value={formData.username}
                 onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="mt-1 block w-full px-3 py-2 border border-theme-primary rounded-lg shadow-theme-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 placeholder="votre_username"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-sm font-medium text-theme-primary">
                 Mot de passe
               </label>
               <div className="mt-1 relative">
@@ -209,7 +215,7 @@ export default function RegisterPage() {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 pr-10"
+                  className="block w-full px-3 py-2 border border-theme-primary rounded-lg shadow-theme-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 pr-10"
                   placeholder="Au moins 8 caractères"
                 />
                 <button
@@ -218,16 +224,16 @@ export default function RegisterPage() {
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-400" />
+                    <EyeOff className="h-5 w-5 text-theme-secondary" />
                   ) : (
-                    <Eye className="h-5 w-5 text-gray-400" />
+                    <Eye className="h-5 w-5 text-theme-secondary" />
                   )}
                 </button>
               </div>
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-theme-primary">
                 Confirmer le mot de passe
               </label>
               <div className="mt-1 relative">
@@ -239,7 +245,7 @@ export default function RegisterPage() {
                   required
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 pr-10"
+                  className="block w-full px-3 py-2 border border-theme-primary rounded-lg shadow-theme-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 pr-10"
                   placeholder="Confirmez votre mot de passe"
                 />
                 <button
@@ -248,9 +254,9 @@ export default function RegisterPage() {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
                   {showConfirmPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-400" />
+                    <EyeOff className="h-5 w-5 text-theme-secondary" />
                   ) : (
-                    <Eye className="h-5 w-5 text-gray-400" />
+                    <Eye className="h-5 w-5 text-theme-secondary" />
                   )}
                 </button>
               </div>
@@ -260,22 +266,22 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? 'Création du compte...' : 'Créer mon compte'}
+                {isLoading ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Création...
+                  </div>
+                ) : (
+                  'Créer mon compte'
+                )}
               </button>
             </div>
           </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Déjà un compte ?{' '}
-              <Link href="/login" className="font-medium text-green-600 hover:text-green-500">
-                Se connecter
-              </Link>
-            </p>
-          </div>
         </div>
+
+
       </div>
     </div>
   )

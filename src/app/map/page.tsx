@@ -14,8 +14,8 @@ import { useInitiatives, useCities } from '@/hooks/useInitiatives'
 const MapComponent = dynamic(() => import('@/components/MapComponent'), {
   ssr: false,
   loading: () => (
-    <div className="h-96 bg-gray-100 rounded-lg flex items-center justify-center">
-      <div className="text-gray-500">Chargement de la carte...</div>
+    <div className="h-96 bg-theme-tertiary rounded-lg flex items-center justify-center">
+      <div className="text-theme-secondary">Chargement de la carte...</div>
     </div>
   )
 })
@@ -220,7 +220,7 @@ export default function MapPage() {
       case 'COMPANY':
         return <Building className="h-4 w-4 text-orange-500" />
       default:
-        return <MapPin className="h-4 w-4 text-gray-500" />
+        return <MapPin className="h-4 w-4 text-theme-secondary" />
     }
   }
 
@@ -408,14 +408,14 @@ export default function MapPage() {
   }
 
   return (
-    <div className="bg-gray-50">
+    <div className="bg-theme-secondary min-h-screen">
       {/* Page Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
+      <div className="bg-theme-card shadow-theme-sm border-b border-theme-primary">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Carte des Initiatives</h1>
-              <p className="text-gray-600">Découvrez les initiatives écologiques près de chez vous</p>
+              <h1 className="text-2xl font-bold text-theme-primary">Carte des Initiatives</h1>
+              <p className="text-theme-secondary">Découvrez les initiatives écologiques près de chez vous</p>
             </div>
             <button 
               onClick={handleCreateInitiative}
@@ -429,56 +429,60 @@ export default function MapPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Filtres */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <input
-                  type="text"
-                  placeholder="Rechercher une initiative..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                />
-              </div>
+        {/* Section de recherche et filtres */}
+        <div className="bg-theme-card rounded-lg shadow-theme-sm border border-theme-primary p-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Barre de recherche */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-theme-secondary h-4 w-4" />
+              <input
+                type="text"
+                placeholder="Rechercher une initiative..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              />
             </div>
 
-            <div className="flex gap-4">
-              <select
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-              >
-                <option value="all">Tous les types</option>
-                <option value="EVENT">Événements</option>
-                <option value="PROJECT">Projets</option>
-                <option value="ACTOR">Acteurs</option>
-                <option value="COMPANY">Entreprises</option>
-              </select>
+            {/* Filtre par type */}
+            <select
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+              className="px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            >
+              <option value="all">Tous les types</option>
+              <option value="EVENT">Événement</option>
+              <option value="PROJECT">Projet</option>
+              <option value="ACTOR">Acteur</option>
+              <option value="COMPANY">Entreprise</option>
+            </select>
 
-              <select
-                value={selectedCity}
-                onChange={(e) => setSelectedCity(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-              >
-                <option value="all">Toutes les villes</option>
-                {cities.map(city => (
-                  <option key={city} value={city}>{city}</option>
-                ))}
-              </select>
-            </div>
+            {/* Filtre par ville */}
+            <select
+              value={selectedCity}
+              onChange={(e) => setSelectedCity(e.target.value)}
+              className="px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            >
+              <option value="all">Toutes les villes</option>
+              {cities.map((city) => (
+                <option key={city} value={city}>
+                  {city}
+                </option>
+              ))}
+            </select>
+
+            {/* Bouton d'ajout */}
+
           </div>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Carte */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="bg-theme-card rounded-lg shadow-theme-sm border border-theme-primary p-4">
               {isLoading ? (
-                <div className="h-[700px] bg-gray-100 rounded-lg flex items-center justify-center">
-                  <div className="text-gray-500">Chargement de la carte...</div>
+                <div className="h-[700px] bg-theme-tertiary rounded-lg flex items-center justify-center">
+                  <div className="text-theme-secondary">Chargement de la carte...</div>
                 </div>
               ) : (
                 <MapComponent 
@@ -492,21 +496,21 @@ export default function MapPage() {
 
           {/* Liste des initiatives avec adresse */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            <div className="bg-theme-card rounded-lg shadow-theme-sm border border-theme-primary p-4">
+              <h3 className="text-lg font-semibold text-theme-primary mb-4">
                 Initiatives localisées ({initiativesWithAddress.length})
               </h3>
               
               <div className="space-y-4 max-h-[657px] overflow-y-auto">
                 {initiativesWithAddress.length === 0 ? (
-                  <div className="text-center text-gray-500 py-8">
+                  <div className="text-center text-theme-secondary py-8">
                     Aucune initiative localisée trouvée
                   </div>
                 ) : (
                   initiativesWithAddress.map((initiative) => (
                     <div
                       key={initiative.id}
-                      className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                      className="border border-theme-primary rounded-lg p-4 hover:shadow-theme-md transition-shadow"
                     >
                       <div 
                         className="flex items-start gap-3 cursor-pointer"
@@ -516,10 +520,10 @@ export default function MapPage() {
                           {getTypeIcon(initiative.type)}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-medium text-gray-900 truncate">
+                          <h4 className="text-sm font-medium text-theme-primary truncate">
                             {initiative.title}
                           </h4>
-                          <p className="text-xs text-gray-500 mt-1">
+                          <p className="text-xs text-theme-secondary mt-1">
                             📍 {initiative.city}
                           </p>
                           <div className="flex items-center gap-2 mt-2">
@@ -527,19 +531,19 @@ export default function MapPage() {
                               {getTypeLabel(initiative.type)}
                             </span>
                             {initiative.startDate && (
-                              <span className="text-xs text-gray-500">
+                              <span className="text-xs text-theme-secondary">
                                 📅 {new Date(initiative.startDate).toLocaleDateString('fr-FR')}
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-gray-600 mt-2 line-clamp-2">
+                          <p className="text-xs text-theme-secondary mt-2 line-clamp-2">
                             {initiative.description}
                           </p>
                         </div>
                       </div>
                       
                       {/* Boutons d'action */}
-                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-theme-secondary">
                         <button
                           onClick={() => handleInitiativeClick(initiative)}
                           className="flex items-center gap-1 text-xs text-green-600 hover:text-green-700 transition-colors"
@@ -566,8 +570,8 @@ export default function MapPage() {
         {/* Liste des initiatives sans adresse */}
         {initiativesWithoutAddress.length > 0 && (
           <div className="mt-6">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            <div className="bg-theme-card rounded-lg shadow-theme-sm border border-theme-primary p-6">
+              <h3 className="text-lg font-semibold text-theme-primary mb-4">
                 Initiatives sans localisation ({initiativesWithoutAddress.length})
               </h3>
               
@@ -575,34 +579,34 @@ export default function MapPage() {
                 {paginatedInitiativesWithoutAddress.map((initiative) => (
                   <div
                     key={initiative.id}
-                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                    className="border border-theme-primary rounded-lg p-4 hover:shadow-theme-md transition-shadow"
                   >
                     <div className="flex items-start gap-3">
                       <div className="flex-shrink-0">
                         {getTypeIcon(initiative.type)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-medium text-gray-900 truncate">
+                        <h4 className="text-sm font-medium text-theme-primary truncate">
                           {initiative.title}
                         </h4>
                         <div className="flex items-center gap-2 mt-2">
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-theme-tertiary text-theme-secondary">
                             {getTypeLabel(initiative.type)}
                           </span>
                           {initiative.startDate && (
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-theme-secondary">
                               📅 {new Date(initiative.startDate).toLocaleDateString('fr-FR')}
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-gray-600 mt-2 line-clamp-3">
+                        <p className="text-xs text-theme-secondary mt-2 line-clamp-3">
                           {initiative.description}
                         </p>
                       </div>
                     </div>
                     
                     {/* Boutons d'action */}
-                    <div className="flex items-center justify-end mt-3 pt-3 border-t border-gray-100">
+                    <div className="flex items-center justify-end mt-3 pt-3 border-t border-theme-secondary">
                       <button
                         onClick={() => handleShowDetails(initiative)}
                         className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 transition-colors"
@@ -617,7 +621,7 @@ export default function MapPage() {
               
               {/* Pagination pour les initiatives sans localisation */}
               {totalPagesWithoutAddress > 1 && (
-                <div className="mt-6 pt-4 border-t border-gray-200">
+                <div className="mt-6 pt-4 border-t border-theme-primary">
                   <Pagination
                     currentPage={currentPageWithoutAddress}
                     totalPages={totalPagesWithoutAddress}
@@ -633,27 +637,27 @@ export default function MapPage() {
       {/* Modal de création d'initiative */}
       {isModalOpen && (
         <div 
-          className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          onClick={closeModal} // Fermer en cliquant sur le backdrop
+          className="fixed inset-0 bg-theme-overlay backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={closeModal}
         >
           <div 
-            className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()} // Empêcher la fermeture en cliquant sur la modale
+            className="bg-theme-card rounded-lg shadow-theme-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
           >
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900">Nouvelle Initiative</h2>
+                <h2 className="text-xl font-bold text-theme-primary">Nouvelle Initiative</h2>
                 <button
                   onClick={closeModal}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  className="text-theme-secondary hover:text-theme-primary transition-colors"
                 >
                   <X className="h-6 w-6" />
                 </button>
               </div>
 
-              <form onSubmit={handleSubmitInitiative} className="space-y-4">
+              <form onSubmit={handleSubmitInitiative} className="space-y-6">
                 <div>
-                  <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="title" className="block text-sm font-medium text-theme-primary mb-2">
                     Titre *
                   </label>
                   <input
@@ -665,25 +669,25 @@ export default function MapPage() {
                       validateField('title', e.target.value)
                     }}
                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
-                      errors.title ? 'border-red-500' : 'border-gray-300'
+                      errors.title ? 'border-red-500' : 'border-theme-primary'
                     }`}
-                    placeholder="Titre de votre initiative..."
+                    placeholder="Titre de l'initiative"
                     required
                   />
                   {errors.title && (
-                    <p className="mt-1 text-sm text-red-600">{errors.title}</p>
+                    <p className="text-red-500 text-sm mt-1">{errors.title}</p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="type" className="block text-sm font-medium text-theme-primary mb-2">
                     Type *
                   </label>
                   <select
                     id="type"
                     value={newInitiative.type}
                     onChange={(e) => setNewInitiative(prev => ({ ...prev, type: e.target.value as 'EVENT' | 'PROJECT' | 'ACTOR' | 'COMPANY' }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                     required
                   >
                     <option value="EVENT">Événement</option>
@@ -694,7 +698,7 @@ export default function MapPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="description" className="block text-sm font-medium text-theme-primary mb-2">
                     Description *
                   </label>
                   <textarea
@@ -706,67 +710,65 @@ export default function MapPage() {
                     }}
                     rows={4}
                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none ${
-                      errors.description ? 'border-red-500' : 'border-gray-300'
+                      errors.description ? 'border-red-500' : 'border-theme-primary'
                     }`}
-                    placeholder="Description de votre initiative..."
+                    placeholder="Description de l'initiative"
                     required
                   />
                   {errors.description && (
-                    <p className="mt-1 text-sm text-red-600">{errors.description}</p>
+                    <p className="text-red-500 text-sm mt-1">{errors.description}</p>
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
-                      Adresse *
-                    </label>
-                    <input
-                      type="text"
-                      id="address"
-                      value={newInitiative.address}
-                      onChange={(e) => {
-                        setNewInitiative(prev => ({ ...prev, address: e.target.value }))
-                        validateField('address', e.target.value)
-                      }}
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
-                        errors.address ? 'border-red-500' : 'border-gray-300'
-                      }`}
-                      placeholder="Adresse complète..."
-                      required
-                    />
-                    {errors.address && (
-                      <p className="mt-1 text-sm text-red-600">{errors.address}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
-                      Ville *
-                    </label>
-                    <input
-                      type="text"
-                      id="city"
-                      value={newInitiative.city}
-                      onChange={(e) => {
-                        setNewInitiative(prev => ({ ...prev, city: e.target.value }))
-                        validateField('city', e.target.value)
-                      }}
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
-                        errors.city ? 'border-red-500' : 'border-gray-300'
-                      }`}
-                      placeholder="Ville..."
-                      required
-                    />
-                    {errors.city && (
-                      <p className="mt-1 text-sm text-red-600">{errors.city}</p>
-                    )}
-                  </div>
+                <div>
+                  <label htmlFor="address" className="block text-sm font-medium text-theme-primary mb-2">
+                    Adresse *
+                  </label>
+                  <input
+                    type="text"
+                    id="address"
+                    value={newInitiative.address}
+                    onChange={(e) => {
+                      setNewInitiative(prev => ({ ...prev, address: e.target.value }))
+                      validateField('address', e.target.value)
+                    }}
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                      errors.address ? 'border-red-500' : 'border-theme-primary'
+                    }`}
+                    placeholder="Adresse complète"
+                    required
+                  />
+                  {errors.address && (
+                    <p className="text-red-500 text-sm mt-1">{errors.address}</p>
+                  )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="city" className="block text-sm font-medium text-theme-primary mb-2">
+                    Ville *
+                  </label>
+                  <input
+                    type="text"
+                    id="city"
+                    value={newInitiative.city}
+                    onChange={(e) => {
+                      setNewInitiative(prev => ({ ...prev, city: e.target.value }))
+                      validateField('city', e.target.value)
+                    }}
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                      errors.city ? 'border-red-500' : 'border-theme-primary'
+                    }`}
+                    placeholder="Ville"
+                    required
+                  />
+                  {errors.city && (
+                    <p className="text-red-500 text-sm mt-1">{errors.city}</p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="startDate" className="block text-sm font-medium text-theme-primary mb-2">
                       Date de début
                     </label>
                     <input
@@ -774,12 +776,12 @@ export default function MapPage() {
                       id="startDate"
                       value={newInitiative.startDate}
                       onChange={(e) => setNewInitiative(prev => ({ ...prev, startDate: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="endDate" className="block text-sm font-medium text-theme-primary mb-2">
                       Date de fin
                     </label>
                     <input
@@ -787,13 +789,13 @@ export default function MapPage() {
                       id="endDate"
                       value={newInitiative.endDate}
                       onChange={(e) => setNewInitiative(prev => ({ ...prev, endDate: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="website" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="website" className="block text-sm font-medium text-theme-primary mb-2">
                     Site web
                   </label>
                   <input
@@ -801,75 +803,76 @@ export default function MapPage() {
                     id="website"
                     value={newInitiative.website}
                     onChange={(e) => setNewInitiative(prev => ({ ...prev, website: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                     placeholder="https://..."
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="contactEmail" className="block text-sm font-medium text-gray-700 mb-2">
-                      Email de contact
-                    </label>
-                    <input
-                      type="email"
-                      id="contactEmail"
-                      value={newInitiative.contactEmail}
-                      onChange={(e) => setNewInitiative(prev => ({ ...prev, contactEmail: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                      placeholder="contact@exemple.com"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="contactPhone" className="block text-sm font-medium text-gray-700 mb-2">
-                      Téléphone
-                    </label>
-                    <input
-                      type="tel"
-                      id="contactPhone"
-                      value={newInitiative.contactPhone}
-                      onChange={(e) => setNewInitiative(prev => ({ ...prev, contactPhone: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                      placeholder="01 23 45 67 89"
-                    />
-                  </div>
+                <div>
+                  <label htmlFor="contactEmail" className="block text-sm font-medium text-theme-primary mb-2">
+                    Email de contact
+                  </label>
+                  <input
+                    type="email"
+                    id="contactEmail"
+                    value={newInitiative.contactEmail}
+                    onChange={(e) => setNewInitiative(prev => ({ ...prev, contactEmail: e.target.value }))}
+                    className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    placeholder="contact@example.com"
+                  />
                 </div>
 
                 <div>
-                  <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 mb-2">
-                    URL de l&apos;image
+                  <label htmlFor="contactPhone" className="block text-sm font-medium text-theme-primary mb-2">
+                    Téléphone de contact
+                  </label>
+                  <input
+                    type="tel"
+                    id="contactPhone"
+                    value={newInitiative.contactPhone}
+                    onChange={(e) => setNewInitiative(prev => ({ ...prev, contactPhone: e.target.value }))}
+                    className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    placeholder="+33 1 23 45 67 89"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="imageUrl" className="block text-sm font-medium text-theme-primary mb-2">
+                                         URL de l&apos;image
                   </label>
                   <input
                     type="url"
                     id="imageUrl"
                     value={newInitiative.imageUrl}
                     onChange={(e) => setNewInitiative(prev => ({ ...prev, imageUrl: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                     placeholder="https://..."
                   />
                 </div>
 
-                <div className="flex items-center justify-end gap-3 pt-4">
+                <div className="flex gap-3">
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                    className="px-4 py-2 text-theme-secondary bg-theme-tertiary hover:bg-theme-primary rounded-lg transition-colors"
                   >
                     Annuler
                   </button>
                   <button
                     type="submit"
-                    disabled={isSubmitting || Object.keys(errors).length > 0}
-                    className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center gap-2"
+                    disabled={isSubmitting}
+                    className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 disabled:bg-theme-secondary disabled:cursor-not-allowed rounded-lg transition-colors flex items-center gap-2"
                   >
                     {isSubmitting ? (
                       <>
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        Publication...
+                        Création...
                       </>
                     ) : (
-                      "Publier l'initiative"
+                      <>
+                        <Plus className="h-4 w-4" />
+                                                 Créer l&apos;initiative
+                      </>
                     )}
                   </button>
                 </div>
@@ -882,19 +885,19 @@ export default function MapPage() {
       {/* Modal de détails d'initiative */}
       {selectedInitiativeForDetails && (
         <div 
-          className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-theme-overlay backdrop-blur-sm z-50 flex items-center justify-center p-4"
           onClick={closeDetailsModal} // Fermer en cliquant sur le backdrop
         >
           <div 
-            className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-gray-100"
+            className="bg-theme-card rounded-xl shadow-theme-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-theme-primary"
             onClick={(e) => e.stopPropagation()} // Empêcher la fermeture en cliquant sur la modale
           >
             <div className="p-8">
               <div className="flex items-center justify-between mb-8">
-                <h2 className="text-2xl font-bold text-gray-900">Détails de l&apos;initiative</h2>
+                <h2 className="text-2xl font-bold text-theme-primary">Détails de l&apos;initiative</h2>
                 <button
                   onClick={closeDetailsModal}
-                  className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-lg"
+                  className="text-theme-secondary hover:text-theme-primary transition-colors p-2 hover:bg-theme-tertiary rounded-lg"
                 >
                   <X className="h-6 w-6" />
                 </button>
@@ -908,7 +911,7 @@ export default function MapPage() {
                       {getTypeIcon(selectedInitiativeForDetails.type)}
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900 mb-2">
+                      <h3 className="text-xl font-bold text-theme-primary mb-2">
                         {selectedInitiativeForDetails.title}
                       </h3>
                       <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-green-100 to-green-200 text-green-800 shadow-sm">
@@ -920,9 +923,9 @@ export default function MapPage() {
 
                 {/* Description */}
                 <div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-3">Description</h4>
-                  <div className="bg-gray-50 rounded-xl p-6">
-                    <p className="text-gray-700 leading-relaxed text-base">
+                  <h4 className="text-lg font-semibold text-theme-primary mb-3">Description</h4>
+                  <div className="bg-theme-tertiary rounded-xl p-6">
+                    <p className="text-theme-secondary leading-relaxed text-base">
                       {selectedInitiativeForDetails.description}
                     </p>
                   </div>
@@ -931,18 +934,18 @@ export default function MapPage() {
                 {/* Localisation - seulement si l'adresse existe */}
                 {selectedInitiativeForDetails.address && selectedInitiativeForDetails.address.trim() !== '' && (
                   <div>
-                    <h4 className="text-lg font-semibold text-gray-900 mb-3">Localisation</h4>
-                    <div className="bg-blue-50 rounded-xl p-6 border border-blue-100">
+                    <h4 className="text-lg font-semibold text-theme-primary mb-3">Localisation</h4>
+                    <div className="bg-theme-tertiary rounded-xl p-6 border border-theme-primary">
                       <div className="flex items-start gap-3">
                         <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-100">
                           <MapPin className="h-4 w-4 text-blue-600" />
                         </div>
                         <div className="flex-1">
-                          <p className="text-gray-700 font-medium mb-1">
+                          <p className="text-theme-primary font-medium mb-1">
                             {selectedInitiativeForDetails.address}
                           </p>
                           {selectedInitiativeForDetails.city && (
-                            <p className="text-gray-600 text-sm">
+                            <p className="text-theme-secondary text-sm">
                               {selectedInitiativeForDetails.city}
                             </p>
                           )}
@@ -955,16 +958,16 @@ export default function MapPage() {
                 {/* Dates */}
                 {(selectedInitiativeForDetails.startDate || selectedInitiativeForDetails.endDate) && (
                   <div>
-                    <h4 className="text-lg font-semibold text-gray-900 mb-3">Dates</h4>
-                    <div className="bg-orange-50 rounded-xl p-6 border border-orange-100 space-y-3">
+                    <h4 className="text-lg font-semibold text-theme-primary mb-3">Dates</h4>
+                    <div className="bg-theme-tertiary rounded-xl p-6 border border-theme-primary space-y-3">
                       {selectedInitiativeForDetails.startDate && (
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-orange-100">
                             <Calendar className="h-4 w-4 text-orange-600" />
                           </div>
                           <div>
-                            <p className="text-gray-700 font-medium">Début</p>
-                            <p className="text-gray-600 text-sm">{formatDate(selectedInitiativeForDetails.startDate)}</p>
+                            <p className="text-theme-primary font-medium">Début</p>
+                            <p className="text-theme-secondary text-sm">{formatDate(selectedInitiativeForDetails.startDate)}</p>
                           </div>
                         </div>
                       )}
@@ -974,8 +977,8 @@ export default function MapPage() {
                             <Calendar className="h-4 w-4 text-orange-600" />
                           </div>
                           <div>
-                            <p className="text-gray-700 font-medium">Fin</p>
-                            <p className="text-gray-600 text-sm">{formatDate(selectedInitiativeForDetails.endDate)}</p>
+                            <p className="text-theme-primary font-medium">Fin</p>
+                            <p className="text-theme-secondary text-sm">{formatDate(selectedInitiativeForDetails.endDate)}</p>
                           </div>
                         </div>
                       )}
@@ -986,20 +989,20 @@ export default function MapPage() {
                 {/* Informations de contact */}
                 {(selectedInitiativeForDetails.website || selectedInitiativeForDetails.contactEmail || selectedInitiativeForDetails.contactPhone) && (
                   <div>
-                    <h4 className="text-lg font-semibold text-gray-900 mb-3">Contact</h4>
-                    <div className="bg-purple-50 rounded-xl p-6 border border-purple-100 space-y-4">
+                    <h4 className="text-lg font-semibold text-theme-primary mb-3">Contact</h4>
+                    <div className="bg-theme-tertiary rounded-xl p-6 border border-theme-primary space-y-4">
                       {selectedInitiativeForDetails.website && (
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-purple-100">
                             <Globe className="h-4 w-4 text-purple-600" />
                           </div>
                           <div className="flex-1">
-                            <p className="text-gray-700 font-medium mb-1">Site web</p>
+                            <p className="text-theme-primary font-medium mb-1">Site web</p>
                             <a 
                               href={selectedInitiativeForDetails.website} 
                               target="_blank" 
                               rel="noopener noreferrer"
-                              className="text-purple-600 hover:text-purple-700 underline text-sm"
+                              className="text-green-600 hover:text-green-700 underline text-sm"
                             >
                               {selectedInitiativeForDetails.website}
                             </a>
@@ -1012,10 +1015,10 @@ export default function MapPage() {
                             <Mail className="h-4 w-4 text-purple-600" />
                           </div>
                           <div className="flex-1">
-                            <p className="text-gray-700 font-medium mb-1">Email</p>
+                            <p className="text-theme-primary font-medium mb-1">Email</p>
                             <a 
                               href={`mailto:${selectedInitiativeForDetails.contactEmail}`}
-                              className="text-purple-600 hover:text-purple-700 underline text-sm"
+                              className="text-green-600 hover:text-green-700 underline text-sm"
                             >
                               {selectedInitiativeForDetails.contactEmail}
                             </a>
@@ -1028,10 +1031,10 @@ export default function MapPage() {
                             <Phone className="h-4 w-4 text-purple-600" />
                           </div>
                           <div className="flex-1">
-                            <p className="text-gray-700 font-medium mb-1">Téléphone</p>
+                            <p className="text-theme-primary font-medium mb-1">Téléphone</p>
                             <a 
                               href={`tel:${selectedInitiativeForDetails.contactPhone}`}
-                              className="text-purple-600 hover:text-purple-700 underline text-sm"
+                              className="text-green-600 hover:text-green-700 underline text-sm"
                             >
                               {selectedInitiativeForDetails.contactPhone}
                             </a>
@@ -1044,14 +1047,14 @@ export default function MapPage() {
 
                 {/* Auteur */}
                 <div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-3">Publié par</h4>
-                  <div className="bg-indigo-50 rounded-xl p-6 border border-indigo-100">
+                  <h4 className="text-lg font-semibold text-theme-primary mb-3">Publié par</h4>
+                  <div className="bg-theme-tertiary rounded-xl p-6 border border-theme-primary">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-100">
                         <Users className="h-4 w-4 text-indigo-600" />
                       </div>
                       <div>
-                        <p className="text-gray-700 font-medium">
+                        <p className="text-theme-primary font-medium">
                           {selectedInitiativeForDetails.author.name || selectedInitiativeForDetails.author.username}
                         </p>
                       </div>
@@ -1062,8 +1065,8 @@ export default function MapPage() {
                 {/* Image */}
                 {selectedInitiativeForDetails.imageUrl && (
                   <div>
-                    <h4 className="text-lg font-semibold text-gray-900 mb-3">Image</h4>
-                    <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                    <h4 className="text-lg font-semibold text-theme-primary mb-3">Image</h4>
+                    <div className="bg-theme-tertiary rounded-xl p-6 border border-theme-primary">
                       <div className="relative w-full h-64 rounded-xl overflow-hidden shadow-lg">
                         <Image 
                           src={selectedInitiativeForDetails.imageUrl} 
@@ -1078,7 +1081,7 @@ export default function MapPage() {
                 )}
 
                 {/* Boutons d'action */}
-                <div className="flex items-center justify-between pt-6 border-t border-gray-200">
+                <div className="flex items-center justify-between pt-6 border-t border-theme-primary">
                   {selectedInitiativeForDetails.address && selectedInitiativeForDetails.address.trim() !== '' && 
                    selectedInitiativeForDetails.latitude !== 0 && selectedInitiativeForDetails.longitude !== 0 ? (
                     <button
@@ -1092,14 +1095,14 @@ export default function MapPage() {
                       Voir sur la carte
                     </button>
                   ) : (
-                    <div className="flex items-center gap-2 text-gray-500 italic">
+                    <div className="flex items-center gap-2 text-theme-secondary italic">
                       <MapPin className="h-4 w-4" />
                       Non localisé sur la carte
                     </div>
                   )}
                   <button
                     onClick={closeDetailsModal}
-                    className="px-6 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors font-medium"
+                    className="px-6 py-2 bg-theme-tertiary text-theme-secondary hover:bg-theme-primary rounded-lg transition-colors font-medium"
                   >
                     Fermer
                   </button>

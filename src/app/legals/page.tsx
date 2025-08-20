@@ -4,47 +4,47 @@ import { Building, Mail, Globe, Shield, FileText } from 'lucide-react'
 
 export default function LegalPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-theme-secondary">
       <div className="max-w-4xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Mentions légales</h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <h1 className="text-4xl font-bold text-theme-primary mb-4">Mentions légales</h1>
+          <p className="text-xl text-theme-secondary max-w-2xl mx-auto">
             Informations légales concernant le site PolUX et ses services
           </p>
         </div>
 
         {/* Éditeur */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+        <div className="bg-theme-card rounded-xl shadow-theme-sm border border-theme-primary p-8 mb-8">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
               <Building className="h-6 w-6 text-blue-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">Éditeur</h2>
+            <h2 className="text-2xl font-bold text-theme-primary">Éditeur</h2>
           </div>
           <div className="space-y-4">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">WGC Concept</h3>
-              <p className="text-gray-600 mb-1">Entreprise Individuelle</p>
-              <p className="text-gray-700">
+              <h3 className="text-lg font-semibold text-theme-primary mb-2">WGC Concept</h3>
+              <p className="text-theme-secondary mb-1">Entreprise Individuelle</p>
+              <p className="text-theme-secondary">
                 Structure porteuse du projet PolUX, spécialisée dans le développement de solutions 
                 numériques écoresponsables et l&apos;accompagnement de la transition écologique.
               </p>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Responsable de publication</h3>
-              <p className="text-gray-700">Solène Zulfiqar</p>
+              <h3 className="text-lg font-semibold text-theme-primary mb-2">Responsable de publication</h3>
+              <p className="text-theme-secondary">Solène Zulfiqar</p>
             </div>
           </div>
         </div>
 
         {/* Contact */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+        <div className="bg-theme-card rounded-xl shadow-theme-sm border border-theme-primary p-8 mb-8">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
               <Mail className="h-6 w-6 text-green-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">Contact</h2>
+            <h2 className="text-2xl font-bold text-theme-primary">Contact</h2>
           </div>
           <div className="space-y-4">
             <div className="flex items-center gap-3">
@@ -52,7 +52,7 @@ export default function LegalPage() {
                 <Mail className="h-4 w-4 text-green-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Email</p>
+                <p className="text-sm text-theme-secondary">Email</p>
                 <a 
                   href="mailto:solene@pol-ux.fr" 
                   className="text-green-600 hover:text-green-700 font-medium"
@@ -66,7 +66,7 @@ export default function LegalPage() {
                 <Globe className="h-4 w-4 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Site web</p>
+                <p className="text-sm text-theme-secondary">Site web</p>
                 <a 
                   href="https://www.pol-ux.fr" 
                   className="text-blue-600 hover:text-blue-700 font-medium"
@@ -81,29 +81,29 @@ export default function LegalPage() {
         </div>
 
         {/* Hébergement */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+        <div className="bg-theme-card rounded-xl shadow-theme-sm border border-theme-primary p-8 mb-8">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
               <Shield className="h-6 w-6 text-purple-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">Hébergement</h2>
+            <h2 className="text-2xl font-bold text-theme-primary">Hébergement</h2>
           </div>
           <div className="space-y-4">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Vercel</h3>
-              <p className="text-gray-700 mb-2">
+              <h3 className="text-lg font-semibold text-theme-primary mb-2">Vercel</h3>
+              <p className="text-theme-secondary mb-2">
                 Plateforme de déploiement et d&apos;hébergement pour applications web modernes.
               </p>
-              <p className="text-gray-600 text-sm">
+              <p className="text-theme-secondary text-sm">
                 Adresse : 340 S Lemon Ave #4133, Walnut, CA 91789, États-Unis
               </p>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Supabase</h3>
-              <p className="text-gray-700 mb-2">
+              <h3 className="text-lg font-semibold text-theme-primary mb-2">Supabase</h3>
+              <p className="text-theme-secondary mb-2">
                 Plateforme de base de données et d&apos;authentification.
               </p>
-              <p className="text-gray-600 text-sm">
+              <p className="text-theme-secondary text-sm">
                 Adresse : 201 Post Street, San Francisco, CA 94108, États-Unis
               </p>
             </div>
@@ -111,14 +111,14 @@ export default function LegalPage() {
         </div>
 
         {/* Propriété intellectuelle */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+        <div className="bg-theme-card rounded-xl shadow-theme-sm border border-theme-primary p-8 mb-8">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
               <FileText className="h-6 w-6 text-orange-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">Propriété intellectuelle</h2>
+            <h2 className="text-2xl font-bold text-theme-primary">Propriété intellectuelle</h2>
           </div>
-          <div className="space-y-4 text-gray-700">
+          <div className="space-y-4 text-theme-secondary">
             <p>
               L&apos;ensemble de ce site relève de la législation française et internationale sur le droit d&apos;auteur 
               et la propriété intellectuelle. Tous les droits de reproduction sont réservés, y compris pour 
@@ -135,9 +135,9 @@ export default function LegalPage() {
         </div>
 
         {/* Responsabilité */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Responsabilité</h2>
-          <div className="space-y-4 text-gray-700">
+        <div className="bg-theme-card rounded-xl shadow-theme-sm border border-theme-primary p-8 mb-8">
+          <h2 className="text-2xl font-bold text-theme-primary mb-6">Responsabilité</h2>
+          <div className="space-y-4 text-theme-secondary">
             <p>
               Les informations contenues sur ce site sont aussi précises que possible et le site est 
               périodiquement remis à jour, mais peut toutefois contenir des inexactitudes, des omissions 
@@ -158,9 +158,9 @@ export default function LegalPage() {
         </div>
 
         {/* Liens hypertextes */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Liens hypertextes</h2>
-          <div className="space-y-4 text-gray-700">
+        <div className="bg-theme-card rounded-xl shadow-theme-sm border border-theme-primary p-8 mb-8">
+          <h2 className="text-2xl font-bold text-theme-primary mb-6">Liens hypertextes</h2>
+          <div className="space-y-4 text-theme-secondary">
             <p>
               Les liens hypertextes mis en place dans le cadre du présent site web en direction d&apos;autres 
               ressources présentes sur le réseau Internet ne sauraient engager la responsabilité de PolUX.
@@ -173,9 +173,9 @@ export default function LegalPage() {
         </div>
 
         {/* Droit applicable */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Droit applicable</h2>
-          <div className="space-y-4 text-gray-700">
+        <div className="bg-theme-card rounded-xl shadow-theme-sm border border-theme-primary p-8">
+          <h2 className="text-2xl font-bold text-theme-primary mb-6">Droit applicable</h2>
+          <div className="space-y-4 text-theme-secondary">
             <p>
               Tout litige en relation avec l&apos;utilisation du site PolUX est soumis au droit français. 
               Hormis les cas où la loi ne le permet pas, il est fait attribution exclusive de juridiction 

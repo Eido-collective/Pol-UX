@@ -161,6 +161,7 @@ export default function DashboardPage() {
 
 
 
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('fr-FR', {
       day: 'numeric',
@@ -299,19 +300,19 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="bg-gray-50">
+    <div className="bg-theme-secondary min-h-screen">
       {/* Page Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
+      <div className="bg-theme-card shadow-theme-sm border-b border-theme-primary">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Tableau de bord</h1>
-              <p className="text-gray-600">Bienvenue sur votre espace personnel</p>
+              <h1 className="text-2xl font-bold text-theme-primary">Tableau de Bord</h1>
+              <p className="text-theme-secondary">Bienvenue sur votre espace personnel</p>
             </div>
             <div className="flex items-center gap-2">
               <User className="h-6 w-6 text-green-600" />
-              <span className="text-sm text-gray-500">
-                {session?.user?.name || session?.user?.username || 'Utilisateur'}
+              <span className="text-sm text-theme-secondary">
+                {session?.user?.name || session?.user?.username}
               </span>
             </div>
           </div>
@@ -320,24 +321,24 @@ export default function DashboardPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Informations utilisateur */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="bg-theme-card rounded-lg shadow-theme-sm border border-theme-primary p-6 mb-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">
+              <h2 className="text-lg font-semibold text-theme-primary mb-2">
                 Profil utilisateur
               </h2>
               <div className="space-y-2">
-                <p className="text-gray-600">
+                <p className="text-theme-secondary">
                   <span className="font-medium">Nom :</span> {session?.user?.name || 'Non renseigné'}
                 </p>
-                <p className="text-gray-600">
+                <p className="text-theme-secondary">
                   <span className="font-medium">Email :</span> {session?.user?.email || 'Non renseigné'}
                 </p>
-                <p className="text-gray-600">
+                <p className="text-theme-secondary">
                   <span className="font-medium">Nom d&apos;utilisateur :</span> {session?.user?.username || 'Non renseigné'}
                 </p>
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-600">Rôle :</span>
+                  <span className="font-medium text-theme-secondary">Rôle :</span>
                   <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(session?.user?.role || 'EXPLORER')}`}>
                     {getRoleLabel(session?.user?.role || 'EXPLORER')}
                   </span>
@@ -348,69 +349,69 @@ export default function DashboardPage() {
               <div className="text-3xl font-bold text-green-600 mb-1">
                 <Leaf className="h-8 w-8" />
               </div>
-              <p className="text-sm text-gray-500">Pol-UX</p>
+              <p className="text-sm text-theme-secondary">Pol-UX</p>
             </div>
           </div>
         </div>
 
         {/* Statistiques rapides */}
         <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-theme-card rounded-lg shadow-theme-sm border border-theme-primary p-6">
             <div className="flex items-center">
               <div className="p-2 bg-green-100 rounded-lg">
                 <MapPin className="h-6 w-6 text-green-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Initiatives</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.initiatives}</p>
+                <p className="text-sm font-medium text-theme-secondary">Initiatives</p>
+                <p className="text-2xl font-bold text-theme-primary">{stats.initiatives}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-theme-card rounded-lg shadow-theme-sm border border-theme-primary p-6">
             <div className="flex items-center">
               <div className="p-2 bg-blue-100 rounded-lg">
                 <MessageSquare className="h-6 w-6 text-blue-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Posts Forum</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.posts}</p>
+                <p className="text-sm font-medium text-theme-secondary">Posts Forum</p>
+                <p className="text-2xl font-bold text-theme-primary">{stats.posts}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-theme-card rounded-lg shadow-theme-sm border border-theme-primary p-6">
             <div className="flex items-center">
               <div className="p-2 bg-yellow-100 rounded-lg">
                 <Lightbulb className="h-6 w-6 text-yellow-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Conseils</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.tips}</p>
+                <p className="text-sm font-medium text-theme-secondary">Conseils</p>
+                <p className="text-2xl font-bold text-theme-primary">{stats.tips}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-theme-card rounded-lg shadow-theme-sm border border-theme-primary p-6">
             <div className="flex items-center">
               <div className="p-2 bg-purple-100 rounded-lg">
                 <TrendingUp className="h-6 w-6 text-purple-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Votes reçus</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.votesReceived}</p>
+                <p className="text-sm font-medium text-theme-secondary">Votes reçus</p>
+                <p className="text-2xl font-bold text-theme-primary">{stats.votesReceived}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-theme-card rounded-lg shadow-theme-sm border border-theme-primary p-6">
             <div className="flex items-center">
               <div className="p-2 bg-indigo-100 rounded-lg">
                 <MessageSquare className="h-6 w-6 text-indigo-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Commentaires</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.comments}</p>
+                <p className="text-sm font-medium text-theme-secondary">Commentaires</p>
+                <p className="text-2xl font-bold text-theme-primary">{stats.comments}</p>
               </div>
             </div>
           </div>
@@ -418,13 +419,13 @@ export default function DashboardPage() {
 
         {/* Actions rapides */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Actions rapides</h3>
+          <div className="bg-theme-card rounded-lg shadow-theme-sm border border-theme-primary p-6">
+            <h3 className="text-lg font-semibold text-theme-primary mb-4">Actions rapides</h3>
             <div className="space-y-3">
               <button 
                 onClick={() => router.push('/map')}
                 disabled={session?.user?.role === 'EXPLORER'}
-                className="w-full flex items-center justify-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-sm"
+                className="w-full flex items-center justify-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:bg-theme-secondary disabled:cursor-not-allowed transition-colors text-sm"
               >
                 <MapPin className="h-4 w-4" />
                 <span className="truncate">
@@ -441,7 +442,7 @@ export default function DashboardPage() {
               <button 
                 onClick={() => router.push('/tips')}
                 disabled={session?.user?.role === 'EXPLORER'}
-                className="w-full flex items-center justify-center gap-2 bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-sm"
+                className="w-full flex items-center justify-center gap-2 bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 disabled:bg-theme-secondary disabled:cursor-not-allowed transition-colors text-sm"
               >
                 <Lightbulb className="h-4 w-4" />
                 <span className="truncate">
@@ -451,24 +452,24 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Activité récente</h3>
+          <div className="bg-theme-card rounded-lg shadow-theme-sm border border-theme-primary p-6">
+            <h3 className="text-lg font-semibold text-theme-primary mb-4">Activité récente</h3>
             <div className="space-y-3">
               {recentActivity.length === 0 ? (
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-theme-secondary">
                   Aucune activité récente
                 </div>
               ) : (
                 recentActivity.slice(0, 5).map((activity) => (
-                  <div key={activity.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50">
+                  <div key={activity.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-theme-tertiary">
                     <div className="mt-1">
                       {getActivityIcon(activity.type)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-900 truncate">
+                      <p className="text-sm text-theme-primary truncate">
                         {getActivityText(activity)}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-theme-secondary">
                         {formatDate(activity.createdAt)}
                       </p>
                     </div>
@@ -478,13 +479,13 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-theme-card rounded-lg shadow-theme-sm border border-theme-primary p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Mes tâches personnelles</h3>
+              <h3 className="text-lg font-semibold text-theme-primary">Mes tâches personnelles</h3>
               <button
                 onClick={handleCreateTask}
                 disabled={userTasks.length >= 5}
-                className="flex items-center gap-1 text-sm bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                className="flex items-center gap-1 text-sm bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 disabled:bg-theme-secondary disabled:cursor-not-allowed transition-colors"
               >
                 <Plus className="h-4 w-4" />
                 Ajouter ({userTasks.length}/5)
@@ -494,17 +495,17 @@ export default function DashboardPage() {
             {/* Liste des tâches */}
             <div className="space-y-3">
               {userTasks.length === 0 ? (
-                <div className="text-sm text-gray-500 text-center py-8">
+                <div className="text-sm text-theme-secondary text-center py-8">
                   Aucune tâche créée. Cliquez sur &quot;Ajouter&quot; pour créer votre première tâche !
                 </div>
               ) : (
                 userTasks.map((task) => (
                   <div 
                     key={task.id} 
-                    className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
+                    className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
                       task.completed 
                         ? 'bg-green-50 border-green-200' 
-                        : 'bg-white border-gray-200 hover:bg-gray-50'
+                        : 'bg-theme-card border-theme-primary hover:bg-theme-tertiary'
                     }`}
                   >
                     <button
@@ -514,23 +515,23 @@ export default function DashboardPage() {
                       {task.completed ? (
                         <CheckCircle className="h-5 w-5 text-green-600" />
                       ) : (
-                        <div className="h-5 w-5 rounded-full border-2 border-gray-300 hover:border-green-500 transition-colors"></div>
+                        <div className="h-5 w-5 rounded-full border-2 border-theme-primary hover:border-green-500 transition-colors"></div>
                       )}
                     </button>
                     <div className="flex-1 min-w-0">
                       <p className={`text-sm font-medium ${
-                        task.completed ? 'text-green-800 line-through' : 'text-gray-900'
+                        task.completed ? 'text-green-800 line-through' : 'text-theme-primary'
                       }`}>
                         {task.title}
                       </p>
                       {task.description && (
                         <p className={`text-xs mt-1 ${
-                          task.completed ? 'text-green-600 line-through' : 'text-gray-500'
+                          task.completed ? 'text-green-600 line-through' : 'text-theme-secondary'
                         }`}>
                           {task.description}
                         </p>
                       )}
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-xs text-theme-secondary mt-1">
                         Créée le {formatDate(task.createdAt)}
                       </p>
                     </div>
@@ -598,68 +599,71 @@ export default function DashboardPage() {
         {/* Modale de création/modification de tâche */}
         {showTaskModal && (
           <div 
-            className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-theme-overlay backdrop-blur-sm z-50 flex items-center justify-center p-4"
             onClick={closeTaskModal} // Fermer en cliquant sur le backdrop
           >
             <div 
-              className="bg-white rounded-lg shadow-xl max-w-md w-full p-6"
+              className="bg-theme-card rounded-lg shadow-theme-xl max-w-md w-full p-6"
               onClick={(e) => e.stopPropagation()} // Empêcher la fermeture en cliquant sur la modale
             >
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-theme-primary">
                   {editingTask ? 'Modifier la tâche' : 'Nouvelle tâche'}
-                </h2>
+                </h3>
                 <button
                   onClick={closeTaskModal}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  className="text-theme-secondary hover:text-theme-primary transition-colors"
                 >
-                  <X className="h-6 w-6" />
+                  <X className="h-5 w-5" />
                 </button>
               </div>
 
               <form onSubmit={handleSubmitTask} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Titre *
+                  <label htmlFor="taskTitle" className="block text-sm font-medium text-theme-primary mb-2">
+                    Titre de la tâche
                   </label>
                   <input
                     type="text"
-                    placeholder="Titre de la tâche"
+                    id="taskTitle"
                     value={newTaskTitle}
                     onChange={(e) => setNewTaskTitle(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    maxLength={100}
+                    className="w-full px-3 py-2 border border-theme-primary rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Entrez le titre de la tâche"
+                    required
                   />
-                  <p className="text-xs text-gray-500 mt-1">
-                    {newTaskTitle.length}/100 caractères
+                  <p className="text-xs text-theme-secondary mt-1">
+                    Maximum 100 caractères
                   </p>
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="taskDescription" className="block text-sm font-medium text-theme-primary mb-2">
                     Description
                   </label>
                   <textarea
-                    placeholder="Description optionnelle"
+                    id="taskDescription"
                     value={newTaskDescription}
                     onChange={(e) => setNewTaskDescription(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-theme-primary rounded-lg text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Décrivez votre tâche"
                     rows={3}
+                    required
                   />
                 </div>
 
-                <div className="flex gap-3 mt-6">
+                <div className="flex gap-3">
                   <button
                     type="submit"
                     disabled={!newTaskTitle.trim()}
-                    className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                    className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:bg-theme-secondary disabled:cursor-not-allowed transition-colors text-sm font-medium"
                   >
                     {editingTask ? 'Modifier' : 'Créer'}
                   </button>
                   <button
                     type="button"
                     onClick={cancelEdit}
-                    className="flex-1 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors text-sm font-medium"
+                    className="flex-1 bg-theme-secondary text-theme-primary px-4 py-2 rounded-lg hover:bg-theme-primary transition-colors text-sm font-medium"
                   >
                     Annuler
                   </button>
@@ -671,32 +675,23 @@ export default function DashboardPage() {
 
         {/* Modale de suppression */}
         {showDeleteModal && taskToDelete && (
-          <div className="fixed inset-0 bg-gray-900/20 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl max-w-md w-full mx-4 border border-gray-200/50">
+          <div className="fixed inset-0 bg-theme-overlay backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-theme-card/95 backdrop-blur-sm rounded-xl shadow-theme-2xl max-w-md w-full mx-4 border border-theme-primary/50">
               <div className="p-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-red-100 rounded-lg">
-                    <AlertTriangle className="h-6 w-6 text-red-600" />
+                  <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                    <AlertTriangle className="h-5 w-5 text-red-600" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      Supprimer la tâche
-                    </h3>
-                    <p className="text-sm text-gray-600">
-                      Cette action est irréversible
-                    </p>
+                    <h3 className="text-lg font-semibold text-theme-primary">Supprimer la tâche</h3>
+                    <p className="text-sm text-theme-secondary">Cette action est irréversible</p>
                   </div>
                 </div>
-                
-                <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                  <p className="text-sm text-gray-700">
-                    <span className="font-medium">Tâche :</span> {taskToDelete.title}
+
+                <div className="bg-theme-tertiary rounded-lg p-4 mb-6">
+                  <p className="text-sm text-theme-secondary">
+                                         Êtes-vous sûr de vouloir supprimer la tâche <strong>&quot;{taskToDelete?.title}&quot;</strong> ?
                   </p>
-                  {taskToDelete.description && (
-                    <p className="text-sm text-gray-600 mt-1">
-                      {taskToDelete.description}
-                    </p>
-                  )}
                 </div>
 
                 <div className="flex gap-3">
@@ -708,7 +703,7 @@ export default function DashboardPage() {
                   </button>
                   <button
                     onClick={cancelDelete}
-                    className="flex-1 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors text-sm font-medium"
+                    className="flex-1 bg-theme-secondary text-theme-primary px-4 py-2 rounded-lg hover:bg-theme-primary transition-colors text-sm font-medium"
                   >
                     Annuler
                   </button>
