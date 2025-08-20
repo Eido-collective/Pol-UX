@@ -2,7 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import dynamic from 'next/dynamic'
-import { MapPin, Search, Calendar, Users, Building } from 'lucide-react'
+import { MapPin, Search, Calendar, Users, Building, Plus, X } from 'lucide-react'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import toast from 'react-hot-toast'
 
 // Import dynamique de la carte pour éviter les erreurs SSR
 const MapComponent = dynamic(() => import('@/components/MapComponent'), {
@@ -37,12 +40,34 @@ interface Initiative {
 }
 
 export default function MapPage() {
+  const { data: session } = useSession()
+  const router = useRouter()
   const [initiatives, setInitiatives] = useState<Initiative[]>([])
   const [filteredInitiatives, setFilteredInitiatives] = useState<Initiative[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedType, setSelectedType] = useState<string>('all')
   const [selectedCity, setSelectedCity] = useState<string>('all')
+  
+  // Modal states
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [newInitiative, setNewInitiative] = useState({
+    title: '',
+    description: '',
+    type: 'EVENT' as 'EVENT' | 'PROJECT' | 'ASSOCIATION' | 'COMPANY',
+    latitude: 0,
+    longitude: 0,
+    address: '',
+    city: '',
+    startDate: '',
+    endDate: '',
+    website: '',
+    contactEmail: '',
+    contactPhone: '',
+    imageUrl: ''
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errors, setErrors] = useState<{[key: string]: string}>({})
 
   const filterInitiatives = useCallback(() => {
     let filtered = initiatives.filter(initiative => initiative.isApproved)
@@ -123,6 +148,162 @@ export default function MapPage() {
 
   const cities = Array.from(new Set(initiatives.map(i => i.city))).sort()
 
+  const handleCreateInitiative = () => {
+    if (!session) {
+      toast.error('Vous devez être connecté pour créer une initiative')
+      router.push('/login')
+      return
+    }
+    
+    if (session.user.role === 'EXPLORER') {
+      toast.error('Vous devez être Contributeur ou Administrateur pour créer des initiatives')
+      router.push('/promotion')
+      return
+    }
+    
+    setIsModalOpen(true)
+  }
+
+  const validateForm = () => {
+    const newErrors: {[key: string]: string} = {}
+    
+    if (!newInitiative.title.trim()) {
+      newErrors.title = 'Le titre est obligatoire'
+    } else if (newInitiative.title.trim().length < 5) {
+      newErrors.title = 'Le titre doit contenir au moins 5 caractères'
+    }
+    
+    if (!newInitiative.description.trim()) {
+      newErrors.description = 'La description est obligatoire'
+    } else if (newInitiative.description.trim().length < 20) {
+      newErrors.description = 'La description doit contenir au moins 20 caractères'
+    }
+
+    if (!newInitiative.address.trim()) {
+      newErrors.address = 'L\'adresse est obligatoire'
+    }
+
+    if (!newInitiative.city.trim()) {
+      newErrors.city = 'La ville est obligatoire'
+    }
+    
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const validateField = (field: string, value: string) => {
+    const newErrors = { ...errors }
+    
+    if (field === 'title') {
+      if (!value.trim()) {
+        newErrors.title = 'Le titre est obligatoire'
+      } else if (value.trim().length < 5) {
+        newErrors.title = 'Le titre doit contenir au moins 5 caractères'
+      } else {
+        delete newErrors.title
+      }
+    }
+    
+    if (field === 'description') {
+      if (!value.trim()) {
+        newErrors.description = 'La description est obligatoire'
+      } else if (value.trim().length < 20) {
+        newErrors.description = 'La description doit contenir au moins 20 caractères'
+      } else {
+        delete newErrors.description
+      }
+    }
+
+    if (field === 'address') {
+      if (!value.trim()) {
+        newErrors.address = 'L\'adresse est obligatoire'
+      } else {
+        delete newErrors.address
+      }
+    }
+
+    if (field === 'city') {
+      if (!value.trim()) {
+        newErrors.city = 'La ville est obligatoire'
+      } else {
+        delete newErrors.city
+      }
+    }
+    
+    setErrors(newErrors)
+  }
+
+  const handleSubmitInitiative = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!validateForm()) {
+      return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      const response = await fetch('/api/initiatives', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newInitiative),
+      })
+
+      if (response.ok) {
+        await response.json()
+        setIsModalOpen(false)
+        setNewInitiative({
+          title: '',
+          description: '',
+          type: 'EVENT',
+          latitude: 0,
+          longitude: 0,
+          address: '',
+          city: '',
+          startDate: '',
+          endDate: '',
+          website: '',
+          contactEmail: '',
+          contactPhone: '',
+          imageUrl: ''
+        })
+        setErrors({})
+        fetchInitiatives() // Recharger les initiatives
+        toast.success('Initiative publiée avec succès ! Elle sera visible après modération.')
+      } else {
+        const errorData = await response.json()
+        toast.error(errorData.error || 'Erreur lors de la publication de l\'initiative')
+      }
+    } catch (error) {
+      console.error('Erreur lors de la publication de l\'initiative:', error)
+      toast.error('Erreur lors de la publication de l\'initiative')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const closeModal = () => {
+    setIsModalOpen(false)
+    setNewInitiative({
+      title: '',
+      description: '',
+      type: 'EVENT',
+      latitude: 0,
+      longitude: 0,
+      address: '',
+      city: '',
+      startDate: '',
+      endDate: '',
+      website: '',
+      contactEmail: '',
+      contactPhone: '',
+      imageUrl: ''
+    })
+    setErrors({})
+  }
+
   return (
     <div className="bg-gray-50">
       {/* Page Header */}
@@ -133,6 +314,13 @@ export default function MapPage() {
               <h1 className="text-2xl font-bold text-gray-900">Carte des Initiatives</h1>
               <p className="text-gray-600">Découvrez les initiatives écologiques près de chez vous</p>
             </div>
+            <button 
+              onClick={handleCreateInitiative}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Ajouter initiative
+            </button>
           </div>
         </div>
       </div>
@@ -247,6 +435,249 @@ export default function MapPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal de création d'initiative */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-gray-900/20 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white/95 backdrop-blur-sm rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Nouvelle Initiative</h2>
+                <button
+                  onClick={closeModal}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmitInitiative} className="space-y-4">
+                <div>
+                  <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+                    Titre *
+                  </label>
+                  <input
+                    type="text"
+                    id="title"
+                    value={newInitiative.title}
+                    onChange={(e) => {
+                      setNewInitiative(prev => ({ ...prev, title: e.target.value }))
+                      validateField('title', e.target.value)
+                    }}
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                      errors.title ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="Titre de votre initiative..."
+                    required
+                  />
+                  {errors.title && (
+                    <p className="mt-1 text-sm text-red-600">{errors.title}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-2">
+                    Type *
+                  </label>
+                  <select
+                    id="type"
+                    value={newInitiative.type}
+                    onChange={(e) => setNewInitiative(prev => ({ ...prev, type: e.target.value as 'EVENT' | 'PROJECT' | 'ASSOCIATION' | 'COMPANY' }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    required
+                  >
+                    <option value="EVENT">Événement</option>
+                    <option value="PROJECT">Projet</option>
+                    <option value="ASSOCIATION">Association</option>
+                    <option value="COMPANY">Entreprise</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                    Description *
+                  </label>
+                  <textarea
+                    id="description"
+                    value={newInitiative.description}
+                    onChange={(e) => {
+                      setNewInitiative(prev => ({ ...prev, description: e.target.value }))
+                      validateField('description', e.target.value)
+                    }}
+                    rows={4}
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none ${
+                      errors.description ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="Description de votre initiative..."
+                    required
+                  />
+                  {errors.description && (
+                    <p className="mt-1 text-sm text-red-600">{errors.description}</p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
+                      Adresse *
+                    </label>
+                    <input
+                      type="text"
+                      id="address"
+                      value={newInitiative.address}
+                      onChange={(e) => {
+                        setNewInitiative(prev => ({ ...prev, address: e.target.value }))
+                        validateField('address', e.target.value)
+                      }}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                        errors.address ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      placeholder="Adresse complète..."
+                      required
+                    />
+                    {errors.address && (
+                      <p className="mt-1 text-sm text-red-600">{errors.address}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
+                      Ville *
+                    </label>
+                    <input
+                      type="text"
+                      id="city"
+                      value={newInitiative.city}
+                      onChange={(e) => {
+                        setNewInitiative(prev => ({ ...prev, city: e.target.value }))
+                        validateField('city', e.target.value)
+                      }}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                        errors.city ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      placeholder="Ville..."
+                      required
+                    />
+                    {errors.city && (
+                      <p className="mt-1 text-sm text-red-600">{errors.city}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-2">
+                      Date de début
+                    </label>
+                    <input
+                      type="date"
+                      id="startDate"
+                      value={newInitiative.startDate}
+                      onChange={(e) => setNewInitiative(prev => ({ ...prev, startDate: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-2">
+                      Date de fin
+                    </label>
+                    <input
+                      type="date"
+                      id="endDate"
+                      value={newInitiative.endDate}
+                      onChange={(e) => setNewInitiative(prev => ({ ...prev, endDate: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="website" className="block text-sm font-medium text-gray-700 mb-2">
+                    Site web
+                  </label>
+                  <input
+                    type="url"
+                    id="website"
+                    value={newInitiative.website}
+                    onChange={(e) => setNewInitiative(prev => ({ ...prev, website: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    placeholder="https://..."
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="contactEmail" className="block text-sm font-medium text-gray-700 mb-2">
+                      Email de contact
+                    </label>
+                    <input
+                      type="email"
+                      id="contactEmail"
+                      value={newInitiative.contactEmail}
+                      onChange={(e) => setNewInitiative(prev => ({ ...prev, contactEmail: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      placeholder="contact@exemple.com"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="contactPhone" className="block text-sm font-medium text-gray-700 mb-2">
+                      Téléphone
+                    </label>
+                    <input
+                      type="tel"
+                      id="contactPhone"
+                      value={newInitiative.contactPhone}
+                      onChange={(e) => setNewInitiative(prev => ({ ...prev, contactPhone: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      placeholder="01 23 45 67 89"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 mb-2">
+                    URL de l&apos;image
+                  </label>
+                  <input
+                    type="url"
+                    id="imageUrl"
+                    value={newInitiative.imageUrl}
+                    onChange={(e) => setNewInitiative(prev => ({ ...prev, imageUrl: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    placeholder="https://..."
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={closeModal}
+                    className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || Object.keys(errors).length > 0}
+                    className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center gap-2"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Publication...
+                      </>
+                    ) : (
+                      'Publier l&apos;initiative'
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

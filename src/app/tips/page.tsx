@@ -1,8 +1,11 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Lightbulb, Search, ThumbsUp, ThumbsDown, Leaf, Zap, Car, Utensils, Droplets, ShoppingBag } from 'lucide-react'
+import { Lightbulb, Search, ThumbsUp, ThumbsDown, Leaf, Zap, Car, Utensils, Droplets, ShoppingBag, Plus, X } from 'lucide-react'
 import Image from 'next/image'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import toast from 'react-hot-toast'
 
 interface Tip {
   id: string
@@ -29,12 +32,55 @@ interface Vote {
 }
 
 export default function TipsPage() {
+  const { data: session } = useSession()
+  const router = useRouter()
   const [tips, setTips] = useState<Tip[]>([])
   const [filteredTips, setFilteredTips] = useState<Tip[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
-  const [sortBy, setSortBy] = useState<string>('newest')
+  const [sortBy, setSortBy] = useState<string>('mostVoted')
+  const [userVotes, setUserVotes] = useState<{[key: string]: number}>({})
+  
+  // Modal states
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [newTip, setNewTip] = useState({
+    title: '',
+    content: '',
+    category: 'WASTE_REDUCTION'
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errors, setErrors] = useState<{[key: string]: string}>({})
+
+  const fetchTips = useCallback(async () => {
+    try {
+      const response = await fetch('/api/tips')
+      if (response.ok) {
+        const data = await response.json()
+        setTips(data.tips)
+        
+        // Charger les votes de l'utilisateur connecté
+        if (session?.user?.id) {
+          const userVotesData: {[key: string]: number} = {}
+          
+          data.tips.forEach((tip: Tip) => {
+            if (tip.votes) {
+              const userVote = tip.votes.find((vote: Vote) => vote.userId === session.user.id)
+              if (userVote) {
+                userVotesData[tip.id] = userVote.value
+              }
+            }
+          })
+          
+          setUserVotes(userVotesData)
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des conseils:', error)
+    } finally {
+      setLoading(false)
+    }
+  }, [session?.user?.id])
 
   const filterAndSortTips = useCallback(() => {
     let filtered = tips.filter(tip => tip.isApproved)
@@ -72,25 +118,11 @@ export default function TipsPage() {
 
   useEffect(() => {
     fetchTips()
-  }, [])
+  }, [fetchTips, session?.user?.id])
 
   useEffect(() => {
     filterAndSortTips()
   }, [filterAndSortTips])
-
-  const fetchTips = async () => {
-    try {
-      const response = await fetch('/api/tips')
-      if (response.ok) {
-        const data = await response.json()
-        setTips(data.tips)
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des conseils:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -149,6 +181,144 @@ export default function TipsPage() {
     return votes?.reduce((sum, vote) => sum + vote.value, 0) || 0
   }
 
+  const handleCreateTip = () => {
+    if (!session) {
+      toast.error('Vous devez être connecté pour créer un conseil')
+      router.push('/login')
+      return
+    }
+    
+    if (session.user.role === 'EXPLORER') {
+      toast.error('Vous devez être Contributeur ou Administrateur pour créer des conseils')
+      router.push('/promotion')
+      return
+    }
+    
+    setIsModalOpen(true)
+  }
+
+  const validateForm = () => {
+    const newErrors: {[key: string]: string} = {}
+    
+    if (!newTip.title.trim()) {
+      newErrors.title = 'Le titre est obligatoire'
+    } else if (newTip.title.trim().length < 5) {
+      newErrors.title = 'Le titre doit contenir au moins 5 caractères'
+    }
+    
+    if (!newTip.content.trim()) {
+      newErrors.content = 'Le contenu est obligatoire'
+    } else if (newTip.content.trim().length < 20) {
+      newErrors.content = 'Le contenu doit contenir au moins 20 caractères'
+    }
+    
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const validateField = (field: string, value: string) => {
+    const newErrors = { ...errors }
+    
+    if (field === 'title') {
+      if (!value.trim()) {
+        newErrors.title = 'Le titre est obligatoire'
+      } else if (value.trim().length < 5) {
+        newErrors.title = 'Le titre doit contenir au moins 5 caractères'
+      } else {
+        delete newErrors.title
+      }
+    }
+    
+    if (field === 'content') {
+      if (!value.trim()) {
+        newErrors.content = 'Le contenu est obligatoire'
+      } else if (value.trim().length < 20) {
+        newErrors.content = 'Le contenu doit contenir au moins 20 caractères'
+      } else {
+        delete newErrors.content
+      }
+    }
+    
+    setErrors(newErrors)
+  }
+
+  const handleSubmitTip = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!validateForm()) {
+      return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      const response = await fetch('/api/tips', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newTip),
+      })
+
+      if (response.ok) {
+        await response.json()
+        setIsModalOpen(false)
+        setNewTip({ title: '', content: '', category: 'WASTE_REDUCTION' })
+        setErrors({})
+        fetchTips() // Recharger les tips
+        toast.success('Conseil publié avec succès ! Il sera visible après modération.')
+      } else {
+        const errorData = await response.json()
+        toast.error(errorData.error || 'Erreur lors de la publication du conseil')
+      }
+    } catch (error) {
+      console.error('Erreur lors de la publication du conseil:', error)
+      toast.error('Erreur lors de la publication du conseil')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const closeModal = () => {
+    setIsModalOpen(false)
+    setNewTip({ title: '', content: '', category: 'WASTE_REDUCTION' })
+    setErrors({})
+  }
+
+  const handleVote = async (tipId: string, value: number) => {
+    if (!session) {
+      router.push('/login')
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/tips/${tipId}/vote`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ value }),
+      })
+
+      if (response.ok) {
+        // Mettre à jour le vote local
+        setUserVotes(prev => ({
+          ...prev,
+          [tipId]: prev[tipId] === value ? 0 : value
+        }))
+        
+        // Recharger les tips pour mettre à jour les compteurs
+        fetchTips()
+      } else {
+        const errorData = await response.json()
+        toast.error(errorData.error || 'Erreur lors du vote')
+      }
+    } catch (error) {
+      console.error('Erreur lors du vote:', error)
+      toast.error('Erreur lors du vote')
+    }
+  }
+
   return (
     <div className="bg-gray-50">
       {/* Page Header */}
@@ -159,6 +329,13 @@ export default function TipsPage() {
               <h1 className="text-2xl font-bold text-gray-900">Conseils Écologiques</h1>
               <p className="text-gray-600">Découvrez des astuces pour réduire votre impact environnemental</p>
             </div>
+            <button 
+              onClick={handleCreateTip}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Nouveau conseil
+            </button>
           </div>
         </div>
       </div>
@@ -201,9 +378,9 @@ export default function TipsPage() {
                 onChange={(e) => setSortBy(e.target.value)}
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
               >
+                <option value="mostVoted">Plus populaires</option>
                 <option value="newest">Plus récents</option>
                 <option value="oldest">Plus anciens</option>
-                <option value="mostVoted">Plus votés</option>
               </select>
             </div>
           </div>
@@ -257,24 +434,40 @@ export default function TipsPage() {
 
                   <div className="flex items-center justify-between text-sm text-gray-500">
                     <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-1">
-                        <ThumbsUp className="h-4 w-4" />
-                        <span>{getVoteCount(tip.votes)}</span>
-                      </div>
                       <span>Par {tip.author.name}</span>
                     </div>
                     <span>{formatDate(tip.createdAt)}</span>
                   </div>
 
-                  <div className="mt-4 flex gap-2">
-                    <button className="flex-1 flex items-center justify-center gap-2 py-2 px-3 border border-green-200 text-green-700 rounded-lg hover:bg-green-50 transition-colors">
-                      <ThumbsUp className="h-4 w-4" />
-                      Utile
-                    </button>
-                    <button className="flex-1 flex items-center justify-center gap-2 py-2 px-3 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                      <ThumbsDown className="h-4 w-4" />
-                      Pas utile
-                    </button>
+                  <div className="mt-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <button 
+                        className={`p-2 rounded-lg transition-colors ${
+                          userVotes[tip.id] === 1 
+                            ? 'text-orange-500 bg-orange-50 border border-orange-200' 
+                            : 'text-gray-400 hover:text-orange-500 hover:bg-gray-50 border border-gray-200'
+                        }`}
+                        onClick={() => handleVote(tip.id, 1)}
+                      >
+                        <ThumbsUp className="h-4 w-4" />
+                      </button>
+                      <span className={`text-sm font-medium ${
+                        getVoteCount(tip.votes) > 0 ? 'text-orange-500' : 
+                        getVoteCount(tip.votes) < 0 ? 'text-blue-500' : 'text-gray-900'
+                      }`}>
+                        {getVoteCount(tip.votes)}
+                      </span>
+                      <button 
+                        className={`p-2 rounded-lg transition-colors ${
+                          userVotes[tip.id] === -1 
+                            ? 'text-blue-500 bg-blue-50 border border-blue-200' 
+                            : 'text-gray-400 hover:text-blue-500 hover:bg-gray-50 border border-gray-200'
+                        }`}
+                        onClick={() => handleVote(tip.id, -1)}
+                      >
+                        <ThumbsDown className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -282,6 +475,118 @@ export default function TipsPage() {
           </div>
         )}
       </div>
+
+      {/* Modal de création de conseil */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-gray-900/20 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white/95 backdrop-blur-sm rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Nouveau Conseil</h2>
+                <button
+                  onClick={closeModal}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmitTip} className="space-y-4">
+                                 <div>
+                   <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+                     Titre *
+                   </label>
+                   <input
+                     type="text"
+                     id="title"
+                     value={newTip.title}
+                                           onChange={(e) => {
+                        setNewTip(prev => ({ ...prev, title: e.target.value }))
+                        validateField('title', e.target.value)
+                      }}
+                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                       errors.title ? 'border-red-500' : 'border-gray-300'
+                     }`}
+                     placeholder="Titre de votre conseil..."
+                     required
+                   />
+                   {errors.title && (
+                     <p className="mt-1 text-sm text-red-600">{errors.title}</p>
+                   )}
+                 </div>
+
+                <div>
+                  <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+                    Catégorie *
+                  </label>
+                  <select
+                    id="category"
+                    value={newTip.category}
+                    onChange={(e) => setNewTip(prev => ({ ...prev, category: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    required
+                  >
+                    <option value="WASTE_REDUCTION">Réduction des déchets</option>
+                    <option value="ENERGY_SAVING">Économies d&apos;énergie</option>
+                    <option value="TRANSPORT">Transport</option>
+                    <option value="FOOD">Alimentation</option>
+                    <option value="WATER">Eau</option>
+                    <option value="CONSUMPTION">Consommation</option>
+                    <option value="OTHER">Autre</option>
+                  </select>
+                </div>
+
+                                 <div>
+                   <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
+                     Contenu *
+                   </label>
+                   <textarea
+                     id="content"
+                     value={newTip.content}
+                                           onChange={(e) => {
+                        setNewTip(prev => ({ ...prev, content: e.target.value }))
+                        validateField('content', e.target.value)
+                      }}
+                     rows={6}
+                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none ${
+                       errors.content ? 'border-red-500' : 'border-gray-300'
+                     }`}
+                     placeholder="Contenu de votre conseil..."
+                     required
+                   />
+                   {errors.content && (
+                     <p className="mt-1 text-sm text-red-600">{errors.content}</p>
+                   )}
+                 </div>
+
+                <div className="flex items-center justify-end gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={closeModal}
+                    className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                  >
+                    Annuler
+                  </button>
+                                     <button
+                     type="submit"
+                     disabled={isSubmitting || Object.keys(errors).length > 0}
+                     className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center gap-2"
+                   >
+                     {isSubmitting ? (
+                       <>
+                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                         Publication...
+                       </>
+                     ) : (
+                       'Publier le conseil'
+                     )}
+                   </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

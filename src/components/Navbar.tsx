@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
-import { Leaf, Menu, X, MapPin, MessageSquare, Lightbulb, Shield, User, LogOut } from 'lucide-react'
+import { Leaf, Menu, X, MapPin, MessageSquare, Lightbulb, BookOpen, Shield, User, LogOut } from 'lucide-react'
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -14,6 +14,7 @@ export default function Navbar() {
     { name: 'Carte', href: '/map', icon: MapPin },
     { name: 'Forum', href: '/forum', icon: MessageSquare },
     { name: 'Conseils', href: '/tips', icon: Lightbulb },
+    { name: 'Articles', href: '/articles', icon: BookOpen },
   ]
 
   const handleSignOut = () => {

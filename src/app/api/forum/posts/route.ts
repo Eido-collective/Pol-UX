@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { Prisma, ForumCategory } from '@prisma/client'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
   try {
@@ -74,6 +76,15 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Vous devez être connecté pour créer un post' },
+        { status: 401 }
+      )
+    }
+
     const body = await request.json()
     const { title, content, category } = body
 
@@ -92,23 +103,19 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (content.length < 10) {
+    if (content.length < 20) {
       return NextResponse.json(
-        { error: 'Le contenu doit contenir au moins 10 caractères' },
+        { error: 'Le contenu doit contenir au moins 20 caractères' },
         { status: 400 }
       )
     }
-
-    // TODO: Récupérer l'utilisateur connecté depuis la session
-    // Pour l'instant, on utilise un utilisateur par défaut
-    const defaultUserId = 'default-user-id'
 
     const post = await prisma.forumPost.create({
       data: {
         title,
         content,
         category,
-        authorId: defaultUserId,
+        authorId: session.user.id,
         isApproved: false // Les nouveaux posts doivent être approuvés
       },
       include: {
