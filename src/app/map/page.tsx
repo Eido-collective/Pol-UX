@@ -7,6 +7,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import Image from 'next/image'
+import Pagination from '@/components/Pagination'
 
 // Import dynamique de la carte pour éviter les erreurs SSR
 const MapComponent = dynamic(() => import('@/components/MapComponent'), {
@@ -74,6 +75,10 @@ export default function MapPage() {
   const [selectedInitiativeForDetails, setSelectedInitiativeForDetails] = useState<Initiative | null>(null)
   const [selectedInitiativeId, setSelectedInitiativeId] = useState<string | undefined>(undefined)
 
+  // Pagination pour les initiatives sans localisation
+  const [currentPageWithoutAddress, setCurrentPageWithoutAddress] = useState(1)
+  const [itemsPerPageWithoutAddress] = useState(6)
+
   // Bloquer le scroll quand une modale est ouverte
   useEffect(() => {
     if (isModalOpen || selectedInitiativeForDetails) {
@@ -127,13 +132,41 @@ export default function MapPage() {
       filtered = filtered.filter(initiative => initiative.type === selectedType)
     }
 
-    // Filtre par ville
+    // Filtre par ville (normaliser la casse pour la comparaison)
     if (selectedCity !== 'all') {
-      filtered = filtered.filter(initiative => initiative.city === selectedCity)
+      filtered = filtered.filter(initiative => {
+        const normalizedInitiativeCity = initiative.city?.charAt(0).toUpperCase() + initiative.city?.slice(1).toLowerCase()
+        return normalizedInitiativeCity === selectedCity
+      })
     }
 
     setFilteredInitiatives(filtered)
+    // Réinitialiser la page quand les filtres changent
+    setCurrentPageWithoutAddress(1)
   }, [initiatives, searchTerm, selectedType, selectedCity])
+
+  const handlePageChangeWithoutAddress = (page: number) => {
+    setCurrentPageWithoutAddress(page)
+    // Scroll vers le haut de la section
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+    // Séparer les initiatives avec et sans adresse
+  const initiativesWithAddress = filteredInitiatives.filter(initiative => 
+    initiative.address && initiative.address.trim() !== '' && 
+    initiative.latitude !== 0 && initiative.longitude !== 0
+  )
+
+  const initiativesWithoutAddress = filteredInitiatives.filter(initiative => 
+    !initiative.address || initiative.address.trim() === '' || 
+    initiative.latitude === 0 || initiative.longitude === 0
+  )
+
+  // Pagination pour les initiatives sans localisation
+  const totalPagesWithoutAddress = Math.ceil(initiativesWithoutAddress.length / itemsPerPageWithoutAddress)
+  const startIndexWithoutAddress = (currentPageWithoutAddress - 1) * itemsPerPageWithoutAddress
+  const endIndexWithoutAddress = startIndexWithoutAddress + itemsPerPageWithoutAddress
+  const paginatedInitiativesWithoutAddress = initiativesWithoutAddress.slice(startIndexWithoutAddress, endIndexWithoutAddress)
 
   useEffect(() => {
     fetchInitiatives()
@@ -187,7 +220,13 @@ export default function MapPage() {
     }
   }
 
-  const cities = Array.from(new Set(initiatives.map(i => i.city))).sort()
+  // Filtrer et normaliser les villes (supprimer les vides et normaliser la casse)
+  const cities = Array.from(new Set(
+    initiatives
+      .map(i => i.city?.trim())
+      .filter(city => city && city.length > 0)
+      .map(city => city.charAt(0).toUpperCase() + city.slice(1).toLowerCase())
+  )).sort()
 
   const handleCreateInitiative = () => {
     if (!session) {
@@ -436,29 +475,33 @@ export default function MapPage() {
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
               {loading ? (
-                <div className="h-[600px] bg-gray-100 rounded-lg flex items-center justify-center">
+                <div className="h-[700px] bg-gray-100 rounded-lg flex items-center justify-center">
                   <div className="text-gray-500">Chargement de la carte...</div>
                 </div>
               ) : (
-                <MapComponent initiatives={filteredInitiatives} selectedInitiativeId={selectedInitiativeId} />
+                <MapComponent 
+                  initiatives={initiativesWithAddress} 
+                  selectedInitiativeId={selectedInitiativeId}
+                  onInitiativeClick={handleInitiativeClick}
+                />
               )}
             </div>
           </div>
 
-          {/* Liste des initiatives */}
+          {/* Liste des initiatives avec adresse */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Initiatives ({filteredInitiatives.length})
+                Initiatives localisées ({initiativesWithAddress.length})
               </h3>
               
-              <div className="space-y-4 max-h-[600px] overflow-y-auto">
-                {filteredInitiatives.length === 0 ? (
+              <div className="space-y-4 max-h-[657px] overflow-y-auto">
+                {initiativesWithAddress.length === 0 ? (
                   <div className="text-center text-gray-500 py-8">
-                    Aucune initiative trouvée
+                    Aucune initiative localisée trouvée
                   </div>
                 ) : (
-                  filteredInitiatives.map((initiative) => (
+                  initiativesWithAddress.map((initiative) => (
                     <div
                       key={initiative.id}
                       className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
@@ -517,6 +560,72 @@ export default function MapPage() {
             </div>
           </div>
         </div>
+
+        {/* Liste des initiatives sans adresse */}
+        {initiativesWithoutAddress.length > 0 && (
+          <div className="mt-6">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Initiatives sans localisation ({initiativesWithoutAddress.length})
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {paginatedInitiativesWithoutAddress.map((initiative) => (
+                  <div
+                    key={initiative.id}
+                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0">
+                        {getTypeIcon(initiative.type)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm font-medium text-gray-900 truncate">
+                          {initiative.title}
+                        </h4>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                            {getTypeLabel(initiative.type)}
+                          </span>
+                          {initiative.startDate && (
+                            <span className="text-xs text-gray-500">
+                              📅 {new Date(initiative.startDate).toLocaleDateString('fr-FR')}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-600 mt-2 line-clamp-3">
+                          {initiative.description}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* Boutons d'action */}
+                    <div className="flex items-center justify-end mt-3 pt-3 border-t border-gray-100">
+                      <button
+                        onClick={() => handleShowDetails(initiative)}
+                        className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 transition-colors"
+                      >
+                        <Info className="h-3 w-3" />
+                        Détails
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Pagination pour les initiatives sans localisation */}
+              {totalPagesWithoutAddress > 1 && (
+                <div className="mt-6 pt-4 border-t border-gray-200">
+                  <Pagination
+                    currentPage={currentPageWithoutAddress}
+                    totalPages={totalPagesWithoutAddress}
+                    onPageChange={handlePageChangeWithoutAddress}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Modal de création d'initiative */}
@@ -771,36 +880,36 @@ export default function MapPage() {
       {/* Modal de détails d'initiative */}
       {selectedInitiativeForDetails && (
         <div 
-          className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
           onClick={closeDetailsModal} // Fermer en cliquant sur le backdrop
         >
           <div 
-            className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-gray-100"
             onClick={(e) => e.stopPropagation()} // Empêcher la fermeture en cliquant sur la modale
           >
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900">Détails de l&apos;initiative</h2>
+            <div className="p-8">
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-2xl font-bold text-gray-900">Détails de l&apos;initiative</h2>
                 <button
                   onClick={closeDetailsModal}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-lg"
                 >
                   <X className="h-6 w-6" />
                 </button>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-8">
                 {/* En-tête avec type et titre */}
                 <div>
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-12 h-12 flex items-center justify-center rounded-lg bg-green-100">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-16 h-16 flex items-center justify-center rounded-xl bg-gradient-to-br from-green-100 to-green-200 shadow-sm">
                       {getTypeIcon(selectedInitiativeForDetails.type)}
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">
+                      <h3 className="text-xl font-bold text-gray-900 mb-2">
                         {selectedInitiativeForDetails.title}
                       </h3>
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                      <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-green-100 to-green-200 text-green-800 shadow-sm">
                         {getTypeLabel(selectedInitiativeForDetails.type)}
                       </span>
                     </div>
@@ -809,41 +918,64 @@ export default function MapPage() {
 
                 {/* Description */}
                 <div>
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Description</h4>
-                  <p className="text-gray-600 leading-relaxed">
-                    {selectedInitiativeForDetails.description}
-                  </p>
-                </div>
-
-                {/* Localisation */}
-                <div>
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Localisation</h4>
-                  <div className="bg-gray-50 rounded-lg p-3">
-                    <p className="text-gray-600">
-                      <span className="font-medium">Adresse :</span> {selectedInitiativeForDetails.address}
-                    </p>
-                    <p className="text-gray-600">
-                      <span className="font-medium">Ville :</span> {selectedInitiativeForDetails.city}
+                  <h4 className="text-lg font-semibold text-gray-900 mb-3">Description</h4>
+                  <div className="bg-gray-50 rounded-xl p-6">
+                    <p className="text-gray-700 leading-relaxed text-base">
+                      {selectedInitiativeForDetails.description}
                     </p>
                   </div>
                 </div>
 
+                {/* Localisation - seulement si l'adresse existe */}
+                {selectedInitiativeForDetails.address && selectedInitiativeForDetails.address.trim() !== '' && (
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-3">Localisation</h4>
+                    <div className="bg-blue-50 rounded-xl p-6 border border-blue-100">
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-100">
+                          <MapPin className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-gray-700 font-medium mb-1">
+                            {selectedInitiativeForDetails.address}
+                          </p>
+                          {selectedInitiativeForDetails.city && (
+                            <p className="text-gray-600 text-sm">
+                              {selectedInitiativeForDetails.city}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Dates */}
                 {(selectedInitiativeForDetails.startDate || selectedInitiativeForDetails.endDate) && (
                   <div>
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">Dates</h4>
-                    <div className="bg-gray-50 rounded-lg p-3 space-y-1">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-3">Dates</h4>
+                    <div className="bg-orange-50 rounded-xl p-6 border border-orange-100 space-y-3">
                       {selectedInitiativeForDetails.startDate && (
-                        <p className="text-gray-600 flex items-center gap-2">
-                          <Calendar className="h-4 w-4" />
-                          <span className="font-medium">Début :</span> {formatDate(selectedInitiativeForDetails.startDate)}
-                        </p>
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-orange-100">
+                            <Calendar className="h-4 w-4 text-orange-600" />
+                          </div>
+                          <div>
+                            <p className="text-gray-700 font-medium">Début</p>
+                            <p className="text-gray-600 text-sm">{formatDate(selectedInitiativeForDetails.startDate)}</p>
+                          </div>
+                        </div>
                       )}
                       {selectedInitiativeForDetails.endDate && (
-                        <p className="text-gray-600 flex items-center gap-2">
-                          <Calendar className="h-4 w-4" />
-                          <span className="font-medium">Fin :</span> {formatDate(selectedInitiativeForDetails.endDate)}
-                        </p>
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-orange-100">
+                            <Calendar className="h-4 w-4 text-orange-600" />
+                          </div>
+                          <div>
+                            <p className="text-gray-700 font-medium">Fin</p>
+                            <p className="text-gray-600 text-sm">{formatDate(selectedInitiativeForDetails.endDate)}</p>
+                          </div>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -852,45 +984,57 @@ export default function MapPage() {
                 {/* Informations de contact */}
                 {(selectedInitiativeForDetails.website || selectedInitiativeForDetails.contactEmail || selectedInitiativeForDetails.contactPhone) && (
                   <div>
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">Contact</h4>
-                    <div className="bg-gray-50 rounded-lg p-3 space-y-2">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-3">Contact</h4>
+                    <div className="bg-purple-50 rounded-xl p-6 border border-purple-100 space-y-4">
                       {selectedInitiativeForDetails.website && (
-                        <p className="text-gray-600 flex items-center gap-2">
-                          <Globe className="h-4 w-4" />
-                          <span className="font-medium">Site web :</span>
-                          <a 
-                            href={selectedInitiativeForDetails.website} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-green-600 hover:text-green-700 underline"
-                          >
-                            {selectedInitiativeForDetails.website}
-                          </a>
-                        </p>
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-purple-100">
+                            <Globe className="h-4 w-4 text-purple-600" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-gray-700 font-medium mb-1">Site web</p>
+                            <a 
+                              href={selectedInitiativeForDetails.website} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-purple-600 hover:text-purple-700 underline text-sm"
+                            >
+                              {selectedInitiativeForDetails.website}
+                            </a>
+                          </div>
+                        </div>
                       )}
                       {selectedInitiativeForDetails.contactEmail && (
-                        <p className="text-gray-600 flex items-center gap-2">
-                          <Mail className="h-4 w-4" />
-                          <span className="font-medium">Email :</span>
-                          <a 
-                            href={`mailto:${selectedInitiativeForDetails.contactEmail}`}
-                            className="text-green-600 hover:text-green-700 underline"
-                          >
-                            {selectedInitiativeForDetails.contactEmail}
-                          </a>
-                        </p>
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-purple-100">
+                            <Mail className="h-4 w-4 text-purple-600" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-gray-700 font-medium mb-1">Email</p>
+                            <a 
+                              href={`mailto:${selectedInitiativeForDetails.contactEmail}`}
+                              className="text-purple-600 hover:text-purple-700 underline text-sm"
+                            >
+                              {selectedInitiativeForDetails.contactEmail}
+                            </a>
+                          </div>
+                        </div>
                       )}
                       {selectedInitiativeForDetails.contactPhone && (
-                        <p className="text-gray-600 flex items-center gap-2">
-                          <Phone className="h-4 w-4" />
-                          <span className="font-medium">Téléphone :</span>
-                          <a 
-                            href={`tel:${selectedInitiativeForDetails.contactPhone}`}
-                            className="text-green-600 hover:text-green-700 underline"
-                          >
-                            {selectedInitiativeForDetails.contactPhone}
-                          </a>
-                        </p>
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-purple-100">
+                            <Phone className="h-4 w-4 text-purple-600" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-gray-700 font-medium mb-1">Téléphone</p>
+                            <a 
+                              href={`tel:${selectedInitiativeForDetails.contactPhone}`}
+                              className="text-purple-600 hover:text-purple-700 underline text-sm"
+                            >
+                              {selectedInitiativeForDetails.contactPhone}
+                            </a>
+                          </div>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -898,20 +1042,27 @@ export default function MapPage() {
 
                 {/* Auteur */}
                 <div>
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Publié par</h4>
-                  <div className="bg-gray-50 rounded-lg p-3">
-                    <p className="text-gray-600">
-                      {selectedInitiativeForDetails.author.name || selectedInitiativeForDetails.author.username}
-                    </p>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-3">Publié par</h4>
+                  <div className="bg-indigo-50 rounded-xl p-6 border border-indigo-100">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-100">
+                        <Users className="h-4 w-4 text-indigo-600" />
+                      </div>
+                      <div>
+                        <p className="text-gray-700 font-medium">
+                          {selectedInitiativeForDetails.author.name || selectedInitiativeForDetails.author.username}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
                 {/* Image */}
                 {selectedInitiativeForDetails.imageUrl && (
                   <div>
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">Image</h4>
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <div className="relative w-full h-48 rounded-lg overflow-hidden">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-3">Image</h4>
+                    <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                      <div className="relative w-full h-64 rounded-xl overflow-hidden shadow-lg">
                         <Image 
                           src={selectedInitiativeForDetails.imageUrl} 
                           alt={selectedInitiativeForDetails.title}
@@ -925,20 +1076,28 @@ export default function MapPage() {
                 )}
 
                 {/* Boutons d'action */}
-                <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-                  <button
-                    onClick={() => {
-                      handleInitiativeClick(selectedInitiativeForDetails)
-                      closeDetailsModal()
-                    }}
-                    className="flex items-center gap-2 text-green-600 hover:text-green-700 font-medium transition-colors"
-                  >
-                    <Eye className="h-4 w-4" />
-                    Voir sur la carte
-                  </button>
+                <div className="flex items-center justify-between pt-6 border-t border-gray-200">
+                  {selectedInitiativeForDetails.address && selectedInitiativeForDetails.address.trim() !== '' && 
+                   selectedInitiativeForDetails.latitude !== 0 && selectedInitiativeForDetails.longitude !== 0 ? (
+                    <button
+                      onClick={() => {
+                        handleInitiativeClick(selectedInitiativeForDetails)
+                        closeDetailsModal()
+                      }}
+                      className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white hover:bg-green-700 rounded-lg transition-colors font-medium"
+                    >
+                      <Eye className="h-4 w-4" />
+                      Voir sur la carte
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-2 text-gray-500 italic">
+                      <MapPin className="h-4 w-4" />
+                      Non localisé sur la carte
+                    </div>
+                  )}
                   <button
                     onClick={closeDetailsModal}
-                    className="px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
+                    className="px-6 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors font-medium"
                   >
                     Fermer
                   </button>

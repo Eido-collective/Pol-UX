@@ -206,6 +206,7 @@ model Tip {
   content     String
   category    TipCategory
   imageUrl    String?
+  source      String?
   isPublished Boolean    @default(true)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
@@ -222,6 +223,7 @@ model Article {
   excerpt     String?
   category    ArticleCategory
   imageUrl    String?
+  source      String?
   isPublished Boolean        @default(true)
   publishedAt DateTime?      @default(now())
   createdAt   DateTime       @default(now())

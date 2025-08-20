@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { title, content, excerpt, category, imageUrl } = body
+    const { title, content, excerpt, category, imageUrl, source } = body
 
     // Validation des données
     if (!title || !content || !category) {
@@ -125,6 +125,7 @@ export async function POST(request: NextRequest) {
         excerpt,
         category,
         imageUrl,
+        source,
         authorId: session.user.id
         // isPublished et publishedAt sont par défaut gérés dans le schéma
       },

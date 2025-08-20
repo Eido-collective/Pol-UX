@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
+import Pagination from '@/components/Pagination'
 
 interface ForumPost {
   id: string
@@ -48,12 +49,15 @@ export default function ForumPage() {
   const { data: session } = useSession()
   const router = useRouter()
   const [posts, setPosts] = useState<ForumPost[]>([])
-  const [filteredPosts, setFilteredPosts] = useState<ForumPost[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [sortBy, setSortBy] = useState<string>('mostVoted')
   const [userVotes, setUserVotes] = useState<{[key: string]: number}>({})
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
   
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -98,10 +102,24 @@ export default function ForumPage() {
 
   const fetchPosts = useCallback(async () => {
     try {
-      const response = await fetch('/api/forum/posts')
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: '10'
+      })
+      
+      if (selectedCategory !== 'all') {
+        params.append('category', selectedCategory)
+      }
+      
+      if (searchTerm) {
+        params.append('search', searchTerm)
+      }
+
+      const response = await fetch(`/api/forum/posts?${params}`)
       if (response.ok) {
         const data = await response.json()
         setPosts(data.posts)
+        setTotalPages(data.pagination.pages)
         
         // Charger les votes de l'utilisateur connecté
         if (session?.user?.id) {
@@ -124,51 +142,11 @@ export default function ForumPage() {
     } finally {
       setLoading(false)
     }
-  }, [session?.user?.id])
-
-  const filterAndSortPosts = useCallback(() => {
-    let filtered = posts.filter(post => post.isPublished)
-
-    // Filtre par recherche
-    if (searchTerm) {
-      filtered = filtered.filter(post =>
-        post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        post.content.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    }
-
-    // Filtre par catégorie
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(post => post.category === selectedCategory)
-    }
-
-    // Tri
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'newest':
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        case 'oldest':
-          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-        case 'mostVoted':
-          return (b.votes?.reduce((sum, vote) => sum + vote.value, 0) || 0) - 
-                 (a.votes?.reduce((sum, vote) => sum + vote.value, 0) || 0)
-        case 'mostCommented':
-          return (b._count?.comments || 0) - (a._count?.comments || 0)
-        default:
-          return 0
-      }
-    })
-
-    setFilteredPosts(filtered)
-  }, [posts, searchTerm, selectedCategory, sortBy])
+  }, [session?.user?.id, currentPage, selectedCategory, searchTerm])
 
   useEffect(() => {
     fetchPosts()
-  }, [fetchPosts, session?.user?.id])
-
-  useEffect(() => {
-    filterAndSortPosts()
-  }, [filterAndSortPosts])
+  }, [fetchPosts])
 
   const getCategoryLabel = (category: string) => {
     switch (category) {
@@ -408,14 +386,14 @@ export default function ForumPage() {
             <div className="text-center py-12">
               <div className="text-gray-500">Chargement des posts...</div>
             </div>
-          ) : filteredPosts.length === 0 ? (
+          ) : posts.length === 0 ? (
             <div className="text-center py-12">
               <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun post trouvé</h3>
               <p className="text-gray-500">Essayez de modifier vos filtres ou créez le premier post !</p>
             </div>
           ) : (
-            filteredPosts.map((post) => (
+            posts.map((post) => (
               <Link
                 key={post.id}
                 href={`/forum/${post.id}`}
@@ -497,6 +475,17 @@ export default function ForumPage() {
             ))
           )}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-8">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        )}
       </div>
 
       {/* Modal de création de post */}

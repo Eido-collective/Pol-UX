@@ -7,6 +7,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import ArticleImage from '@/components/ArticleImage'
+import Pagination from '@/components/Pagination'
 
 interface Article {
   id: string
@@ -15,6 +16,7 @@ interface Article {
   excerpt?: string
   category: string
   imageUrl?: string
+  source?: string
   publishedAt?: string
   createdAt: string
   author: {
@@ -51,7 +53,8 @@ export default function ArticlesPage() {
     content: '',
     excerpt: '',
     category: 'ENVIRONMENT' as 'ENVIRONMENT' | 'SUSTAINABILITY' | 'CLIMATE_CHANGE' | 'BIODIVERSITY' | 'RENEWABLE_ENERGY' | 'CIRCULAR_ECONOMY' | 'GREEN_TECHNOLOGY' | 'CONSERVATION' | 'EDUCATION' | 'POLICY',
-    imageUrl: ''
+    imageUrl: '',
+    source: ''
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<{[key: string]: string}>({})
@@ -448,13 +451,19 @@ export default function ArticlesPage() {
                         
                         <Link href={`/articles/${article.id}`}>
                           <h2 className="text-xl font-semibold text-gray-900 mb-2 hover:text-green-600 transition-colors">
-                            {article.title}
+                            {article.title.length > 80 
+                              ? `${article.title.substring(0, 80)}...` 
+                              : article.title
+                            }
                           </h2>
                         </Link>
 
                         {article.excerpt && (
                           <p className="text-gray-600 mb-4 line-clamp-3">
-                            {article.excerpt}
+                            {article.excerpt.length > 150 
+                              ? `${article.excerpt.substring(0, 150)}...` 
+                              : article.excerpt
+                            }
                           </p>
                         )}
 
@@ -468,6 +477,8 @@ export default function ArticlesPage() {
                             <span>{formatDate(article.publishedAt || article.createdAt)}</span>
                           </div>
                         </div>
+
+
                       </div>
 
                       {/* Système de vote */}
@@ -519,28 +530,12 @@ export default function ArticlesPage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-center mt-8">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-                className="px-3 py-2 text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Précédent
-              </button>
-              
-              <span className="px-3 py-2 text-gray-700">
-                Page {currentPage} sur {totalPages}
-              </span>
-              
-              <button
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                disabled={currentPage === totalPages}
-                className="px-3 py-2 text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Suivant
-              </button>
-            </div>
+          <div className="mt-8">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
           </div>
         )}
 
@@ -661,13 +656,27 @@ export default function ArticlesPage() {
 
                   <div>
                     <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 mb-2">
-                      URL de l&apos;image
+                      URL de l&apos;image (optionnel)
                     </label>
                     <input
                       type="url"
                       id="imageUrl"
                       value={newArticle.imageUrl}
                       onChange={(e) => setNewArticle(prev => ({ ...prev, imageUrl: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      placeholder="https://..."
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="source" className="block text-sm font-medium text-gray-700 mb-2">
+                      URL de la source (optionnel)
+                    </label>
+                    <input
+                      type="url"
+                      id="source"
+                      value={newArticle.source}
+                      onChange={(e) => setNewArticle(prev => ({ ...prev, source: e.target.value }))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       placeholder="https://..."
                     />

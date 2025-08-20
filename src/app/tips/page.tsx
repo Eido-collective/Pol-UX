@@ -2,10 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { Lightbulb, Search, ThumbsUp, ThumbsDown, Leaf, Zap, Car, Utensils, Droplets, ShoppingBag, Plus, X } from 'lucide-react'
-import Image from 'next/image'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import toast from 'react-hot-toast'
+import TipImage from '@/components/TipImage'
+import Pagination from '@/components/Pagination'
 
 interface Tip {
   id: string
@@ -13,6 +15,7 @@ interface Tip {
   content: string
   category: string
   imageUrl?: string
+  source?: string
   createdAt: string
   isPublished: boolean
   author: {
@@ -35,29 +38,48 @@ export default function TipsPage() {
   const { data: session } = useSession()
   const router = useRouter()
   const [tips, setTips] = useState<Tip[]>([])
-  const [filteredTips, setFilteredTips] = useState<Tip[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [sortBy, setSortBy] = useState<string>('mostVoted')
   const [userVotes, setUserVotes] = useState<{[key: string]: number}>({})
   
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newTip, setNewTip] = useState({
     title: '',
     content: '',
-    category: 'WASTE_REDUCTION'
+    category: 'WASTE_REDUCTION',
+    imageUrl: '',
+    source: ''
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<{[key: string]: string}>({})
 
   const fetchTips = useCallback(async () => {
     try {
-      const response = await fetch('/api/tips')
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: '9'
+      })
+      
+      if (selectedCategory !== 'all') {
+        params.append('category', selectedCategory)
+      }
+      
+      if (searchTerm) {
+        params.append('search', searchTerm)
+      }
+
+      const response = await fetch(`/api/tips?${params}`)
       if (response.ok) {
         const data = await response.json()
         setTips(data.tips)
+        setTotalPages(data.pagination.pages)
         
         // Charger les votes de l'utilisateur connecté
         if (session?.user?.id) {
@@ -80,49 +102,11 @@ export default function TipsPage() {
     } finally {
       setLoading(false)
     }
-  }, [session?.user?.id])
-
-  const filterAndSortTips = useCallback(() => {
-    let filtered = tips.filter(tip => tip.isPublished)
-
-    // Filtre par recherche
-    if (searchTerm) {
-      filtered = filtered.filter(tip =>
-        tip.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        tip.content.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    }
-
-    // Filtre par catégorie
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(tip => tip.category === selectedCategory)
-    }
-
-    // Tri
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'newest':
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        case 'oldest':
-          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-        case 'mostVoted':
-          return (b.votes?.reduce((sum, vote) => sum + vote.value, 0) || 0) - 
-                 (a.votes?.reduce((sum, vote) => sum + vote.value, 0) || 0)
-        default:
-          return 0
-      }
-    })
-
-    setFilteredTips(filtered)
-  }, [tips, searchTerm, selectedCategory, sortBy])
+  }, [session?.user?.id, currentPage, selectedCategory, searchTerm])
 
   useEffect(() => {
     fetchTips()
-  }, [fetchTips, session?.user?.id])
-
-  useEffect(() => {
-    filterAndSortTips()
-  }, [filterAndSortTips])
+  }, [fetchTips])
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -263,7 +247,7 @@ export default function TipsPage() {
       if (response.ok) {
         await response.json()
         setIsModalOpen(false)
-        setNewTip({ title: '', content: '', category: 'WASTE_REDUCTION' })
+        setNewTip({ title: '', content: '', category: 'WASTE_REDUCTION', imageUrl: '', source: '' })
         setErrors({})
         fetchTips() // Recharger les tips
         toast.success('Conseil publié avec succès ! Il sera visible après modération.')
@@ -281,7 +265,7 @@ export default function TipsPage() {
 
   const closeModal = () => {
     setIsModalOpen(false)
-    setNewTip({ title: '', content: '', category: 'WASTE_REDUCTION' })
+    setNewTip({ title: '', content: '', category: 'WASTE_REDUCTION', imageUrl: '', source: '' })
     setErrors({})
   }
 
@@ -391,28 +375,26 @@ export default function TipsPage() {
           <div className="text-center py-12">
             <div className="text-gray-500">Chargement des conseils...</div>
           </div>
-        ) : filteredTips.length === 0 ? (
+        ) : tips.length === 0 ? (
           <div className="text-center py-12">
             <Lightbulb className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun conseil trouvé</h3>
             <p className="text-gray-500">Essayez de modifier vos filtres !</p>
           </div>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredTips.map((tip) => (
+                 ) : (
+           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+             {tips.map((tip) => (
               <div
                 key={tip.id}
                 className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
               >
-                {tip.imageUrl && (
-                  <div className="h-48 bg-gray-200">
-                    <Image
-                      src={tip.imageUrl}
-                      alt={tip.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
+                <TipImage
+                  src={tip.imageUrl}
+                  alt={tip.title}
+                  width={500}
+                  height={500}
+                  className="h-48 w-full"
+                />
                 
                 <div className="p-6">
                   <div className="flex items-center gap-2 mb-3">
@@ -424,13 +406,23 @@ export default function TipsPage() {
                     </span>
                   </div>
 
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    {tip.title}
-                  </h3>
+                  <Link href={`/tips/${tip.id}`}>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2 hover:text-green-600 transition-colors">
+                      {tip.title.length > 60 
+                        ? `${tip.title.substring(0, 60)}...` 
+                        : tip.title
+                      }
+                    </h3>
+                  </Link>
 
                   <p className="text-gray-600 mb-4 line-clamp-4">
-                    {tip.content}
+                    {tip.content.length > 120 
+                      ? `${tip.content.substring(0, 120)}...` 
+                      : tip.content
+                    }
                   </p>
+
+
 
                   <div className="flex items-center justify-between text-sm text-gray-500">
                     <div className="flex items-center gap-4">
@@ -473,10 +465,21 @@ export default function TipsPage() {
               </div>
             ))}
           </div>
-        )}
-      </div>
+                 )}
 
-      {/* Modal de création de conseil */}
+         {/* Pagination */}
+         {totalPages > 1 && (
+           <div className="mt-8">
+             <Pagination
+               currentPage={currentPage}
+               totalPages={totalPages}
+               onPageChange={setCurrentPage}
+             />
+           </div>
+         )}
+       </div>
+
+       {/* Modal de création de conseil */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-gray-900/20 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white/95 backdrop-blur-sm rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -558,6 +561,34 @@ export default function TipsPage() {
                      <p className="mt-1 text-sm text-red-600">{errors.content}</p>
                    )}
                  </div>
+
+                <div>
+                  <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 mb-2">
+                    URL de l&apos;image (optionnel)
+                  </label>
+                  <input
+                    type="url"
+                    id="imageUrl"
+                    value={newTip.imageUrl}
+                    onChange={(e) => setNewTip(prev => ({ ...prev, imageUrl: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    placeholder="https://..."
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="source" className="block text-sm font-medium text-gray-700 mb-2">
+                    URL de la source (optionnel)
+                  </label>
+                  <input
+                    type="url"
+                    id="source"
+                    value={newTip.source}
+                    onChange={(e) => setNewTip(prev => ({ ...prev, source: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    placeholder="https://..."
+                  />
+                </div>
 
                 <div className="flex items-center justify-end gap-3 pt-4">
                   <button
