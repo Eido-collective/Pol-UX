@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Mail, Globe, Building, User, MapPin, Clock, Send, CheckCircle, AlertCircle } from 'lucide-react'
+import { Mail, Globe, Building, User, MapPin, Clock, Send } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 export default function ContactPage() {
@@ -80,7 +80,7 @@ export default function ContactPage() {
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Contact</h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Nous sommes là pour vous accompagner dans votre démarche de numérique écoresponsable. 
-            N'hésitez pas à nous contacter !
+            N&apos;hésitez pas à nous contacter !
           </p>
         </div>
 
@@ -285,8 +285,8 @@ export default function ContactPage() {
             <div>
               <h3 className="text-lg font-semibold text-blue-900 mb-2">Information importante</h3>
               <p className="text-blue-800">
-                Pour toute question concernant le numérique écoresponsable, l'ajout d'initiatives sur la carte, 
-                ou la collaboration, n'hésitez pas à nous contacter. Nous répondons généralement sous 24-48h.
+                Pour toute question concernant le numérique écoresponsable, l&apos;ajout d&apos;initiatives sur la carte, 
+                ou la collaboration, n&apos;hésitez pas à nous contacter. Nous répondons généralement sous 24-48h.
               </p>
             </div>
           </div>

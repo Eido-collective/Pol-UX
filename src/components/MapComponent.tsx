@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
@@ -44,6 +44,7 @@ const MapComponent = ({ initiatives, selectedInitiativeId, onInitiativeClick }: 
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<L.Map | null>(null)
   const markersRef = useRef<{[key: string]: L.Marker}>({})
+  const [isMapLoaded, setIsMapLoaded] = useState(false)
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return
@@ -58,7 +59,7 @@ const MapComponent = ({ initiatives, selectedInitiativeId, onInitiativeClick }: 
 
     // Marquer la carte comme chargée après un délai pour s'assurer qu'elle est complètement initialisée
     setTimeout(() => {
-      map._loaded = true
+      setIsMapLoaded(true)
     }, 100)
     
     mapInstanceRef.current = map
@@ -72,19 +73,14 @@ const MapComponent = ({ initiatives, selectedInitiativeId, onInitiativeClick }: 
   }, [onInitiativeClick])
 
   useEffect(() => {
-    if (!mapInstanceRef.current) return
+    if (!mapInstanceRef.current || !isMapLoaded) return
 
     const map = mapInstanceRef.current
-
-    // Vérifier que la carte est bien initialisée
-    if (!map._loaded) {
-      return
-    }
 
     // Utiliser un délai pour éviter les conflits de rendu
     const timeoutId = setTimeout(() => {
       // Vérifier que la carte est dans un état stable
-      if (!map._loaded || !map.getContainer() || !map.getSize()) {
+      if (!map.getContainer() || !map.getSize()) {
         return
       }
 
@@ -252,7 +248,7 @@ const MapComponent = ({ initiatives, selectedInitiativeId, onInitiativeClick }: 
     return () => {
       clearTimeout(timeoutId)
     }
-  }, [initiatives])
+  }, [initiatives, isMapLoaded])
 
   // Effet pour centrer sur une initiative sélectionnée
   useEffect(() => {
@@ -267,7 +263,7 @@ const MapComponent = ({ initiatives, selectedInitiativeId, onInitiativeClick }: 
       const timeoutId = setTimeout(() => {
         try {
           // Vérifier que la carte est toujours valide
-          if (!map._loaded || !map.getContainer()) {
+          if (!map.getContainer()) {
             return
           }
 
