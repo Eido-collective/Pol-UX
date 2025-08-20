@@ -26,7 +26,7 @@ export default function AboutPage() {
           <p className="text-gray-700 leading-relaxed">
             PolUX est née de la conviction que le numérique peut et doit être un levier pour la transition écologique. 
             Notre plateforme vise à connecter les acteurs du numérique écoresponsable, à valoriser leurs initiatives 
-            et à faciliter l'accès aux ressources nécessaires pour un numérique plus durable.
+            et à faciliter l&apos;accès aux ressources nécessaires pour un numérique plus durable.
           </p>
         </div>
 
@@ -58,7 +58,7 @@ export default function AboutPage() {
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Innovation</h3>
             <p className="text-gray-600 text-sm">
-              Promouvoir l'innovation responsable et partager les bonnes pratiques du numérique durable.
+              Promouvoir l&apos;innovation responsable et partager les bonnes pratiques du numérique durable.
             </p>
           </div>
         </div>
@@ -77,7 +77,7 @@ export default function AboutPage() {
               <p className="text-gray-600 mb-2">Fondatrice et Responsable</p>
               <p className="text-gray-700 text-sm">
                 Passionnée par le numérique écoresponsable, Solène a créé PolUX pour connecter 
-                les acteurs de la transition numérique écologique et faciliter l'accès aux ressources.
+                les acteurs de la transition numérique écologique et faciliter l&apos;accès aux ressources.
               </p>
             </div>
             <div>
@@ -85,7 +85,7 @@ export default function AboutPage() {
               <p className="text-gray-600 mb-2">Entreprise Individuelle</p>
               <p className="text-gray-700 text-sm">
                 Structure porteuse du projet PolUX, spécialisée dans le développement de solutions 
-                numériques écoresponsables et l'accompagnement de la transition écologique.
+                numériques écoresponsables et l&apos;accompagnement de la transition écologique.
               </p>
             </div>
           </div>

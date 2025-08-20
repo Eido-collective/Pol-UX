@@ -23,7 +23,7 @@ export default function PrivacyPage() {
             <h2 className="text-2xl font-bold text-gray-900">Notre engagement</h2>
           </div>
           <p className="text-gray-700 leading-relaxed">
-            PolUX s'engage à protéger la confidentialité et la sécurité de vos données personnelles. 
+            PolUX s&apos;engage à protéger la confidentialité et la sécurité de vos données personnelles. 
             Cette politique de confidentialité décrit comment nous collectons, utilisons et protégeons 
             vos informations lorsque vous utilisez notre plateforme.
           </p>
@@ -73,11 +73,11 @@ export default function PrivacyPage() {
           </div>
           <div className="space-y-6">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Données d'identification</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Données d&apos;identification</h3>
               <ul className="space-y-2 text-gray-700">
                 <li>• Nom et prénom</li>
                 <li>• Adresse email</li>
-                <li>• Nom d'utilisateur</li>
+                <li>• Nom d&apos;utilisateur</li>
                 <li>• Mot de passe (chiffré)</li>
               </ul>
             </div>
@@ -119,7 +119,7 @@ export default function PrivacyPage() {
                 <span className="text-blue-600 text-sm font-bold">2</span>
               </div>
               <p>
-                <strong>Publication d'initiatives :</strong> Permettre aux utilisateurs de créer, modifier 
+                <strong>Publication d&apos;initiatives :</strong> Permettre aux utilisateurs de créer, modifier 
                 et gérer leurs initiatives sur la carte interactive.
               </p>
             </div>
@@ -128,7 +128,7 @@ export default function PrivacyPage() {
                 <span className="text-purple-600 text-sm font-bold">3</span>
               </div>
               <p>
-                <strong>Communication :</strong> Envoi d'informations importantes, notifications et 
+                <strong>Communication :</strong> Envoi d&apos;informations importantes, notifications et 
                 communications relatives au service.
               </p>
             </div>
@@ -137,7 +137,7 @@ export default function PrivacyPage() {
                 <span className="text-orange-600 text-sm font-bold">4</span>
               </div>
               <p>
-                <strong>Amélioration du service :</strong> Analyse des données d'usage pour améliorer 
+                <strong>Amélioration du service :</strong> Analyse des données d&apos;usage pour améliorer 
                 la qualité et les fonctionnalités de la plateforme.
               </p>
             </div>
@@ -153,7 +153,7 @@ export default function PrivacyPage() {
             </p>
             <ul className="space-y-2 ml-4">
               <li>• <strong>Exécution du contrat :</strong> Pour la fourniture des services demandés</li>
-              <li>• <strong>Intérêt légitime :</strong> Pour l'amélioration de nos services et la sécurité</li>
+              <li>• <strong>Intérêt légitime :</strong> Pour l&apos;amélioration de nos services et la sécurité</li>
               <li>• <strong>Consentement :</strong> Pour les communications marketing (si applicable)</li>
               <li>• <strong>Obligation légale :</strong> Pour respecter nos obligations réglementaires</li>
             </ul>
@@ -170,7 +170,7 @@ export default function PrivacyPage() {
             <ul className="space-y-2 ml-4">
               <li>• <strong>Notre équipe :</strong> Personnel autorisé de PolUX pour la gestion du service</li>
               <li>• <strong>Prestataires techniques :</strong> Vercel (hébergement) et Supabase (base de données)</li>
-              <li>• <strong>Autorités :</strong> En cas d'obligation légale ou de demande judiciaire</li>
+              <li>• <strong>Autorités :</strong> En cas d&apos;obligation légale ou de demande judiciaire</li>
               <li>• <strong>Utilisateurs :</strong> Informations publiques des initiatives (nom, description, localisation)</li>
             </ul>
           </div>
@@ -209,7 +209,7 @@ export default function PrivacyPage() {
                 <div className="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center">
                   <span className="text-blue-600 text-xs font-bold">1</span>
                 </div>
-                <span className="text-gray-700 font-medium">Droit d'accès</span>
+                <span className="text-gray-700 font-medium">Droit d&apos;accès</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-green-100 rounded-full flex items-center justify-center">
@@ -221,7 +221,7 @@ export default function PrivacyPage() {
                 <div className="w-4 h-4 bg-purple-100 rounded-full flex items-center justify-center">
                   <span className="text-purple-600 text-xs font-bold">3</span>
                 </div>
-                <span className="text-gray-700 font-medium">Droit à l'effacement</span>
+                <span className="text-gray-700 font-medium">Droit à l&apos;effacement</span>
               </div>
             </div>
             <div className="space-y-3">
@@ -235,7 +235,7 @@ export default function PrivacyPage() {
                 <div className="w-4 h-4 bg-red-100 rounded-full flex items-center justify-center">
                   <span className="text-red-600 text-xs font-bold">5</span>
                 </div>
-                <span className="text-gray-700 font-medium">Droit d'opposition</span>
+                <span className="text-gray-700 font-medium">Droit d&apos;opposition</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-indigo-100 rounded-full flex items-center justify-center">
@@ -267,13 +267,13 @@ export default function PrivacyPage() {
               protéger vos données personnelles contre :
             </p>
             <ul className="space-y-2 ml-4">
-              <li>• L'accès non autorisé</li>
+              <li>• L&apos;accès non autorisé</li>
               <li>• La divulgation accidentelle</li>
               <li>• La modification ou destruction non autorisée</li>
               <li>• La perte accidentelle</li>
             </ul>
             <p>
-              Ces mesures incluent le chiffrement des données, l'authentification sécurisée, 
+              Ces mesures incluent le chiffrement des données, l&apos;authentification sécurisée, 
               les sauvegardes régulières et la formation de notre personnel.
             </p>
           </div>
@@ -291,7 +291,7 @@ export default function PrivacyPage() {
               <p className="font-medium">Email : solene@pol-ux.fr</p>
               <p className="text-sm text-gray-600 mt-1">
                 Vous avez également le droit de déposer une réclamation auprès de la CNIL 
-                (Commission Nationale de l'Informatique et des Libertés) si vous estimez que 
+                (Commission Nationale de l&apos;Informatique et des Libertés) si vous estimez que 
                 vos droits ne sont pas respectés.
               </p>
             </div>

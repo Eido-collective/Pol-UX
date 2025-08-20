@@ -1,6 +1,6 @@
 'use client'
 
-import { Building, User, Mail, Globe, Shield, FileText } from 'lucide-react'
+import { Building, Mail, Globe, Shield, FileText } from 'lucide-react'
 
 export default function LegalPage() {
   return (
@@ -28,7 +28,7 @@ export default function LegalPage() {
               <p className="text-gray-600 mb-1">Entreprise Individuelle</p>
               <p className="text-gray-700">
                 Structure porteuse du projet PolUX, spécialisée dans le développement de solutions 
-                numériques écoresponsables et l'accompagnement de la transition écologique.
+                numériques écoresponsables et l&apos;accompagnement de la transition écologique.
               </p>
             </div>
             <div>
@@ -92,7 +92,7 @@ export default function LegalPage() {
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Vercel</h3>
               <p className="text-gray-700 mb-2">
-                Plateforme de déploiement et d'hébergement pour applications web modernes.
+                Plateforme de déploiement et d&apos;hébergement pour applications web modernes.
               </p>
               <p className="text-gray-600 text-sm">
                 Adresse : 340 S Lemon Ave #4133, Walnut, CA 91789, États-Unis
@@ -101,7 +101,7 @@ export default function LegalPage() {
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Supabase</h3>
               <p className="text-gray-700 mb-2">
-                Plateforme de base de données et d'authentification.
+                Plateforme de base de données et d&apos;authentification.
               </p>
               <p className="text-gray-600 text-sm">
                 Adresse : 201 Post Street, San Francisco, CA 94108, États-Unis
@@ -120,12 +120,12 @@ export default function LegalPage() {
           </div>
           <div className="space-y-4 text-gray-700">
             <p>
-              L'ensemble de ce site relève de la législation française et internationale sur le droit d'auteur 
+              L&apos;ensemble de ce site relève de la législation française et internationale sur le droit d&apos;auteur 
               et la propriété intellectuelle. Tous les droits de reproduction sont réservés, y compris pour 
               les documents téléchargeables et les représentations iconographiques et photographiques.
             </p>
             <p>
-              La reproduction de tout ou partie de ce site sur un support électronique quel qu'il soit 
+              La reproduction de tout ou partie de ce site sur un support électronique quel qu&apos;il soit 
               est formellement interdite sauf autorisation expresse du directeur de la publication.
             </p>
             <p>
@@ -145,13 +145,13 @@ export default function LegalPage() {
             </p>
             <p>
               Si vous constatez une lacune, erreur ou ce qui parait être un dysfonctionnement, merci de 
-              bien vouloir le signaler par email à l'adresse solene@pol-ux.fr, en décrivant le problème 
+              bien vouloir le signaler par email à l&apos;adresse solene@pol-ux.fr, en décrivant le problème 
               de la manière la plus précise possible.
             </p>
             <p>
-              Tout contenu téléchargé se fait aux risques et périls de l'utilisateur et sous sa seule 
-              responsabilité. En conséquence, PolUX ne saurait être tenu responsable d'un quelconque 
-              dommage subi par l'ordinateur de l'utilisateur ou d'une quelconque perte de données 
+              Tout contenu téléchargé se fait aux risques et périls de l&apos;utilisateur et sous sa seule 
+              responsabilité. En conséquence, PolUX ne saurait être tenu responsable d&apos;un quelconque 
+              dommage subi par l&apos;ordinateur de l&apos;utilisateur ou d&apos;une quelconque perte de données 
               consécutives au téléchargement.
             </p>
           </div>
@@ -162,12 +162,12 @@ export default function LegalPage() {
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Liens hypertextes</h2>
           <div className="space-y-4 text-gray-700">
             <p>
-              Les liens hypertextes mis en place dans le cadre du présent site web en direction d'autres 
+              Les liens hypertextes mis en place dans le cadre du présent site web en direction d&apos;autres 
               ressources présentes sur le réseau Internet ne sauraient engager la responsabilité de PolUX.
             </p>
             <p>
               Les utilisateurs et visiteurs du site web ne peuvent pas mettre en place un hyperlien 
-              en direction de ce site sans l'autorisation expresse et préalable de PolUX.
+              en direction de ce site sans l&apos;autorisation expresse et préalable de PolUX.
             </p>
           </div>
         </div>
@@ -177,7 +177,7 @@ export default function LegalPage() {
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Droit applicable</h2>
           <div className="space-y-4 text-gray-700">
             <p>
-              Tout litige en relation avec l'utilisation du site PolUX est soumis au droit français. 
+              Tout litige en relation avec l&apos;utilisation du site PolUX est soumis au droit français. 
               Hormis les cas où la loi ne le permet pas, il est fait attribution exclusive de juridiction 
               aux tribunaux compétents de France.
             </p>

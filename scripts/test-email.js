@@ -5,21 +5,21 @@ async function testEmail() {
   console.log('🧪 Test de la configuration SMTP...')
   
   // Vérifier les variables d'environnement
-  console.log('📧 GMAIL_USER:', process.env.GMAIL_USER ? '✅ Configuré' : '❌ Manquant')
-  console.log('🔑 GMAIL_APP_PASSWORD:', process.env.GMAIL_APP_PASSWORD ? '✅ Configuré' : '❌ Manquant')
+  console.log('📧 SMTP_USER:', process.env.SMTP_USER ? '✅ Configuré' : '❌ Manquant')
+  console.log('🔑 SMTP_PASSWORD:', process.env.SMTP_PASSWORD ? '✅ Configuré' : '❌ Manquant')
   
-  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASSWORD) {
     console.log('❌ Variables d\'environnement manquantes. Vérifiez votre fichier .env')
     return
   }
 
   try {
     // Créer le transporteur
-    const transporter = nodemailer.createTransporter({
+    const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD,
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD,
       },
     })
 
@@ -31,7 +31,7 @@ async function testEmail() {
     // Envoyer un email de test
     console.log('📤 Envoi d\'un email de test...')
     const mailOptions = {
-      from: process.env.GMAIL_USER,
+      from: process.env.SMTP_USER,
       to: 'solene@pol-ux.fr',
       subject: 'Test SMTP PolUX',
       html: `

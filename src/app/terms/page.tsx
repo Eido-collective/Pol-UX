@@ -8,9 +8,9 @@ export default function TermsPage() {
       <div className="max-w-4xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Conditions d'utilisation</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Conditions d&apos;utilisation</h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Conditions générales d'utilisation de la plateforme PolUX
+            Conditions générales d&apos;utilisation de la plateforme PolUX
           </p>
         </div>
 
@@ -23,9 +23,9 @@ export default function TermsPage() {
             <h2 className="text-2xl font-bold text-gray-900">Présentation</h2>
           </div>
           <p className="text-gray-700 leading-relaxed">
-            Les présentes conditions générales d'utilisation (CGU) régissent l'utilisation de la plateforme 
-            PolUX, accessible à l'adresse www.pol-ux.fr. En utilisant cette plateforme, vous acceptez 
-            d'être lié par ces conditions.
+            Les présentes conditions générales d&apos;utilisation (CGU) régissent l&apos;utilisation de la plateforme 
+            PolUX, accessible à l&apos;adresse www.pol-ux.fr. En utilisant cette plateforme, vous acceptez 
+            d&apos;être lié par ces conditions.
           </p>
         </div>
 
@@ -39,7 +39,7 @@ export default function TermsPage() {
             </div>
             <div>
               <strong>Utilisateur :</strong> Toute personne qui utilise la plateforme PolUX, 
-              qu'elle soit inscrite ou non.
+              qu&apos;elle soit inscrite ou non.
             </div>
             <div>
               <strong>Initiative :</strong> Contenu créé par un utilisateur décrivant un projet, 
@@ -61,8 +61,8 @@ export default function TermsPage() {
           </div>
           <div className="space-y-4 text-gray-700">
             <p>
-              En accédant et en utilisant la plateforme PolUX, vous acceptez d'être lié par ces 
-              conditions d'utilisation. Si vous n'acceptez pas ces conditions, veuillez ne pas 
+              En accédant et en utilisant la plateforme PolUX, vous acceptez d&apos;être lié par ces 
+              conditions d&apos;utilisation. Si vous n&apos;acceptez pas ces conditions, veuillez ne pas 
               utiliser la plateforme.
             </p>
             <p>
@@ -91,7 +91,7 @@ export default function TermsPage() {
               <ul className="space-y-2 text-gray-700 ml-4">
                 <li>• Publier du contenu illégal, diffamatoire ou offensant</li>
                 <li>• Violer les droits de propriété intellectuelle</li>
-                <li>• Tenter d'accéder aux systèmes de manière non autorisée</li>
+                <li>• Tenter d&apos;accéder aux systèmes de manière non autorisée</li>
                 <li>• Utiliser la plateforme à des fins commerciales non autorisées</li>
                 <li>• Publier des informations personnelles sans consentement</li>
               </ul>
@@ -150,7 +150,7 @@ export default function TermsPage() {
                 <li>• Contenu illégal ou diffamatoire</li>
                 <li>• Spam ou publicité non autorisée</li>
                 <li>• Contenu offensant ou discriminatoire</li>
-                <li>• Violation de droits d'auteur</li>
+                <li>• Violation de droits d&apos;auteur</li>
               </ul>
             </div>
           </div>
@@ -162,11 +162,11 @@ export default function TermsPage() {
           <div className="space-y-4 text-gray-700">
             <p>
               <strong>Contenu de PolUX :</strong> La plateforme et son contenu original sont protégés 
-              par les droits d'auteur. Toute reproduction sans autorisation est interdite.
+              par les droits d&apos;auteur. Toute reproduction sans autorisation est interdite.
             </p>
             <p>
               <strong>Contenu utilisateur :</strong> Vous conservez vos droits sur le contenu que vous 
-              publiez, mais accordez à PolUX une licence non exclusive pour l'utiliser sur la plateforme.
+              publiez, mais accordez à PolUX une licence non exclusive pour l&apos;utiliser sur la plateforme.
             </p>
             <p>
               <strong>Marques :</strong> Les marques et logos utilisés appartiennent à leurs propriétaires respectifs.
@@ -184,8 +184,8 @@ export default function TermsPage() {
           </div>
           <div className="space-y-4 text-gray-700">
             <p>
-              PolUX s'efforce de maintenir la plateforme accessible et fonctionnelle, mais ne peut 
-              garantir une disponibilité continue ou l'absence d'erreurs.
+              PolUX s&apos;efforce de maintenir la plateforme accessible et fonctionnelle, mais ne peut 
+              garantir une disponibilité continue ou l&apos;absence d&apos;erreurs.
             </p>
             <p>
               PolUX ne peut être tenu responsable :
@@ -256,7 +256,7 @@ export default function TermsPage() {
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Contact</h2>
           <div className="space-y-4 text-gray-700">
             <p>
-              Pour toute question concernant ces conditions d'utilisation, contactez-nous :
+              Pour toute question concernant ces conditions d&apos;utilisation, contactez-nous :
             </p>
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">

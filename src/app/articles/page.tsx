@@ -241,7 +241,8 @@ export default function ArticlesPage() {
           content: '',
           excerpt: '',
           category: 'ENVIRONMENT',
-          imageUrl: ''
+          imageUrl: '',
+          source: ''
         })
         setErrors({})
         fetchArticles() // Recharger les articles
@@ -265,7 +266,8 @@ export default function ArticlesPage() {
       content: '',
       excerpt: '',
       category: 'ENVIRONMENT',
-      imageUrl: ''
+      imageUrl: '',
+      source: ''
     })
     setErrors({})
   }
