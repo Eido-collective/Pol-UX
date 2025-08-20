@@ -1,8 +1,11 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { MessageSquare, ChevronUp, ChevronDown, Plus, Search } from 'lucide-react'
+import { MessageSquare, ChevronUp, ChevronDown, Plus, Search, X } from 'lucide-react'
 import Link from 'next/link'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import toast from 'react-hot-toast'
 
 interface ForumPost {
   id: string
@@ -10,7 +13,7 @@ interface ForumPost {
   content: string
   category: string
   createdAt: string
-  isApproved: boolean
+  isPublished: boolean
   author: {
     name: string
     username: string
@@ -27,7 +30,7 @@ interface ForumComment {
   id: string
   content: string
   createdAt: string
-  isApproved: boolean
+  isPublished: boolean
   author: {
     name: string
     username: string
@@ -42,6 +45,8 @@ interface Vote {
 }
 
 export default function ForumPage() {
+  const { data: session } = useSession()
+  const router = useRouter()
   const [posts, setPosts] = useState<ForumPost[]>([])
   const [filteredPosts, setFilteredPosts] = useState<ForumPost[]>([])
   const [loading, setLoading] = useState(true)
@@ -49,9 +54,80 @@ export default function ForumPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [sortBy, setSortBy] = useState<string>('mostVoted')
   const [userVotes, setUserVotes] = useState<{[key: string]: number}>({})
+  
+  // Modal states
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [newPost, setNewPost] = useState({
+    title: '',
+    content: '',
+    category: 'GENERAL'
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errors, setErrors] = useState<{[key: string]: string}>({})
+
+  // Bloquer le scroll quand la modale est ouverte
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+
+    // Nettoyer lors du démontage du composant
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isModalOpen])
+
+  // Fermer la modale avec Échap
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isModalOpen) {
+        closeModal()
+      }
+    }
+
+    if (isModalOpen) {
+      document.addEventListener('keydown', handleEscape)
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isModalOpen])
+
+  const fetchPosts = useCallback(async () => {
+    try {
+      const response = await fetch('/api/forum/posts')
+      if (response.ok) {
+        const data = await response.json()
+        setPosts(data.posts)
+        
+        // Charger les votes de l'utilisateur connecté
+        if (session?.user?.id) {
+          const userVotesData: {[key: string]: number} = {}
+          
+          data.posts.forEach((post: ForumPost) => {
+            if (post.votes) {
+              const userVote = post.votes.find((vote: Vote) => vote.userId === session.user.id)
+              if (userVote) {
+                userVotesData[post.id] = userVote.value
+              }
+            }
+          })
+          
+          setUserVotes(userVotesData)
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des posts:', error)
+    } finally {
+      setLoading(false)
+    }
+  }, [session?.user?.id])
 
   const filterAndSortPosts = useCallback(() => {
-    let filtered = posts.filter(post => post.isApproved)
+    let filtered = posts.filter(post => post.isPublished)
 
     // Filtre par recherche
     if (searchTerm) {
@@ -88,25 +164,11 @@ export default function ForumPage() {
 
   useEffect(() => {
     fetchPosts()
-  }, [])
+  }, [fetchPosts, session?.user?.id])
 
   useEffect(() => {
     filterAndSortPosts()
   }, [filterAndSortPosts])
-
-  const fetchPosts = async () => {
-    try {
-      const response = await fetch('/api/forum/posts')
-      if (response.ok) {
-        const data = await response.json()
-        setPosts(data.posts)
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des posts:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const getCategoryLabel = (category: string) => {
     switch (category) {
@@ -165,10 +227,112 @@ export default function ForumPage() {
         
         // Recharger les posts pour mettre à jour les compteurs
         fetchPosts()
+      } else {
+        const errorData = await response.json()
+        toast.error(errorData.error || 'Erreur lors du vote')
       }
     } catch (error) {
       console.error('Erreur lors du vote:', error)
+      toast.error('Erreur lors du vote')
     }
+  }
+
+  const handleCreatePost = () => {
+    if (!session) {
+      toast.error('Vous devez être connecté pour créer un post')
+      router.push('/login')
+      return
+    }
+    
+    setIsModalOpen(true)
+  }
+
+  const validateForm = () => {
+    const newErrors: {[key: string]: string} = {}
+    
+    if (!newPost.title.trim()) {
+      newErrors.title = 'Le titre est obligatoire'
+    } else if (newPost.title.trim().length < 5) {
+      newErrors.title = 'Le titre doit contenir au moins 5 caractères'
+    }
+    
+    if (!newPost.content.trim()) {
+      newErrors.content = 'Le contenu est obligatoire'
+    } else if (newPost.content.trim().length < 20) {
+      newErrors.content = 'Le contenu doit contenir au moins 20 caractères'
+    }
+    
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const validateField = (field: string, value: string) => {
+    const newErrors = { ...errors }
+    
+    if (field === 'title') {
+      if (!value.trim()) {
+        newErrors.title = 'Le titre est obligatoire'
+      } else if (value.trim().length < 5) {
+        newErrors.title = 'Le titre doit contenir au moins 5 caractères'
+      } else {
+        delete newErrors.title
+      }
+    }
+    
+    if (field === 'content') {
+      if (!value.trim()) {
+        newErrors.content = 'Le contenu est obligatoire'
+      } else if (value.trim().length < 20) {
+        newErrors.content = 'Le contenu doit contenir au moins 20 caractères'
+      } else {
+        delete newErrors.content
+      }
+    }
+    
+    setErrors(newErrors)
+  }
+
+  const handleSubmitPost = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!validateForm()) {
+      return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      const response = await fetch('/api/forum/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newPost),
+      })
+
+      if (response.ok) {
+        await response.json()
+        setIsModalOpen(false)
+        setNewPost({ title: '', content: '', category: 'GENERAL' })
+        setErrors({})
+        fetchPosts() // Recharger les posts
+        toast.success('Post publié avec succès ! Il sera visible après modération.')
+      } else {
+        const errorData = await response.json()
+        toast.error(errorData.error || 'Erreur lors de la publication du post')
+      }
+    } catch (error) {
+      console.error('Erreur lors de la publication du post:', error)
+      toast.error('Erreur lors de la publication du post')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const closeModal = () => {
+    setIsModalOpen(false)
+    setNewPost({ title: '', content: '', category: 'GENERAL' })
+    setErrors({})
   }
 
   return (
@@ -181,7 +345,10 @@ export default function ForumPage() {
               <h1 className="text-2xl font-bold text-gray-900">Forum Collaboratif</h1>
               <p className="text-gray-600">Échangez avec la communauté écologique</p>
             </div>
-            <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2">
+            <button 
+              onClick={handleCreatePost}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+            >
               <Plus className="h-4 w-4" />
               Nouveau post
             </button>
@@ -331,6 +498,123 @@ export default function ForumPage() {
           )}
         </div>
       </div>
+
+      {/* Modal de création de post */}
+      {isModalOpen && (
+        <div 
+          className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={closeModal} // Fermer en cliquant sur le backdrop
+        >
+          <div 
+            className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()} // Empêcher la fermeture en cliquant sur la modale
+          >
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Nouveau Post</h2>
+                <button
+                  onClick={closeModal}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmitPost} className="space-y-6">
+                                 <div>
+                   <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+                     Titre *
+                   </label>
+                   <input
+                     type="text"
+                     id="title"
+                     value={newPost.title}
+                                           onChange={(e) => {
+                        setNewPost(prev => ({ ...prev, title: e.target.value }))
+                        validateField('title', e.target.value)
+                      }}
+                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                       errors.title ? 'border-red-500' : 'border-gray-300'
+                     }`}
+                     placeholder="Titre de votre post..."
+                     required
+                   />
+                   {errors.title && (
+                     <p className="mt-1 text-sm text-red-600">{errors.title}</p>
+                   )}
+                 </div>
+
+                <div>
+                  <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+                    Catégorie *
+                  </label>
+                  <select
+                    id="category"
+                    value={newPost.category}
+                    onChange={(e) => setNewPost(prev => ({ ...prev, category: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    required
+                  >
+                    <option value="GENERAL">Général</option>
+                    <option value="EVENTS">Événements</option>
+                    <option value="PROJECTS">Projets</option>
+                    <option value="TIPS">Conseils</option>
+                    <option value="NEWS">Actualités</option>
+                    <option value="DISCUSSION">Discussion</option>
+                  </select>
+                </div>
+
+                                 <div>
+                   <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
+                     Contenu *
+                   </label>
+                   <textarea
+                     id="content"
+                     value={newPost.content}
+                                           onChange={(e) => {
+                        setNewPost(prev => ({ ...prev, content: e.target.value }))
+                        validateField('content', e.target.value)
+                      }}
+                     rows={6}
+                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none ${
+                       errors.content ? 'border-red-500' : 'border-gray-300'
+                     }`}
+                     placeholder="Contenu de votre post..."
+                     required
+                   />
+                   {errors.content && (
+                     <p className="mt-1 text-sm text-red-600">{errors.content}</p>
+                   )}
+                 </div>
+
+                <div className="flex items-center justify-end gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={closeModal}
+                    className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                  >
+                    Annuler
+                  </button>
+                                     <button
+                     type="submit"
+                     disabled={isSubmitting || Object.keys(errors).length > 0}
+                     className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center gap-2"
+                   >
+                     {isSubmitting ? (
+                       <>
+                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                         Publication...
+                       </>
+                     ) : (
+                       'Publier le post'
+                     )}
+                   </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

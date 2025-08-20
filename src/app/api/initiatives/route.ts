@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 
     // Construire les filtres
     const where: Prisma.InitiativeWhereInput = {
-      isApproved: true
+      isPublished: true
     }
 
     if (type && type !== 'all') {
@@ -122,8 +122,8 @@ export async function POST(request: NextRequest) {
         contactEmail,
         contactPhone,
         imageUrl,
-        authorId: session.user.id,
-        isApproved: session.user.role === 'ADMIN'
+        authorId: session.user.id
+        // isPublished est par défaut à true dans le schéma
       },
       include: {
         author: {

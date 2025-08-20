@@ -3,8 +3,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { ArrowLeft, MessageSquare, ChevronUp, ChevronDown, User, Calendar, Send, Loader2, Trash2, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, ChevronUp, ChevronDown, User, Calendar, MessageSquare, Trash2, Send, Loader2 } from 'lucide-react'
 import Link from 'next/link'
+import toast from 'react-hot-toast'
 
 interface Vote {
   id: string
@@ -55,7 +56,7 @@ interface ForumPost {
   }
 }
 
-export default function ForumPostPage() {
+export default function ForumPostDetailPage() {
   const params = useParams()
   const { data: session } = useSession()
   const [post, setPost] = useState<ForumPost | null>(null)
@@ -65,7 +66,6 @@ export default function ForumPostPage() {
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [replyContent, setReplyContent] = useState('')
   const [userVotes, setUserVotes] = useState<{[key: string]: number}>({})
-  const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [commentToDelete, setCommentToDelete] = useState<string | null>(null)
 
   const fetchPost = useCallback(async () => {
@@ -74,15 +74,56 @@ export default function ForumPostPage() {
       if (response.ok) {
         const data = await response.json()
         setPost(data.post)
+        
+        // Charger les votes de l'utilisateur
+        if (session?.user?.id) {
+          const userVotesData: {[key: string]: number} = {}
+          
+          // Votes sur le post
+          if (data.post.votes) {
+            const userVote = data.post.votes.find((vote: Vote) => vote.userId === session.user.id)
+            if (userVote) {
+              userVotesData[data.post.id] = userVote.value
+            }
+          }
+          
+          // Votes sur les commentaires
+          if (data.post.comments) {
+            data.post.comments.forEach((comment: Comment) => {
+              if (comment.votes) {
+                const userVote = comment.votes.find((vote: Vote) => vote.userId === session.user.id)
+                if (userVote) {
+                  userVotesData[comment.id] = userVote.value
+                }
+              }
+              
+              // Votes sur les réponses
+              if (comment.replies) {
+                comment.replies.forEach((reply: Reply) => {
+                  if (reply.votes) {
+                    const userVote = reply.votes.find((vote: Vote) => vote.userId === session.user.id)
+                    if (userVote) {
+                      userVotesData[reply.id] = userVote.value
+                    }
+                  }
+                })
+              }
+            })
+          }
+          
+          setUserVotes(userVotesData)
+        }
       } else {
         console.error('Erreur lors du chargement du post')
+        toast.error('Erreur lors du chargement du post')
       }
     } catch (error) {
       console.error('Erreur:', error)
+      toast.error('Erreur lors du chargement du post')
     } finally {
       setLoading(false)
     }
-  }, [params.id])
+  }, [params.id, session?.user?.id])
 
   useEffect(() => {
     if (params.id) {
@@ -107,11 +148,14 @@ export default function ForumPostPage() {
       if (response.ok) {
         setNewComment('')
         fetchPost() // Recharger le post pour afficher le nouveau commentaire
+        toast.success('Commentaire ajouté avec succès !')
       } else {
-        console.error('Erreur lors de l\'ajout du commentaire')
+        const errorData = await response.json()
+        toast.error(errorData.error || 'Erreur lors de l\'ajout du commentaire')
       }
     } catch (error) {
       console.error('Erreur:', error)
+      toast.error('Erreur lors de l\'ajout du commentaire')
     } finally {
       setSubmitting(false)
     }
@@ -138,11 +182,14 @@ export default function ForumPostPage() {
         setReplyContent('')
         setReplyingTo(null)
         fetchPost() // Recharger le post pour afficher la nouvelle réponse
+        toast.success('Réponse ajoutée avec succès !')
       } else {
-        console.error('Erreur lors de l\'ajout de la réponse')
+        const errorData = await response.json()
+        toast.error(errorData.error || 'Erreur lors de l\'ajout de la réponse')
       }
     } catch (error) {
       console.error('Erreur:', error)
+      toast.error('Erreur lors de l\'ajout de la réponse')
     } finally {
       setSubmitting(false)
     }
@@ -173,46 +220,36 @@ export default function ForumPostPage() {
         
         // Recharger le post pour mettre à jour les compteurs
         fetchPost()
+      } else {
+        const errorData = await response.json()
+        toast.error(errorData.error || 'Erreur lors du vote')
       }
     } catch (error) {
       console.error('Erreur lors du vote:', error)
+      toast.error('Erreur lors du vote')
     }
   }
 
   const handleDeleteComment = async (commentId: string) => {
     if (!session) return
 
-    // Ouvrir la modal de confirmation
-    setCommentToDelete(commentId)
-    setShowDeleteModal(true)
-  }
-
-  const confirmDelete = async () => {
-    if (!commentToDelete) return
-
     try {
-      const response = await fetch(`/api/forum/comments/${commentToDelete}/delete`, {
+      const response = await fetch(`/api/forum/comments/${commentId}/delete`, {
         method: 'DELETE',
       })
 
       if (response.ok) {
         // Recharger le post pour mettre à jour l'affichage
         fetchPost()
-        setShowDeleteModal(false)
-        setCommentToDelete(null)
+        toast.success('Commentaire supprimé avec succès !')
       } else {
         const errorData = await response.json()
-        alert(errorData.error || 'Erreur lors de la suppression')
+        toast.error(errorData.error || 'Erreur lors de la suppression du commentaire')
       }
     } catch (error) {
-      console.error('Erreur lors de la suppression:', error)
-      alert('Erreur lors de la suppression du commentaire')
+      console.error('Erreur lors de la suppression du commentaire:', error)
+      toast.error('Erreur lors de la suppression du commentaire')
     }
-  }
-
-  const cancelDelete = () => {
-    setShowDeleteModal(false)
-    setCommentToDelete(null)
   }
 
   const formatDate = (dateString: string) => {
@@ -223,6 +260,29 @@ export default function ForumPostPage() {
       hour: '2-digit',
       minute: '2-digit'
     })
+  }
+
+  const getVoteCount = (votes: Vote[]) => {
+    return votes?.reduce((sum, vote) => sum + vote.value, 0) || 0
+  }
+
+  const getSortedComments = (comments: Comment[]) => {
+    if (!comments) return []
+    
+    const sorted = [...comments]
+    // Supprimer les variables et fonctions inutilisées
+    // const [sortBy, setSortBy] = useState<'newest' | 'mostVoted'>('mostVoted')
+    // if (sortBy === 'mostVoted') {
+    //   sorted.sort((a, b) => {
+    //     const aVotes = getVoteCount(a.votes)
+    //     const bVotes = getVoteCount(b.votes)
+    //     return bVotes - aVotes
+    //   })
+    // } else {
+      sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    // }
+    
+    return sorted
   }
 
   const getCategoryColor = (category: string) => {
@@ -319,38 +379,55 @@ export default function ForumPostPage() {
           {/* Actions sur le post */}
           <div className="mt-6 pt-4 border-t border-gray-200">
             <div className="flex items-center space-x-4">
-              <button 
-                onClick={() => handleVote('post', post.id, 1)}
-                className={`flex items-center space-x-1 transition-colors ${
-                  userVotes[post.id] === 1 
-                    ? 'text-orange-500' 
-                    : 'text-gray-600 hover:text-orange-500'
-                }`}
-              >
-                <ChevronUp className="h-4 w-4" />
-                <span>Voter</span>
-              </button>
-              <button 
-                onClick={() => handleVote('post', post.id, -1)}
-                className={`flex items-center space-x-1 transition-colors ${
-                  userVotes[post.id] === -1 
-                    ? 'text-blue-500' 
-                    : 'text-gray-600 hover:text-blue-500'
-                }`}
-              >
-                <ChevronDown className="h-4 w-4" />
-                <span>Voter contre</span>
-              </button>
+              <div className="flex items-center space-x-2">
+                <button 
+                  onClick={() => handleVote('post', post.id, 1)}
+                  className={`p-2 rounded-lg transition-colors ${
+                    userVotes[post.id] === 1 
+                      ? 'text-orange-500 bg-orange-50 border border-orange-200' 
+                      : 'text-gray-400 hover:text-orange-500 hover:bg-gray-50 border border-gray-200'
+                  }`}
+                >
+                  <ChevronUp className="h-4 w-4" />
+                </button>
+                <span className={`text-sm font-medium ${
+                  getVoteCount(post.votes) > 0 ? 'text-orange-500' : 
+                  getVoteCount(post.votes) < 0 ? 'text-blue-500' : 'text-gray-900'
+                }`}>
+                  {getVoteCount(post.votes)}
+                </span>
+                <button 
+                  onClick={() => handleVote('post', post.id, -1)}
+                  className={`p-2 rounded-lg transition-colors ${
+                    userVotes[post.id] === -1 
+                      ? 'text-blue-500 bg-blue-50 border border-blue-200' 
+                      : 'text-gray-400 hover:text-blue-500 hover:bg-gray-50 border border-gray-200'
+                  }`}
+                >
+                  <ChevronDown className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Section commentaires */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center space-x-2">
-            <MessageSquare className="h-5 w-5" />
-            <span>Commentaires ({post._count.comments})</span>
-          </h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-900 flex items-center space-x-2">
+              <MessageSquare className="h-5 w-5" />
+              <span>Commentaires ({post._count.comments})</span>
+            </h2>
+            {/* Supprimer les variables et fonctions inutilisées */}
+            {/* <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as 'newest' | 'mostVoted')}
+              className="px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
+            >
+              <option value="mostVoted">Plus populaires</option>
+              <option value="newest">Plus récents</option>
+            </select> */}
+          </div>
 
           {/* Formulaire de commentaire */}
           {session && (
@@ -396,7 +473,7 @@ export default function ForumPostPage() {
                 )}
               </div>
             ) : (
-                             post.comments.map((comment) => (
+              getSortedComments(post.comments).map((comment) => (
                  <div key={comment.id} className="bg-white border border-gray-200 rounded-lg shadow-sm">
                    {/* En-tête du commentaire */}
                    <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 rounded-t-lg">
@@ -438,28 +515,34 @@ export default function ForumPostPage() {
                    <div className="px-4 py-3 border-t border-gray-100 bg-gray-50 rounded-b-lg">
                      <div className="flex items-center justify-between">
                        <div className="flex items-center space-x-4">
-                         <button 
-                           onClick={() => handleVote('comment', comment.id, 1)}
-                           className={`flex items-center space-x-1 px-2 py-1 rounded transition-colors ${
-                             userVotes[comment.id] === 1 
-                               ? 'text-orange-500 bg-orange-50' 
-                               : 'text-gray-600 hover:text-orange-500 hover:bg-gray-100'
-                           }`}
-                         >
-                           <ChevronUp className="h-3 w-3" />
-                           <span className="text-xs">Voter</span>
-                         </button>
-                         <button 
-                           onClick={() => handleVote('comment', comment.id, -1)}
-                           className={`flex items-center space-x-1 px-2 py-1 rounded transition-colors ${
-                             userVotes[comment.id] === -1 
-                               ? 'text-blue-500 bg-blue-50' 
-                               : 'text-gray-600 hover:text-blue-500 hover:bg-gray-100'
-                           }`}
-                         >
-                           <ChevronDown className="h-3 w-3" />
-                           <span className="text-xs">Voter contre</span>
-                         </button>
+                         <div className="flex items-center space-x-1">
+                           <button 
+                             onClick={() => handleVote('comment', comment.id, 1)}
+                             className={`p-1 rounded transition-colors ${
+                               userVotes[comment.id] === 1 
+                                 ? 'text-orange-500 bg-orange-50' 
+                                 : 'text-gray-400 hover:text-orange-500 hover:bg-gray-100'
+                             }`}
+                           >
+                             <ChevronUp className="h-3 w-3" />
+                           </button>
+                           <span className={`text-xs font-medium ${
+                             getVoteCount(comment.votes) > 0 ? 'text-orange-500' : 
+                             getVoteCount(comment.votes) < 0 ? 'text-blue-500' : 'text-gray-900'
+                           }`}>
+                             {getVoteCount(comment.votes)}
+                           </span>
+                           <button 
+                             onClick={() => handleVote('comment', comment.id, -1)}
+                             className={`p-1 rounded transition-colors ${
+                               userVotes[comment.id] === -1 
+                                 ? 'text-blue-500 bg-blue-50' 
+                                 : 'text-gray-400 hover:text-blue-500 hover:bg-gray-100'
+                             }`}
+                           >
+                             <ChevronDown className="h-3 w-3" />
+                           </button>
+                         </div>
                          {session && (
                            <button
                              onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
@@ -570,28 +653,34 @@ export default function ForumPostPage() {
                              {/* Actions de la réponse */}
                              <div className="px-3 py-2 border-t border-gray-100 bg-gray-50 rounded-b-lg">
                                <div className="flex items-center space-x-3">
-                                 <button 
-                                   onClick={() => handleVote('comment', reply.id, 1)}
-                                   className={`flex items-center space-x-1 px-2 py-1 rounded transition-colors ${
-                                     userVotes[reply.id] === 1 
-                                       ? 'text-orange-500 bg-orange-50' 
-                                       : 'text-gray-600 hover:text-orange-500 hover:bg-gray-100'
-                                   }`}
-                                 >
-                                   <ChevronUp className="h-2 w-2" />
-                                   <span className="text-xs">Voter</span>
-                                 </button>
-                                 <button 
-                                   onClick={() => handleVote('comment', reply.id, -1)}
-                                   className={`flex items-center space-x-1 px-2 py-1 rounded transition-colors ${
-                                     userVotes[reply.id] === -1 
-                                       ? 'text-blue-500 bg-blue-50' 
-                                       : 'text-gray-600 hover:text-blue-500 hover:bg-gray-100'
-                                   }`}
-                                 >
-                                   <ChevronDown className="h-2 w-2" />
-                                   <span className="text-xs">Voter contre</span>
-                                 </button>
+                                 <div className="flex items-center space-x-1">
+                                   <button 
+                                     onClick={() => handleVote('comment', reply.id, 1)}
+                                     className={`p-1 rounded transition-colors ${
+                                       userVotes[reply.id] === 1 
+                                         ? 'text-orange-500 bg-orange-50' 
+                                         : 'text-gray-400 hover:text-orange-500 hover:bg-gray-100'
+                                     }`}
+                                   >
+                                     <ChevronUp className="h-2 w-2" />
+                                   </button>
+                                   <span className={`text-xs font-medium ${
+                                     getVoteCount(reply.votes) > 0 ? 'text-orange-500' : 
+                                     getVoteCount(reply.votes) < 0 ? 'text-blue-500' : 'text-gray-900'
+                                   }`}>
+                                     {getVoteCount(reply.votes)}
+                                   </span>
+                                   <button 
+                                     onClick={() => handleVote('comment', reply.id, -1)}
+                                     className={`p-1 rounded transition-colors ${
+                                       userVotes[reply.id] === -1 
+                                         ? 'text-blue-500 bg-blue-50' 
+                                         : 'text-gray-400 hover:text-blue-500 hover:bg-gray-100'
+                                     }`}
+                                   >
+                                     <ChevronDown className="h-2 w-2" />
+                                   </button>
+                                 </div>
                                </div>
                              </div>
                            </div>
@@ -607,47 +696,37 @@ export default function ForumPostPage() {
        </div>
 
        {/* Modal de confirmation de suppression */}
-       {showDeleteModal && (
-         <div className="fixed inset-0 bg-gray-900/20 backdrop-blur-sm flex items-center justify-center z-50">
-           <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl max-w-md w-full mx-4 border border-gray-200/50">
-                            {/* En-tête de la modal */}
-               <div className="flex items-center space-x-3 p-6 border-b border-gray-200/60">
-                 <div className="w-10 h-10 bg-red-100/80 rounded-full flex items-center justify-center backdrop-blur-sm">
-                   <AlertTriangle className="h-5 w-5 text-red-600" />
-                 </div>
-                 <div>
-                   <h3 className="text-lg font-semibold text-gray-900">
-                     Confirmer la suppression
-                   </h3>
-                   <p className="text-sm text-gray-500">
-                     Cette action est irréversible
-                   </p>
-                 </div>
-               </div>
-
-             {/* Contenu de la modal */}
-             <div className="p-6">
-               <p className="text-gray-700 mb-6">
-                 Êtes-vous sûr de vouloir supprimer ce commentaire ? 
-                 Cette action ne peut pas être annulée.
-               </p>
-
-               {/* Actions */}
-               <div className="flex items-center justify-end space-x-3">
-                 <button
-                   onClick={cancelDelete}
-                   className="px-4 py-2 text-gray-700 bg-gray-100/80 backdrop-blur-sm rounded-lg hover:bg-gray-200/90 transition-all duration-200 border border-gray-200/50"
-                 >
-                   Annuler
-                 </button>
-                 <button
-                   onClick={confirmDelete}
-                   className="px-4 py-2 bg-red-600/90 backdrop-blur-sm text-white rounded-lg hover:bg-red-700/90 transition-all duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl"
-                 >
-                   <Trash2 className="h-4 w-4" />
-                   <span>Supprimer</span>
-                 </button>
-               </div>
+       {commentToDelete && (
+         <div 
+           className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+           onClick={() => setCommentToDelete(null)} // Fermer en cliquant sur le backdrop
+         >
+           <div 
+             className="bg-white rounded-lg shadow-xl max-w-md w-full p-6"
+             onClick={(e) => e.stopPropagation()} // Empêcher la fermeture en cliquant sur la modale
+           >
+             <h3 className="text-lg font-semibold text-gray-900 mb-4">
+               Confirmer la suppression
+             </h3>
+             <p className="text-gray-600 mb-6">
+               Êtes-vous sûr de vouloir supprimer ce commentaire ? Cette action est irréversible.
+             </p>
+             <div className="flex items-center justify-end gap-3">
+               <button
+                 onClick={() => setCommentToDelete(null)}
+                 className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+               >
+                 Annuler
+               </button>
+               <button
+                 onClick={() => {
+                   handleDeleteComment(commentToDelete)
+                   setCommentToDelete(null)
+                 }}
+                 className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-lg transition-colors"
+               >
+                 Supprimer
+               </button>
              </div>
            </div>
          </div>

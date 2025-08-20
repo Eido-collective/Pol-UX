@@ -79,7 +79,7 @@ export async function POST(
         postId: id,
         parentId: parentId || null,
         authorId: session.user.id,
-        isApproved: true // Approuver automatiquement pour les tests
+        // isPublished est par défaut à true dans le schéma
       },
       include: {
         author: {

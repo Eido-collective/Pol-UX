@@ -20,7 +20,7 @@ export async function GET(
                 },
         comments: {
           where: { 
-            isApproved: true,
+            isPublished: true,
             parentId: null // Récupérer seulement les commentaires principaux
           },
           include: {
@@ -32,7 +32,7 @@ export async function GET(
               }
             },
             replies: {
-              where: { isApproved: true },
+              where: { isPublished: true },
               include: {
                 author: {
                   select: {

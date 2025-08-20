@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Leaf, MapPin, MessageSquare, Lightbulb, User, Calendar, TrendingUp, CheckCircle, Plus, X, Edit3, Trash2, AlertTriangle } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 interface DashboardStats {
   initiatives: number
@@ -47,12 +48,43 @@ export default function DashboardPage() {
   })
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
   const [userTasks, setUserTasks] = useState<UserTask[]>([])
-  const [showTaskForm, setShowTaskForm] = useState(false)
+  const [showTaskModal, setShowTaskModal] = useState(false)
   const [editingTask, setEditingTask] = useState<UserTask | null>(null)
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const [newTaskDescription, setNewTaskDescription] = useState('')
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [taskToDelete, setTaskToDelete] = useState<UserTask | null>(null)
+
+  // Bloquer le scroll quand une modale est ouverte
+  useEffect(() => {
+    if (showTaskModal) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+
+    // Nettoyer lors du démontage du composant
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [showTaskModal])
+
+  // Fermer la modale avec Échap
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showTaskModal) {
+        closeTaskModal()
+      }
+    }
+
+    if (showTaskModal) {
+      document.addEventListener('keydown', handleEscape)
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [showTaskModal])
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -139,33 +171,11 @@ export default function DashboardPage() {
   }
 
   // Fonctions pour gérer les tâches
-  const handleCreateTask = async () => {
-    if (!newTaskTitle.trim()) return
-
-    try {
-      const response = await fetch('/api/user-tasks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: newTaskTitle,
-          description: newTaskDescription
-        })
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setUserTasks([...userTasks, data.task])
-        setNewTaskTitle('')
-        setNewTaskDescription('')
-        setShowTaskForm(false)
-      } else {
-        const errorData = await response.json()
-        alert(errorData.error)
-      }
-    } catch (error) {
-      console.error('Erreur lors de la création de la tâche:', error)
-      alert('Erreur lors de la création de la tâche')
-    }
+  const handleCreateTask = () => {
+    setEditingTask(null)
+    setNewTaskTitle('')
+    setNewTaskDescription('')
+    setShowTaskModal(true)
   }
 
   const handleToggleTask = async (taskId: string, completed: boolean) => {
@@ -219,51 +229,73 @@ export default function DashboardPage() {
     setShowDeleteModal(true)
   }
 
-  const handleEditTask = async () => {
-    if (!editingTask || !newTaskTitle.trim()) return
-
-    try {
-      const response = await fetch(`/api/user-tasks/${editingTask.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: newTaskTitle,
-          description: newTaskDescription
-        })
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setUserTasks(userTasks.map(task => 
-          task.id === editingTask.id ? data.task : task
-        ))
-        setEditingTask(null)
-        setNewTaskTitle('')
-        setNewTaskDescription('')
-      }
-    } catch (error) {
-      console.error('Erreur lors de la modification de la tâche:', error)
-    }
-  }
-
-  const startEditTask = (task: UserTask) => {
+  const handleEditTask = (task: UserTask) => {
     setEditingTask(task)
     setNewTaskTitle(task.title)
     setNewTaskDescription(task.description || '')
+    setShowTaskModal(true)
   }
 
   const cancelEdit = () => {
+    setShowTaskModal(false)
     setEditingTask(null)
     setNewTaskTitle('')
     setNewTaskDescription('')
-    setShowTaskForm(false)
   }
 
-  const openCreateModal = () => {
-    setShowTaskForm(true)
+  const closeTaskModal = () => {
+    setShowTaskModal(false)
     setEditingTask(null)
     setNewTaskTitle('')
     setNewTaskDescription('')
+  }
+
+  const handleSubmitTask = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newTaskTitle.trim()) return
+
+    try {
+      if (editingTask) {
+        const response = await fetch(`/api/user-tasks/${editingTask.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: newTaskTitle,
+            description: newTaskDescription
+          })
+        })
+        if (response.ok) {
+          const data = await response.json()
+          setUserTasks(userTasks.map(task => task.id === editingTask.id ? data.task : task))
+          setEditingTask(null)
+          toast.success('Tâche modifiée avec succès !')
+        } else {
+          const errorData = await response.json()
+          toast.error(errorData.error || 'Erreur lors de la modification de la tâche')
+        }
+      } else {
+        const response = await fetch('/api/user-tasks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: newTaskTitle,
+            description: newTaskDescription
+          })
+        })
+        if (response.ok) {
+          const data = await response.json()
+          setUserTasks([...userTasks, data.task])
+          toast.success('Tâche créée avec succès !')
+        } else {
+          const errorData = await response.json()
+          toast.error(errorData.error || 'Erreur lors de la création de la tâche')
+        }
+      }
+      closeTaskModal()
+    } catch (error) {
+      console.error('Erreur lors de la soumission de la tâche:', error)
+      toast.error('Erreur lors de la soumission de la tâche')
+    }
   }
 
   return (
@@ -450,7 +482,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Mes tâches personnelles</h3>
               <button
-                onClick={openCreateModal}
+                onClick={handleCreateTask}
                 disabled={userTasks.length >= 5}
                 className="flex items-center gap-1 text-sm bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
               >
@@ -504,7 +536,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex gap-1">
                       <button
-                        onClick={() => startEditTask(task)}
+                        onClick={() => handleEditTask(task)}
                         className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
                         title="Modifier"
                       >
@@ -564,70 +596,75 @@ export default function DashboardPage() {
         )}
 
         {/* Modale de création/modification de tâche */}
-        {(showTaskForm || editingTask) && (
-          <div className="fixed inset-0 bg-gray-900/20 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl max-w-md w-full mx-4 border border-gray-200/50">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    {editingTask ? 'Modifier la tâche' : 'Nouvelle tâche'}
-                  </h3>
-                  <button
-                    onClick={cancelEdit}
-                    className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
+        {showTaskModal && (
+          <div 
+            className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={closeTaskModal} // Fermer en cliquant sur le backdrop
+          >
+            <div 
+              className="bg-white rounded-lg shadow-xl max-w-md w-full p-6"
+              onClick={(e) => e.stopPropagation()} // Empêcher la fermeture en cliquant sur la modale
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900">
+                  {editingTask ? 'Modifier la tâche' : 'Nouvelle tâche'}
+                </h2>
+                <button
+                  onClick={closeTaskModal}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmitTask} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Titre *
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Titre de la tâche"
+                    value={newTaskTitle}
+                    onChange={(e) => setNewTaskTitle(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    maxLength={100}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    {newTaskTitle.length}/100 caractères
+                  </p>
                 </div>
                 
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Titre *
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Titre de la tâche"
-                      value={newTaskTitle}
-                      onChange={(e) => setNewTaskTitle(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      maxLength={100}
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      {newTaskTitle.length}/100 caractères
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Description
-                    </label>
-                    <textarea
-                      placeholder="Description optionnelle"
-                      value={newTaskDescription}
-                      onChange={(e) => setNewTaskDescription(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      rows={3}
-                    />
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Description
+                  </label>
+                  <textarea
+                    placeholder="Description optionnelle"
+                    value={newTaskDescription}
+                    onChange={(e) => setNewTaskDescription(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    rows={3}
+                  />
                 </div>
 
                 <div className="flex gap-3 mt-6">
                   <button
-                    onClick={editingTask ? handleEditTask : handleCreateTask}
+                    type="submit"
                     disabled={!newTaskTitle.trim()}
                     className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-sm font-medium"
                   >
                     {editingTask ? 'Modifier' : 'Créer'}
                   </button>
                   <button
+                    type="button"
                     onClick={cancelEdit}
                     className="flex-1 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors text-sm font-medium"
                   >
                     Annuler
                   </button>
                 </div>
-              </div>
+              </form>
             </div>
           </div>
         )}

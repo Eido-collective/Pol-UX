@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 
     // Construire les filtres
     const where: Prisma.TipWhereInput = {
-      isApproved: true
+      isPublished: true
     }
 
     if (category && category !== 'all') {
@@ -111,8 +111,8 @@ export async function POST(request: NextRequest) {
         content,
         category,
         imageUrl,
-        authorId: session.user.id,
-        isApproved: session.user.role === 'ADMIN'
+        authorId: session.user.id
+        // isPublished est par défaut à true dans le schéma
       },
       include: {
         author: {

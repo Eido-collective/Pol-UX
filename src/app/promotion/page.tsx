@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Send, Loader2, CheckCircle, XCircle, Clock, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
+import toast from 'react-hot-toast'
 
 interface RoleRequest {
   id: string
@@ -68,14 +69,14 @@ export default function PromotionPage() {
         setReason('')
         setRequestedRole('CONTRIBUTOR')
         fetchUserRequests()
-        alert('Demande de promotion envoyée avec succès !')
+        toast.success('Demande de promotion envoyée avec succès !')
       } else {
         const errorData = await response.json()
-        alert(errorData.error || 'Erreur lors de l\'envoi de la demande')
+        toast.error(errorData.error || 'Erreur lors de l\'envoi de la demande')
       }
     } catch (error) {
       console.error('Erreur:', error)
-      alert('Erreur lors de l\'envoi de la demande')
+      toast.error('Erreur lors de l\'envoi de la demande')
     } finally {
       setSubmitting(false)
     }

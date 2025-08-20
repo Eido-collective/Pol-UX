@@ -27,6 +27,7 @@ interface Initiative {
 
 interface MapComponentProps {
   initiatives: Initiative[]
+  selectedInitiativeId?: string
 }
 
 // Fix pour les icônes Leaflet
@@ -37,15 +38,16 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 })
 
-const MapComponent = ({ initiatives }: MapComponentProps) => {
+const MapComponent = ({ initiatives, selectedInitiativeId }: MapComponentProps) => {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<L.Map | null>(null)
+  const markersRef = useRef<{[key: string]: L.Marker}>({})
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return
 
-    // Initialiser la carte centrée sur la France
-    const map = L.map(mapRef.current).setView([46.603354, 1.888334], 6)
+    // Initialiser la carte centrée sur la France avec un zoom adapté
+    const map = L.map(mapRef.current).setView([46.603354, 1.888334], 5)
 
     // Ajouter la couche de tuiles OpenStreetMap
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -108,11 +110,17 @@ const MapComponent = ({ initiatives }: MapComponentProps) => {
       })
     }
 
+    // Nettoyer les marqueurs stockés
+    markersRef.current = {}
+
     // Ajouter les marqueurs pour chaque initiative
     initiatives.forEach((initiative) => {
       const marker = L.marker([initiative.latitude, initiative.longitude], {
         icon: createCustomIcon(initiative.type)
       }).addTo(map)
+
+      // Stocker le marqueur
+      markersRef.current[initiative.id] = marker
 
       const getTypeLabel = (type: string) => {
         switch (type) {
@@ -170,15 +178,42 @@ const MapComponent = ({ initiatives }: MapComponentProps) => {
       const group = new L.FeatureGroup(initiatives.map(i => 
         L.marker([i.latitude, i.longitude])
       ))
-      map.fitBounds(group.getBounds().pad(0.1))
+      const bounds = group.getBounds()
+      
+      // Si les initiatives sont dispersées, ajuster la vue pour les voir toutes
+      if (bounds.isValid()) {
+        map.fitBounds(bounds.pad(0.2)) // Augmenter le padding pour mieux voir tous les points
+      } else {
+        // Si pas de bounds valides, centrer sur la France avec un zoom adapté
+        map.setView([46.603354, 1.888334], 5)
+      }
+    } else {
+      // Si aucune initiative, centrer sur la France
+      map.setView([46.603354, 1.888334], 5)
     }
 
   }, [initiatives])
 
+  // Effet pour centrer sur une initiative sélectionnée
+  useEffect(() => {
+    if (!mapInstanceRef.current || !selectedInitiativeId) return
+
+    const selectedInitiative = initiatives.find(i => i.id === selectedInitiativeId)
+    const marker = markersRef.current[selectedInitiativeId]
+
+    if (selectedInitiative && marker) {
+      // Centrer la carte sur l'initiative
+      mapInstanceRef.current.setView([selectedInitiative.latitude, selectedInitiative.longitude], 12)
+      
+      // Ouvrir la popup
+      marker.openPopup()
+    }
+  }, [selectedInitiativeId, initiatives])
+
   return (
     <div 
       ref={mapRef} 
-      className="w-full h-96 rounded-lg"
+      className="w-full h-[600px] rounded-lg"
       style={{ zIndex: 1 }}
     />
   )

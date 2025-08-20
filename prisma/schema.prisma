@@ -45,6 +45,19 @@ enum TipCategory {
   OTHER
 }
 
+enum ArticleCategory {
+  ENVIRONMENT
+  SUSTAINABILITY
+  CLIMATE_CHANGE
+  BIODIVERSITY
+  RENEWABLE_ENERGY
+  CIRCULAR_ECONOMY
+  GREEN_TECHNOLOGY
+  CONSERVATION
+  EDUCATION
+  POLICY
+}
+
 enum RoleRequestStatus {
   PENDING
   APPROVED
@@ -96,6 +109,7 @@ model User {
   forumPosts    ForumPost[]
   forumComments ForumComment[]
   tips          Tip[]
+  articles      Article[]
   votes         Vote[]
   roleRequests  RoleRequest[]
   processedRoleRequests RoleRequest[] @relation("AdminRoleRequests")
@@ -142,7 +156,7 @@ model Initiative {
   contactEmail String?
   contactPhone String?
   imageUrl    String?
-  isApproved  Boolean        @default(false)
+  isPublished Boolean        @default(true)
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 
@@ -155,7 +169,7 @@ model ForumPost {
   title       String
   content     String
   category    ForumCategory
-  isApproved  Boolean       @default(false)
+  isPublished Boolean       @default(true)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
@@ -168,7 +182,7 @@ model ForumPost {
 model ForumComment {
   id        String   @id @default(cuid())
   content   String
-  isApproved Boolean @default(false)
+  isPublished Boolean @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -191,12 +205,29 @@ model Tip {
   content     String
   category    TipCategory
   imageUrl    String?
-  isApproved  Boolean    @default(false)
+  isPublished Boolean    @default(true)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
   authorId    String
   author      User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  votes       Vote[]
+}
+
+model Article {
+  id          String         @id @default(cuid())
+  title       String
+  content     String         @db.Text
+  excerpt     String?
+  category    ArticleCategory
+  imageUrl    String?
+  isPublished Boolean        @default(true)
+  publishedAt DateTime?      @default(now())
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  authorId    String
+  author      User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
   votes       Vote[]
 }
 
@@ -213,10 +244,13 @@ model Vote {
   comment   ForumComment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
   tipId     String?
   tip       Tip?     @relation(fields: [tipId], references: [id], onDelete: Cascade)
+  articleId String?
+  article   Article? @relation(fields: [articleId], references: [id], onDelete: Cascade)
 
   @@unique([userId, postId])
   @@unique([userId, commentId])
   @@unique([userId, tipId])
+  @@unique([userId, articleId])
 }
 
 model UserTask {

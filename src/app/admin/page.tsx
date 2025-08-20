@@ -1,7 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Users, FileText, MessageSquare, Lightbulb, CheckCircle, XCircle, Eye, Shield, UserPlus } from 'lucide-react'
+import { Users, FileText, MessageSquare, Lightbulb, BookOpen, Eye, EyeOff, Trash2, UserPlus, Shield } from 'lucide-react'
+import Image from 'next/image'
+import toast from 'react-hot-toast'
+import ContentFilters from '@/components/ContentFilters'
+import ArticleImage from '@/components/ArticleImage'
 
 interface User {
   id: string
@@ -15,34 +19,74 @@ interface User {
 interface Initiative {
   id: string
   title: string
+  description: string
   type: string
   city: string
-  isApproved: boolean
+  address: string
+  isPublished: boolean
   createdAt: string
   author: {
     name: string
+    username: string
   }
+  startDate?: string
+  endDate?: string
+  website?: string
+  contactEmail?: string
+  contactPhone?: string
+  imageUrl?: string
 }
 
 interface ForumPost {
   id: string
   title: string
+  content: string
   category: string
-  isApproved: boolean
+  isPublished: boolean
   createdAt: string
   author: {
     name: string
+    username: string
+  }
+  _count: {
+    comments: number
+    votes: number
   }
 }
 
 interface Tip {
   id: string
   title: string
+  content: string
   category: string
-  isApproved: boolean
+  imageUrl?: string
+  isPublished: boolean
   createdAt: string
   author: {
     name: string
+    username: string
+  }
+  _count: {
+    votes: number
+  }
+}
+
+interface Article {
+  id: string
+  title: string
+  content: string
+  excerpt?: string
+  category: string
+  imageUrl?: string
+  isPublished: boolean
+  publishedAt?: string
+  createdAt: string
+  author: {
+    name: string
+    username: string
+  }
+  _count: {
+    votes: number
   }
 }
 
@@ -60,85 +104,194 @@ interface RoleRequest {
   requestedRole: string
 }
 
+type ContentType = 'initiatives' | 'posts' | 'tips' | 'articles'
+
+// Type pour les éléments avec _count
+type ContentWithCount = (Initiative | ForumPost | Tip | Article) & {
+  _count?: {
+    comments?: number
+    votes?: number
+  }
+}
+
+// Type pour les éléments avec propriétés optionnelles
+type ContentWithOptionalProps = (Initiative | ForumPost | Tip | Article) & {
+  description?: string
+  content?: string
+  excerpt?: string
+  category?: string
+  imageUrl?: string
+  type?: string
+  city?: string
+  address?: string
+  website?: string
+  contactEmail?: string
+  contactPhone?: string
+  startDate?: string
+  endDate?: string
+}
+
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState('users')
   const [roleRequests, setRoleRequests] = useState<RoleRequest[]>([])
   const [loadingRequests, setLoadingRequests] = useState(false)
   const [users, setUsers] = useState<User[]>([])
-  const [initiatives, setInitiatives] = useState<Initiative[]>([])
-  const [posts, setPosts] = useState<ForumPost[]>([])
-  const [tips, setTips] = useState<Tip[]>([])
+  const [content, setContent] = useState<{
+    initiatives?: Initiative[]
+    posts?: ForumPost[]
+    tips?: Tip[]
+    articles?: Article[]
+  }>({})
   const [loading, setLoading] = useState(true)
+  const [selectedItem, setSelectedItem] = useState<ContentWithOptionalProps & { type: string } | null>(null)
+  const [showDetailsModal, setShowDetailsModal] = useState(false)
+  
+  // États pour les filtres et la pagination
+  const [filters, setFilters] = useState<{
+    initiatives: 'all' | 'published' | 'unpublished'
+    posts: 'all' | 'published' | 'unpublished'
+    tips: 'all' | 'published' | 'unpublished'
+    articles: 'all' | 'published' | 'unpublished'
+  }>({
+    initiatives: 'all',
+    posts: 'all',
+    tips: 'all',
+    articles: 'all'
+  })
+  
+  const [pagination, setPagination] = useState<{
+    initiatives: { page: number; limit: number }
+    posts: { page: number; limit: number }
+    tips: { page: number; limit: number }
+    articles: { page: number; limit: number }
+  }>({
+    initiatives: { page: 1, limit: 10 },
+    posts: { page: 1, limit: 10 },
+    tips: { page: 1, limit: 10 },
+    articles: { page: 1, limit: 10 }
+  })
+
+  // États pour la gestion du scroll et de la fermeture des modales
+  useEffect(() => {
+    if (showDetailsModal) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [showDetailsModal])
+
+  // Fermer la modale avec Échap
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showDetailsModal) {
+        closeDetailsModal()
+      }
+    }
+
+    if (showDetailsModal) {
+      document.addEventListener('keydown', handleEscape)
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [showDetailsModal])
 
   useEffect(() => {
-    fetchData()
-  }, [])
+    fetchUsers()
+    // Charger tous les contenus au démarrage pour avoir les comptes
+    fetchContent('initiatives')
+    fetchContent('posts')
+    fetchContent('tips')
+    fetchContent('articles')
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (activeTab === 'role-requests') {
       fetchRoleRequests()
+    } else if (['initiatives', 'posts', 'tips', 'articles'].includes(activeTab)) {
+      fetchContent(activeTab as ContentType)
     }
-  }, [activeTab])
+  }, [activeTab]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const fetchData = async () => {
+  const fetchUsers = async () => {
     try {
-      // Récupérer les utilisateurs
-      const usersResponse = await fetch('/api/admin/users')
-      if (usersResponse.ok) {
-        const usersData = await usersResponse.json()
-        setUsers(usersData.users)
-      }
-
-      // Récupérer les initiatives en attente
-      const initiativesResponse = await fetch('/api/admin/initiatives')
-      if (initiativesResponse.ok) {
-        const initiativesData = await initiativesResponse.json()
-        setInitiatives(initiativesData.initiatives)
-      }
-
-      // Récupérer les posts en attente
-      const postsResponse = await fetch('/api/admin/posts')
-      if (postsResponse.ok) {
-        const postsData = await postsResponse.json()
-        setPosts(postsData.posts)
-      }
-
-      // Récupérer les conseils en attente
-      const tipsResponse = await fetch('/api/admin/tips')
-      if (tipsResponse.ok) {
-        const tipsData = await tipsResponse.json()
-        setTips(tipsData.tips)
+      const response = await fetch('/api/admin/users')
+      if (response.ok) {
+        const data = await response.json()
+        setUsers(data.users)
       }
     } catch (error) {
-      console.error('Erreur lors du chargement des données:', error)
+      console.error('Erreur lors du chargement des utilisateurs:', error)
+      toast.error('Erreur lors du chargement des utilisateurs')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleApprove = async (type: string, id: string) => {
+  const fetchContent = async (type: ContentType) => {
     try {
-      const response = await fetch(`/api/admin/${type}/${id}/approve`, {
-        method: 'PUT'
+      const currentFilter = filters[type]
+      const currentPagination = pagination[type]
+      
+      const params = new URLSearchParams({
+        type,
+        page: currentPagination.page.toString(),
+        limit: currentPagination.limit.toString()
       })
+      
+      if (currentFilter !== 'all') {
+        params.append('status', currentFilter)
+      }
+      
+      const response = await fetch(`/api/admin/content?${params}`)
       if (response.ok) {
-        fetchData() // Recharger les données
+        const data = await response.json()
+        setContent(prevContent => ({
+          ...prevContent,
+          [type]: data[type]
+        }))
       }
     } catch (error) {
-      console.error('Erreur lors de l\'approbation:', error)
+      console.error(`Erreur lors du chargement de ${type}:`, error)
+      toast.error(`Erreur lors du chargement de ${type}`)
     }
   }
 
-  const handleReject = async (type: string, id: string) => {
+  const handleContentAction = async (type: ContentType, id: string, action: 'publish' | 'unpublish' | 'delete') => {
     try {
-      const response = await fetch(`/api/admin/${type}/${id}/reject`, {
-        method: 'DELETE'
-      })
-      if (response.ok) {
-        fetchData() // Recharger les données
+      if (action === 'delete') {
+        const response = await fetch(`/api/admin/content/${type}/${id}`, {
+          method: 'DELETE'
+        })
+        if (response.ok) {
+          await fetchContent(type)
+          toast.success('Contenu supprimé avec succès')
+        } else {
+          toast.error('Erreur lors de la suppression')
+        }
+      } else {
+        const response = await fetch(`/api/admin/content/${type}/${id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ action })
+        })
+        if (response.ok) {
+          await fetchContent(type)
+          toast.success(`Contenu ${action === 'publish' ? 'publié' : 'dépublié'} avec succès`)
+        } else {
+          toast.error(`Erreur lors de ${action === 'publish' ? 'la publication' : 'la dépublication'}`)
+        }
       }
     } catch (error) {
-      console.error('Erreur lors du rejet:', error)
+      console.error('Erreur lors de l\'action:', error)
+      toast.error('Erreur lors de l\'action')
     }
   }
 
@@ -152,19 +305,14 @@ export default function AdminPage() {
         body: JSON.stringify({ role: newRole })
       })
       if (response.ok) {
-        fetchData() // Recharger les données
+        await fetchUsers()
+        toast.success('Rôle modifié avec succès')
+      } else {
+        toast.error('Erreur lors du changement de rôle')
       }
     } catch (error) {
       console.error('Erreur lors du changement de rôle:', error)
-    }
-  }
-
-  const getRoleLabel = (role: string) => {
-    switch (role) {
-      case 'EXPLORER': return 'Explorateur'
-      case 'CONTRIBUTOR': return 'Contributeur'
-      case 'ADMIN': return 'Administrateur'
-      default: return role
+      toast.error('Erreur lors du changement de rôle')
     }
   }
 
@@ -178,6 +326,7 @@ export default function AdminPage() {
       }
     } catch (error) {
       console.error('Erreur lors de la récupération des demandes de promotion:', error)
+      toast.error('Erreur lors de la récupération des demandes')
     } finally {
       setLoadingRequests(false)
     }
@@ -193,11 +342,48 @@ export default function AdminPage() {
         body: JSON.stringify({ action, adminNotes })
       })
       if (response.ok) {
-        fetchRoleRequests()
-        fetchData() // Recharger les utilisateurs aussi
+        await fetchRoleRequests()
+        await fetchUsers()
+        toast.success(`Demande ${action === 'approve' ? 'approuvée' : 'rejetée'} avec succès`)
+      } else {
+        toast.error('Erreur lors du traitement de la demande')
       }
     } catch (error) {
       console.error('Erreur lors du traitement de la demande:', error)
+      toast.error('Erreur lors du traitement de la demande')
+    }
+  }
+
+  const showDetails = (item: ContentWithCount, type: string) => {
+    setSelectedItem({ ...item, type })
+    setShowDetailsModal(true)
+  }
+
+  const closeDetailsModal = () => {
+    setShowDetailsModal(false)
+    setSelectedItem(null)
+  }
+
+  const handleFilterChange = (type: ContentType, filter: 'all' | 'published' | 'unpublished') => {
+    setFilters(prev => ({ ...prev, [type]: filter }))
+    setPagination(prev => ({ ...prev, [type]: { ...prev[type], page: 1 } }))
+    // Recharger le contenu avec le nouveau filtre
+    setTimeout(() => fetchContent(type), 0)
+  }
+
+  // Fonction pour la pagination (prête pour une utilisation future)
+  // const handlePageChange = (type: ContentType, page: number) => {
+  //   setPagination(prev => ({ ...prev, [type]: { ...prev[type], page } }))
+  //   // Recharger le contenu avec la nouvelle page
+  //   setTimeout(() => fetchContent(type), 0)
+  // }
+
+  const getRoleLabel = (role: string) => {
+    switch (role) {
+      case 'EXPLORER': return 'Explorateur'
+      case 'CONTRIBUTOR': return 'Contributeur'
+      case 'ADMIN': return 'Administrateur'
+      default: return role
     }
   }
 
@@ -211,8 +397,153 @@ export default function AdminPage() {
     }
   }
 
+  const getCategoryLabel = (category: string, type: string) => {
+    if (type === 'tips') {
+      switch (category) {
+        case 'WASTE_REDUCTION': return 'Réduction des déchets'
+        case 'ENERGY_SAVING': return 'Économie d\'énergie'
+        case 'TRANSPORT': return 'Transport'
+        case 'FOOD': return 'Alimentation'
+        case 'WATER': return 'Eau'
+        case 'CONSUMPTION': return 'Consommation'
+        case 'OTHER': return 'Autre'
+        default: return category
+      }
+    } else if (type === 'posts') {
+      switch (category) {
+        case 'GENERAL': return 'Général'
+        case 'EVENTS': return 'Événements'
+        case 'PROJECTS': return 'Projets'
+        case 'TIPS': return 'Conseils'
+        case 'NEWS': return 'Actualités'
+        case 'DISCUSSION': return 'Discussion'
+        default: return category
+      }
+    } else if (type === 'articles') {
+      switch (category) {
+        case 'ENVIRONMENT': return 'Environnement'
+        case 'SUSTAINABILITY': return 'Développement durable'
+        case 'CLIMATE_CHANGE': return 'Changement climatique'
+        case 'BIODIVERSITY': return 'Biodiversité'
+        case 'RENEWABLE_ENERGY': return 'Énergies renouvelables'
+        case 'CIRCULAR_ECONOMY': return 'Économie circulaire'
+        case 'GREEN_TECHNOLOGY': return 'Technologies vertes'
+        case 'CONSERVATION': return 'Conservation'
+        case 'EDUCATION': return 'Éducation'
+        case 'POLICY': return 'Politique'
+        default: return category
+      }
+    }
+    return category
+  }
+
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR')
+    return new Date(dateString).toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
+  const renderContentList = (items: ContentWithCount[], type: ContentType) => {
+    const currentFilter = filters[type]
+    
+    // Filtrer les éléments côté client pour l'affichage
+    const filteredItems = items.filter(item => {
+      if (currentFilter === 'published') return item.isPublished
+      if (currentFilter === 'unpublished') return !item.isPublished
+      return true
+    })
+
+    const filterOptions = [
+      { value: 'all', label: 'Tous', count: items.length },
+      { value: 'published', label: 'Publiés', count: items.filter(item => item.isPublished).length },
+      { value: 'unpublished', label: 'Dépubliés', count: items.filter(item => !item.isPublished).length }
+    ]
+
+    return (
+      <div className="space-y-4">
+        {/* Filtres */}
+        <ContentFilters
+          options={filterOptions}
+          currentFilter={currentFilter}
+          onFilterChange={(filter) => handleFilterChange(type, filter as 'all' | 'published' | 'unpublished')}
+        />
+
+        {/* Liste des éléments */}
+        {filteredItems.length === 0 ? (
+          <p className="text-gray-500 text-center py-8">Aucun contenu trouvé</p>
+        ) : (
+          <div className="space-y-4">
+            {filteredItems.map((item) => (
+              <div key={item.id} className="border border-gray-200 rounded-lg p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h4 className="text-sm font-medium text-gray-900">{item.title}</h4>
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        item.isPublished 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {item.isPublished ? 'Publié' : 'Dépublié'}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-2">
+                      {type === 'initiatives' && `${getTypeLabel((item as Initiative).type)} • ${(item as Initiative).city}`}
+                      {(type === 'posts' || type === 'tips' || type === 'articles') && getCategoryLabel((item as ForumPost | Tip | Article).category, type)}
+                      {' • Par '}{item.author.name || item.author.username}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      Créé le {formatDate(item.createdAt)}
+                      {item._count && (
+                        <span className="ml-2">
+                          {type === 'posts' && `• ${item._count.comments} commentaires • ${item._count.votes} votes`}
+                          {(type === 'tips' || type === 'articles') && `• ${item._count.votes} votes`}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                  <div className="flex gap-2 ml-4">
+                    <button
+                      onClick={() => showDetails(item, type)}
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                      title="Voir les détails"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleContentAction(type, item.id, item.isPublished ? 'unpublish' : 'publish')}
+                      className={`p-2 rounded-lg ${
+                        item.isPublished 
+                          ? 'text-orange-600 hover:bg-orange-50' 
+                          : 'text-green-600 hover:bg-green-50'
+                      }`}
+                      title={item.isPublished ? 'Dépublier' : 'Publier'}
+                    >
+                      {item.isPublished ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (confirm('Êtes-vous sûr de vouloir supprimer ce contenu ? Cette action est irréversible.')) {
+                          handleContentAction(type, item.id, 'delete')
+                        }
+                      }}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                      title="Supprimer"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    )
   }
 
   if (loading) {
@@ -269,7 +600,7 @@ export default function AdminPage() {
               >
                 <div className="flex items-center gap-2">
                   <FileText className="h-4 w-4" />
-                  Initiatives ({initiatives.filter(i => !i.isApproved).length})
+                  Initiatives ({content.initiatives?.length || 0})
                 </div>
               </button>
               <button
@@ -282,7 +613,7 @@ export default function AdminPage() {
               >
                 <div className="flex items-center gap-2">
                   <MessageSquare className="h-4 w-4" />
-                  Posts ({posts.filter(p => !p.isApproved).length})
+                  Posts ({content.posts?.length || 0})
                 </div>
               </button>
               <button
@@ -295,7 +626,20 @@ export default function AdminPage() {
               >
                 <div className="flex items-center gap-2">
                   <Lightbulb className="h-4 w-4" />
-                  Conseils ({tips.filter(t => !t.isApproved).length})
+                  Conseils ({content.tips?.length || 0})
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab('articles')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'articles'
+                    ? 'border-green-500 text-green-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <BookOpen className="h-4 w-4" />
+                  Articles ({content.articles?.length || 0})
                 </div>
               </button>
               <button
@@ -308,7 +652,7 @@ export default function AdminPage() {
               >
                 <div className="flex items-center gap-2">
                   <UserPlus className="h-4 w-4" />
-                  Demandes de Promotion ({roleRequests.filter((r: RoleRequest) => r.status === 'PENDING').length})
+                  Demandes de Promotion ({roleRequests.filter(r => r.status === 'PENDING').length})
                 </div>
               </button>
             </nav>
@@ -331,9 +675,6 @@ export default function AdminPage() {
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Date d&apos;inscription
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Actions
                         </th>
                       </tr>
                     </thead>
@@ -360,11 +701,6 @@ export default function AdminPage() {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {formatDate(user.createdAt)}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button className="text-green-600 hover:text-green-900 mr-3">
-                              <Eye className="h-4 w-4" />
-                            </button>
-                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -375,115 +711,29 @@ export default function AdminPage() {
 
             {activeTab === 'initiatives' && (
               <div className="space-y-4">
-                <h3 className="text-lg font-medium text-gray-900">Initiatives en attente d&apos;approbation</h3>
-                <div className="space-y-4">
-                  {initiatives.filter(i => !i.isApproved).map((initiative) => (
-                    <div key={initiative.id} className="border border-gray-200 rounded-lg p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-900">{initiative.title}</h4>
-                          <p className="text-sm text-gray-500">
-                            {getTypeLabel(initiative.type)} • {initiative.city} • Par {initiative.author.name}
-                          </p>
-                          <p className="text-xs text-gray-400">{formatDate(initiative.createdAt)}</p>
-                        </div>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleApprove('initiatives', initiative.id)}
-                            className="p-2 text-green-600 hover:bg-green-50 rounded-lg"
-                          >
-                            <CheckCircle className="h-5 w-5" />
-                          </button>
-                          <button
-                            onClick={() => handleReject('initiatives', initiative.id)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                          >
-                            <XCircle className="h-5 w-5" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  {initiatives.filter(i => !i.isApproved).length === 0 && (
-                    <p className="text-gray-500 text-center py-8">Aucune initiative en attente d&apos;approbation</p>
-                  )}
-                </div>
+                <h3 className="text-lg font-medium text-gray-900">Gestion des initiatives</h3>
+                {renderContentList(content.initiatives || [], 'initiatives')}
               </div>
             )}
 
             {activeTab === 'posts' && (
               <div className="space-y-4">
-                <h3 className="text-lg font-medium text-gray-900">Posts en attente d&apos;approbation</h3>
-                <div className="space-y-4">
-                  {posts.filter(p => !p.isApproved).map((post) => (
-                    <div key={post.id} className="border border-gray-200 rounded-lg p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-900">{post.title}</h4>
-                          <p className="text-sm text-gray-500">
-                            {post.category} • Par {post.author.name}
-                          </p>
-                          <p className="text-xs text-gray-400">{formatDate(post.createdAt)}</p>
-                        </div>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleApprove('posts', post.id)}
-                            className="p-2 text-green-600 hover:bg-green-50 rounded-lg"
-                          >
-                            <CheckCircle className="h-5 w-5" />
-                          </button>
-                          <button
-                            onClick={() => handleReject('posts', post.id)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                          >
-                            <XCircle className="h-5 w-5" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  {posts.filter(p => !p.isApproved).length === 0 && (
-                    <p className="text-gray-500 text-center py-8">Aucun post en attente d&apos;approbation</p>
-                  )}
-                </div>
+                <h3 className="text-lg font-medium text-gray-900">Gestion des posts</h3>
+                {renderContentList(content.posts || [], 'posts')}
               </div>
             )}
 
             {activeTab === 'tips' && (
               <div className="space-y-4">
-                <h3 className="text-lg font-medium text-gray-900">Conseils en attente d&apos;approbation</h3>
-                <div className="space-y-4">
-                  {tips.filter(t => !t.isApproved).map((tip) => (
-                    <div key={tip.id} className="border border-gray-200 rounded-lg p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-900">{tip.title}</h4>
-                          <p className="text-sm text-gray-500">
-                            {tip.category} • Par {tip.author.name}
-                          </p>
-                          <p className="text-xs text-gray-400">{formatDate(tip.createdAt)}</p>
-                        </div>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleApprove('tips', tip.id)}
-                            className="p-2 text-green-600 hover:bg-green-50 rounded-lg"
-                          >
-                            <CheckCircle className="h-5 w-5" />
-                          </button>
-                          <button
-                            onClick={() => handleReject('tips', tip.id)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                          >
-                            <XCircle className="h-5 w-5" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  {tips.filter(t => !t.isApproved).length === 0 && (
-                    <p className="text-gray-500 text-center py-8">Aucun conseil en attente d&apos;approbation</p>
-                  )}
-                </div>
+                <h3 className="text-lg font-medium text-gray-900">Gestion des conseils</h3>
+                {renderContentList(content.tips || [], 'tips')}
+              </div>
+            )}
+
+            {activeTab === 'articles' && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium text-gray-900">Gestion des articles</h3>
+                {renderContentList(content.articles || [], 'articles')}
               </div>
             )}
 
@@ -496,7 +746,7 @@ export default function AdminPage() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {roleRequests.map((request: RoleRequest) => (
+                    {roleRequests.map((request) => (
                       <div key={request.id} className="border border-gray-200 rounded-lg p-4">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
@@ -533,20 +783,18 @@ export default function AdminPage() {
                                     const notes = (document.getElementById(`notes-${request.id}`) as HTMLTextAreaElement)?.value
                                     handleProcessRoleRequest(request.id, 'approve', notes)
                                   }}
-                                  className="p-2 text-green-600 hover:bg-green-50 rounded-lg"
-                                  title="Approuver"
+                                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
                                 >
-                                  <CheckCircle className="h-5 w-5" />
+                                  Approuver
                                 </button>
                                 <button
                                   onClick={() => {
                                     const notes = (document.getElementById(`notes-${request.id}`) as HTMLTextAreaElement)?.value
                                     handleProcessRoleRequest(request.id, 'reject', notes)
                                   }}
-                                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                                  title="Rejeter"
+                                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
                                 >
-                                  <XCircle className="h-5 w-5" />
+                                  Rejeter
                                 </button>
                               </>
                             ) : (
@@ -577,6 +825,166 @@ export default function AdminPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal de détails */}
+      {showDetailsModal && selectedItem && (
+        <div 
+          className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={closeDetailsModal}
+        >
+          <div 
+            className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900">
+                  Détails - {selectedItem.title}
+                </h2>
+                <button
+                  onClick={closeDetailsModal}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <Eye className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{selectedItem.title}</h3>
+                  <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
+                    <span>Par {selectedItem.author.name || selectedItem.author.username}</span>
+                    <span>•</span>
+                    <span>Créé le {formatDate(selectedItem.createdAt)}</span>
+                    <span>•</span>
+                    <span className={`px-2 py-1 rounded-full text-xs ${
+                      selectedItem.isPublished 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {selectedItem.isPublished ? 'Publié' : 'Dépublié'}
+                    </span>
+                  </div>
+                </div>
+
+                {selectedItem.description && (
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">Description</h4>
+                    <p className="text-gray-700 whitespace-pre-wrap">{selectedItem.description}</p>
+                  </div>
+                )}
+
+                {selectedItem.content && (
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">Contenu</h4>
+                    <div className="text-gray-700 whitespace-pre-wrap max-h-64 overflow-y-auto bg-gray-50 p-4 rounded-lg">
+                      {selectedItem.content}
+                    </div>
+                  </div>
+                )}
+
+                {selectedItem.excerpt && (
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">Extrait</h4>
+                    <p className="text-gray-700">{selectedItem.excerpt}</p>
+                  </div>
+                )}
+
+                {selectedItem.type === 'initiatives' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <h4 className="font-medium text-gray-900 mb-2">Informations</h4>
+                      <div className="space-y-1 text-sm">
+                        <p><strong>Type :</strong> {getTypeLabel(selectedItem.type)}</p>
+                        <p><strong>Ville :</strong> {selectedItem.city}</p>
+                        <p><strong>Adresse :</strong> {selectedItem.address}</p>
+                        {selectedItem.website && <p><strong>Site web :</strong> <a href={selectedItem.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{selectedItem.website}</a></p>}
+                        {selectedItem.contactEmail && <p><strong>Email :</strong> {selectedItem.contactEmail}</p>}
+                        {selectedItem.contactPhone && <p><strong>Téléphone :</strong> {selectedItem.contactPhone}</p>}
+                      </div>
+                    </div>
+                    {(selectedItem.startDate || selectedItem.endDate) && (
+                      <div>
+                        <h4 className="font-medium text-gray-900 mb-2">Dates</h4>
+                        <div className="space-y-1 text-sm">
+                          {selectedItem.startDate && <p><strong>Début :</strong> {formatDate(selectedItem.startDate)}</p>}
+                          {selectedItem.endDate && <p><strong>Fin :</strong> {formatDate(selectedItem.endDate)}</p>}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {selectedItem.category && (
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">Catégorie</h4>
+                    <p className="text-gray-700">{getCategoryLabel(selectedItem.category, selectedItem.type)}</p>
+                  </div>
+                )}
+
+                {selectedItem.imageUrl && (
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">Image</h4>
+                    <div className="relative w-full h-64 rounded-lg overflow-hidden">
+                      {selectedItem.type === 'articles' ? (
+                        <ArticleImage 
+                          src={selectedItem.imageUrl} 
+                          alt={selectedItem.title}
+                          fill
+                          sizes="(max-width: 768px) 100vw, 800px"
+                          className="w-full h-full"
+                          fallbackIcon={<BookOpen className="h-16 w-16 text-green-600" />}
+                        />
+                      ) : (
+                        <Image 
+                          src={selectedItem.imageUrl} 
+                          alt={selectedItem.title}
+                          fill
+                          sizes="(max-width: 768px) 100vw, 800px"
+                          className="object-cover"
+                        />
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
+                  <button
+                    onClick={closeDetailsModal}
+                    className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                  >
+                    Fermer
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleContentAction(selectedItem.type as ContentType, selectedItem.id, selectedItem.isPublished ? 'unpublish' : 'publish')
+                      closeDetailsModal()
+                    }}
+                    className={`px-4 py-2 rounded-lg transition-colors ${
+                      selectedItem.isPublished 
+                        ? 'bg-orange-600 text-white hover:bg-orange-700' 
+                        : 'bg-green-600 text-white hover:bg-green-700'
+                    }`}
+                  >
+                    {selectedItem.isPublished ? 'Dépublier' : 'Publier'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (confirm('Êtes-vous sûr de vouloir supprimer ce contenu ? Cette action est irréversible.')) {
+                        handleContentAction(selectedItem.type as ContentType, selectedItem.id, 'delete')
+                        closeDetailsModal()
+                      }
+                    }}
+                    className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-lg transition-colors"
+                  >
+                    Supprimer
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
