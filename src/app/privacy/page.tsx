@@ -24,7 +24,7 @@ export default function PrivacyPage() {
               <section>
                 <h2 className="text-2xl font-semibold text-theme-primary mb-4">1. Introduction</h2>
                 <p className="text-theme-secondary leading-relaxed">
-                  Pol-UX s'engage à protéger votre vie privée et vos données personnelles. Cette politique de confidentialité 
+                  Pol-UX s&apos;engage à protéger votre vie privée et vos données personnelles. Cette politique de confidentialité 
                   explique comment nous collectons, utilisons et protégeons vos informations lorsque vous utilisez notre plateforme.
                 </p>
               </section>
@@ -36,7 +36,7 @@ export default function PrivacyPage() {
                   <div>
                     <h3 className="text-lg font-medium text-theme-primary mb-2">Données que vous nous fournissez :</h3>
                     <ul className="list-disc list-inside text-theme-secondary space-y-1 ml-4">
-                      <li>Informations de compte (nom, prénom, email, nom d'utilisateur)</li>
+                      <li>Informations de compte (nom, prénom, email, nom d&apos;utilisateur)</li>
                       <li>Contenu que vous publiez (initiatives, articles, conseils, posts forum)</li>
                       <li>Messages et communications</li>
                       <li>Préférences et paramètres</li>
@@ -46,7 +46,7 @@ export default function PrivacyPage() {
                     <h3 className="text-lg font-medium text-theme-primary mb-2">Données collectées automatiquement :</h3>
                     <ul className="list-disc list-inside text-theme-secondary space-y-1 ml-4">
                       <li>Adresse IP et informations de localisation</li>
-                      <li>Données de navigation et d'utilisation</li>
+                      <li>Données de navigation et d&apos;utilisation</li>
                       <li>Cookies et technologies similaires</li>
                       <li>Informations sur votre appareil</li>
                     </ul>
@@ -88,8 +88,8 @@ export default function PrivacyPage() {
                 <h2 className="text-2xl font-semibold text-theme-primary mb-4">5. Sécurité des Données</h2>
                 <p className="text-theme-secondary leading-relaxed">
                   Nous mettons en place des mesures de sécurité appropriées pour protéger vos données contre 
-                  l'accès non autorisé, la modification, la divulgation ou la destruction. Ces mesures incluent 
-                  le chiffrement, l'authentification sécurisée et la surveillance continue de nos systèmes.
+                  l&apos;accès non autorisé, la modification, la divulgation ou la destruction. Ces mesures incluent 
+                  le chiffrement, l&apos;authentification sécurisée et la surveillance continue de nos systèmes.
                 </p>
               </section>
 
@@ -100,12 +100,12 @@ export default function PrivacyPage() {
                   Conformément au RGPD, vous avez les droits suivants :
                 </p>
                 <ul className="list-disc list-inside text-theme-secondary space-y-1 ml-4">
-                  <li>Droit d'accès à vos données personnelles</li>
+                  <li>Droit d&apos;accès à vos données personnelles</li>
                   <li>Droit de rectification des données inexactes</li>
-                  <li>Droit d'effacement de vos données</li>
+                  <li>Droit d&apos;effacement de vos données</li>
                   <li>Droit à la limitation du traitement</li>
                   <li>Droit à la portabilité de vos données</li>
-                  <li>Droit d'opposition au traitement</li>
+                  <li>Droit d&apos;opposition au traitement</li>
                 </ul>
               </section>
 
@@ -114,14 +114,14 @@ export default function PrivacyPage() {
                 <h2 className="text-2xl font-semibold text-theme-primary mb-4">7. Cookies</h2>
                 <p className="text-theme-secondary leading-relaxed mb-4">
                   Nous utilisons des cookies pour améliorer votre expérience sur notre site. Vous pouvez 
-                  contrôler l'utilisation des cookies via les paramètres de votre navigateur.
+                  contrôler l&apos;utilisation des cookies via les paramètres de votre navigateur.
                 </p>
                 <div className="bg-theme-tertiary rounded-lg p-4">
                   <h4 className="font-medium text-theme-primary mb-2">Types de cookies utilisés :</h4>
                   <ul className="list-disc list-inside text-theme-secondary space-y-1 ml-4">
                     <li>Cookies de session (nécessaires au fonctionnement)</li>
                     <li>Cookies de préférences (thème, langue)</li>
-                    <li>Cookies analytiques (statistiques d'utilisation)</li>
+                    <li>Cookies analytiques (statistiques d&apos;utilisation)</li>
                   </ul>
                 </div>
               </section>
@@ -180,7 +180,7 @@ export default function PrivacyPage() {
             href="/"
             className="inline-flex items-center gap-2 text-green-600 hover:text-green-700 font-medium"
           >
-            ← Retour à l'accueil
+            ← Retour à l&apos;accueil
           </Link>
         </div>
       </div>
