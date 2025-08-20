@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { MapPin, Search, Calendar, Users, Building, Plus, X, Info, Eye, Globe, Mail, Phone } from 'lucide-react'
 import { useSession } from 'next-auth/react'
@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import Image from 'next/image'
 import Pagination from '@/components/Pagination'
+import { useInitiatives } from '@/hooks/useInitiatives'
 
 // Import dynamique de la carte pour éviter les erreurs SSR
 const MapComponent = dynamic(() => import('@/components/MapComponent'), {
@@ -44,12 +45,27 @@ interface Initiative {
 export default function MapPage() {
   const { data: session } = useSession()
   const router = useRouter()
-  const [initiatives, setInitiatives] = useState<Initiative[]>([])
-  const [filteredInitiatives, setFilteredInitiatives] = useState<Initiative[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedType, setSelectedType] = useState<string>('all')
   const [selectedCity, setSelectedCity] = useState<string>('all')
+  
+  // Utilisation de SWR pour récupérer les initiatives
+  const { initiatives, mutate } = useInitiatives({
+    city: selectedCity !== 'all' ? selectedCity : undefined,
+    type: selectedType !== 'all' ? selectedType : undefined
+  })
+
+  // Filtrage temporaire (à optimiser plus tard)
+  const filteredInitiatives = initiatives.filter(initiative => {
+    if (!initiative.isPublished) return false
+    if (searchTerm) {
+      return initiative.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+             initiative.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+             initiative.city.toLowerCase().includes(searchTerm.toLowerCase())
+    }
+    return true
+  })
   
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -115,43 +131,13 @@ export default function MapPage() {
     }
   }, [isModalOpen, selectedInitiativeForDetails])
 
-  const filterInitiatives = useCallback(() => {
-    let filtered = initiatives.filter(initiative => initiative.isPublished)
-
-    // Filtre par recherche
-    if (searchTerm) {
-      filtered = filtered.filter(initiative =>
-        initiative.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        initiative.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        initiative.city.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    }
-
-    // Filtre par type
-    if (selectedType !== 'all') {
-      filtered = filtered.filter(initiative => initiative.type === selectedType)
-    }
-
-    // Filtre par ville (normaliser la casse pour la comparaison)
-    if (selectedCity !== 'all') {
-      filtered = filtered.filter(initiative => {
-        const normalizedInitiativeCity = initiative.city?.charAt(0).toUpperCase() + initiative.city?.slice(1).toLowerCase()
-        return normalizedInitiativeCity === selectedCity
-      })
-    }
-
-    setFilteredInitiatives(filtered)
-    // Réinitialiser la page quand les filtres changent
-    setCurrentPageWithoutAddress(1)
-  }, [initiatives, searchTerm, selectedType, selectedCity])
-
-  const handlePageChangeWithoutAddress = (page: number) => {
+    const handlePageChangeWithoutAddress = (page: number) => {
     setCurrentPageWithoutAddress(page)
     // Scroll vers le haut de la section
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-    // Séparer les initiatives avec et sans adresse
+  // Séparer les initiatives avec et sans adresse
   const initiativesWithAddress = filteredInitiatives.filter(initiative => 
     initiative.address && initiative.address.trim() !== '' && 
     initiative.latitude !== 0 && initiative.longitude !== 0
@@ -168,20 +154,12 @@ export default function MapPage() {
   const endIndexWithoutAddress = startIndexWithoutAddress + itemsPerPageWithoutAddress
   const paginatedInitiativesWithoutAddress = initiativesWithoutAddress.slice(startIndexWithoutAddress, endIndexWithoutAddress)
 
-  useEffect(() => {
-    fetchInitiatives()
-  }, [])
-
-  useEffect(() => {
-    filterInitiatives()
-  }, [filterInitiatives])
-
   const fetchInitiatives = async () => {
     try {
       const response = await fetch('/api/initiatives')
       if (response.ok) {
-        const data = await response.json()
-        setInitiatives(data.initiatives)
+        await response.json()
+        mutate() // Revalider le cache SWR
       }
     } catch (error) {
       console.error('Erreur lors du chargement des initiatives:', error)
