@@ -176,7 +176,7 @@ export default function PromotionPage() {
                 id="role"
                 value={requestedRole}
                 onChange={(e) => setRequestedRole(e.target.value)}
-                className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-theme-card text-theme-primary"
                 required
               >
                 <option value="">Sélectionnez un rôle</option>

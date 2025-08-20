@@ -361,7 +361,7 @@ export default function ArticlesPage() {
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-theme-card text-theme-primary"
               >
                 <option value="all">Toutes les catégories</option>
                 {availableCategories.map((category: { value: string; label: string; count: number }) => (
@@ -557,7 +557,7 @@ export default function ArticlesPage() {
                       id="category"
                       value={newArticle.category}
                       onChange={(e) => setNewArticle(prev => ({ ...prev, category: e.target.value as 'ENVIRONMENT' | 'SUSTAINABILITY' | 'CLIMATE_CHANGE' | 'BIODIVERSITY' | 'RENEWABLE_ENERGY' | 'CIRCULAR_ECONOMY' | 'GREEN_TECHNOLOGY' | 'CONSERVATION' | 'EDUCATION' | 'POLICY' }))}
-                      className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-theme-card text-theme-primary"
                       required
                     >
                       <option value="ENVIRONMENT">Environnement</option>

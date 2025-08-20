@@ -538,7 +538,7 @@ export default function ForumPage() {
                       id="category"
                       value={newPost.category}
                       onChange={(e) => setNewPost(prev => ({ ...prev, category: e.target.value }))}
-                      className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-theme-card text-theme-primary"
                       required
                     >
                       <option value="">Sélectionnez une catégorie</option>

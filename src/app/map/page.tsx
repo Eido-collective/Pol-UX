@@ -687,7 +687,7 @@ export default function MapPage() {
                     id="type"
                     value={newInitiative.type}
                     onChange={(e) => setNewInitiative(prev => ({ ...prev, type: e.target.value as 'EVENT' | 'PROJECT' | 'ACTOR' | 'COMPANY' }))}
-                    className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-theme-card text-theme-primary"
                     required
                   >
                     <option value="EVENT">Événement</option>
