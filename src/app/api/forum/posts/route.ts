@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 
     // Construire les filtres
     const where: Prisma.ForumPostWhereInput = {
-      isApproved: true
+      isPublished: true
     }
 
     if (category && category !== 'all') {
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
           }
         },
         comments: {
-          where: { isApproved: true },
+          where: { isPublished: true },
           include: {
             author: {
               select: {
@@ -115,8 +115,8 @@ export async function POST(request: NextRequest) {
         title,
         content,
         category,
-        authorId: session.user.id,
-        isApproved: false // Les nouveaux posts doivent être approuvés
+        authorId: session.user.id
+        // isPublished est par défaut à true dans le schéma
       },
       include: {
         author: {

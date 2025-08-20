@@ -61,8 +61,7 @@ async function main() {
       website: 'https://example.com',
       contactEmail: 'contact@example.com',
       contactPhone: '01 23 45 67 89',
-      authorId: user1.id,
-      isApproved: true,
+      authorId: user1.id
     },
   })
 
@@ -78,8 +77,7 @@ async function main() {
       postalCode: '69001',
       website: 'https://eco-citoyens-lyon.fr',
       contactEmail: 'contact@eco-citoyens-lyon.fr',
-      authorId: user2.id,
-      isApproved: true,
+      authorId: user2.id
     },
   })
 
@@ -96,8 +94,7 @@ async function main() {
       startDate: new Date('2024-07-01'),
       endDate: new Date('2024-12-31'),
       contactEmail: 'jardin@example.com',
-      authorId: user1.id,
-      isApproved: true,
+      authorId: user1.id
     },
   })
 
@@ -107,8 +104,7 @@ async function main() {
       title: 'Comment réduire ses déchets au quotidien ?',
       content: 'Je cherche des conseils pratiques pour réduire mes déchets ménagers. Quelles sont vos astuces ?',
       category: 'TIPS',
-      authorId: user1.id,
-      isApproved: true,
+      authorId: user1.id
     },
   })
 
@@ -117,8 +113,7 @@ async function main() {
       title: 'Événement écologique à Paris',
       content: 'Il y a un grand événement écologique qui se prépare à Paris. Qui est intéressé pour y participer ?',
       category: 'EVENTS',
-      authorId: user2.id,
-      isApproved: true,
+      authorId: user2.id
     },
   })
 
@@ -128,7 +123,7 @@ async function main() {
       content: 'Je recommande le compostage ! C\'est très efficace pour réduire les déchets organiques.',
       authorId: user2.id,
       postId: post1.id,
-      isApproved: true,
+
     },
   })
 
@@ -137,7 +132,7 @@ async function main() {
       content: 'Moi aussi je suis intéressé ! Quand est-ce que ça se passe ?',
       authorId: user1.id,
       postId: post2.id,
-      isApproved: true,
+
     },
   })
 
@@ -147,8 +142,7 @@ async function main() {
       title: 'Remplacer les bouteilles en plastique',
       content: 'Utilisez une gourde réutilisable en inox ou en verre. Cela permet d\'économiser des centaines de bouteilles en plastique par an !',
       category: 'WASTE_REDUCTION',
-      authorId: user1.id,
-      isApproved: true,
+      authorId: user1.id
     },
   })
 
@@ -157,8 +151,7 @@ async function main() {
       title: 'Économiser l\'énergie avec les LED',
       content: 'Remplacez vos ampoules classiques par des LED. Elles consomment jusqu\'à 80% moins d\'énergie et durent plus longtemps.',
       category: 'ENERGY_SAVING',
-      authorId: user2.id,
-      isApproved: true,
+      authorId: user2.id
     },
   })
 
@@ -167,8 +160,7 @@ async function main() {
       title: 'Privilégier les transports en commun',
       content: 'Pour vos trajets quotidiens, privilégiez les transports en commun, le vélo ou la marche. C\'est bon pour la planète et pour votre santé !',
       category: 'TRANSPORT',
-      authorId: user1.id,
-      isApproved: true,
+      authorId: user1.id
     },
   })
 
@@ -200,9 +192,7 @@ La France, avec sa riche biodiversité, a un rôle crucial à jouer dans la prot
       category: 'CLIMATE_CHANGE',
       imageUrl: 'https://images.unsplash.com/photo-1569163136547-3c23a60a1c2d?w=800&h=400&fit=crop',
       authorId: user1.id,
-      isApproved: true,
-      isPublished: true,
-      publishedAt: new Date('2024-01-15'),
+      publishedAt: new Date('2024-01-15')
     },
   })
 
@@ -241,9 +231,7 @@ La transition vers les énergies renouvelables est en marche et s'accélère. Ch
       category: 'RENEWABLE_ENERGY',
       imageUrl: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=800&h=400&fit=crop',
       authorId: admin.id,
-      isApproved: true,
-      isPublished: true,
-      publishedAt: new Date('2024-02-20'),
+      publishedAt: new Date('2024-02-20')
     },
   })
 
@@ -286,9 +274,7 @@ L'économie circulaire n'est pas seulement un concept, c'est une réalité qui s
       category: 'CIRCULAR_ECONOMY',
       imageUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=400&fit=crop',
       authorId: user1.id,
-      isApproved: true,
-      isPublished: true,
-      publishedAt: new Date('2024-03-10'),
+      publishedAt: new Date('2024-03-10')
     },
   })
 

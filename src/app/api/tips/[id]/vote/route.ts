@@ -41,10 +41,10 @@ export async function POST(
       )
     }
 
-    // Vérifier que le tip est approuvé
-    if (!tip.isApproved) {
+    // Vérifier que le tip est publié
+    if (!tip.isPublished) {
       return NextResponse.json(
-        { error: 'Ce conseil n\'est pas encore approuvé' },
+        { error: 'Ce conseil n\'est pas publié' },
         { status: 403 }
       )
     }

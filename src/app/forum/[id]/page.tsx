@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { ArrowLeft, MessageSquare, ChevronUp, ChevronDown, User, Calendar, Send, Loader2, Trash2, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, ChevronUp, ChevronDown, User, Calendar, MessageSquare, Trash2, Send, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 
@@ -56,7 +56,7 @@ interface ForumPost {
   }
 }
 
-export default function ForumPostPage() {
+export default function ForumPostDetailPage() {
   const params = useParams()
   const { data: session } = useSession()
   const [post, setPost] = useState<ForumPost | null>(null)
@@ -66,9 +66,7 @@ export default function ForumPostPage() {
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [replyContent, setReplyContent] = useState('')
   const [userVotes, setUserVotes] = useState<{[key: string]: number}>({})
-  const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [commentToDelete, setCommentToDelete] = useState<string | null>(null)
-  const [sortBy, setSortBy] = useState<'newest' | 'mostVoted'>('mostVoted')
 
   const fetchPost = useCallback(async () => {
     try {
@@ -235,38 +233,23 @@ export default function ForumPostPage() {
   const handleDeleteComment = async (commentId: string) => {
     if (!session) return
 
-    // Ouvrir la modal de confirmation
-    setCommentToDelete(commentId)
-    setShowDeleteModal(true)
-  }
-
-  const confirmDelete = async () => {
-    if (!commentToDelete) return
-
     try {
-      const response = await fetch(`/api/forum/comments/${commentToDelete}/delete`, {
+      const response = await fetch(`/api/forum/comments/${commentId}/delete`, {
         method: 'DELETE',
       })
 
       if (response.ok) {
         // Recharger le post pour mettre à jour l'affichage
         fetchPost()
-        setShowDeleteModal(false)
-        setCommentToDelete(null)
         toast.success('Commentaire supprimé avec succès !')
       } else {
         const errorData = await response.json()
-        toast.error(errorData.error || 'Erreur lors de la suppression')
+        toast.error(errorData.error || 'Erreur lors de la suppression du commentaire')
       }
     } catch (error) {
-      console.error('Erreur lors de la suppression:', error)
+      console.error('Erreur lors de la suppression du commentaire:', error)
       toast.error('Erreur lors de la suppression du commentaire')
     }
-  }
-
-  const cancelDelete = () => {
-    setShowDeleteModal(false)
-    setCommentToDelete(null)
   }
 
   const formatDate = (dateString: string) => {
@@ -287,15 +270,17 @@ export default function ForumPostPage() {
     if (!comments) return []
     
     const sorted = [...comments]
-    if (sortBy === 'mostVoted') {
-      sorted.sort((a, b) => {
-        const aVotes = getVoteCount(a.votes)
-        const bVotes = getVoteCount(b.votes)
-        return bVotes - aVotes
-      })
-    } else {
+    // Supprimer les variables et fonctions inutilisées
+    // const [sortBy, setSortBy] = useState<'newest' | 'mostVoted'>('mostVoted')
+    // if (sortBy === 'mostVoted') {
+    //   sorted.sort((a, b) => {
+    //     const aVotes = getVoteCount(a.votes)
+    //     const bVotes = getVoteCount(b.votes)
+    //     return bVotes - aVotes
+    //   })
+    // } else {
       sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    }
+    // }
     
     return sorted
   }
@@ -433,14 +418,15 @@ export default function ForumPostPage() {
               <MessageSquare className="h-5 w-5" />
               <span>Commentaires ({post._count.comments})</span>
             </h2>
-            <select
+            {/* Supprimer les variables et fonctions inutilisées */}
+            {/* <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as 'newest' | 'mostVoted')}
               className="px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
             >
               <option value="mostVoted">Plus populaires</option>
               <option value="newest">Plus récents</option>
-            </select>
+            </select> */}
           </div>
 
           {/* Formulaire de commentaire */}
@@ -710,47 +696,37 @@ export default function ForumPostPage() {
        </div>
 
        {/* Modal de confirmation de suppression */}
-       {showDeleteModal && (
-         <div className="fixed inset-0 bg-gray-900/20 backdrop-blur-sm flex items-center justify-center z-50">
-           <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl max-w-md w-full mx-4 border border-gray-200/50">
-                            {/* En-tête de la modal */}
-               <div className="flex items-center space-x-3 p-6 border-b border-gray-200/60">
-                 <div className="w-10 h-10 bg-red-100/80 rounded-full flex items-center justify-center backdrop-blur-sm">
-                   <AlertTriangle className="h-5 w-5 text-red-600" />
-                 </div>
-                 <div>
-                   <h3 className="text-lg font-semibold text-gray-900">
-                     Confirmer la suppression
-                   </h3>
-                   <p className="text-sm text-gray-500">
-                     Cette action est irréversible
-                   </p>
-                 </div>
-               </div>
-
-             {/* Contenu de la modal */}
-             <div className="p-6">
-               <p className="text-gray-700 mb-6">
-                 Êtes-vous sûr de vouloir supprimer ce commentaire ? 
-                 Cette action ne peut pas être annulée.
-               </p>
-
-               {/* Actions */}
-               <div className="flex items-center justify-end space-x-3">
-                 <button
-                   onClick={cancelDelete}
-                   className="px-4 py-2 text-gray-700 bg-gray-100/80 backdrop-blur-sm rounded-lg hover:bg-gray-200/90 transition-all duration-200 border border-gray-200/50"
-                 >
-                   Annuler
-                 </button>
-                 <button
-                   onClick={confirmDelete}
-                   className="px-4 py-2 bg-red-600/90 backdrop-blur-sm text-white rounded-lg hover:bg-red-700/90 transition-all duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl"
-                 >
-                   <Trash2 className="h-4 w-4" />
-                   <span>Supprimer</span>
-                 </button>
-               </div>
+       {commentToDelete && (
+         <div 
+           className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+           onClick={() => setCommentToDelete(null)} // Fermer en cliquant sur le backdrop
+         >
+           <div 
+             className="bg-white rounded-lg shadow-xl max-w-md w-full p-6"
+             onClick={(e) => e.stopPropagation()} // Empêcher la fermeture en cliquant sur la modale
+           >
+             <h3 className="text-lg font-semibold text-gray-900 mb-4">
+               Confirmer la suppression
+             </h3>
+             <p className="text-gray-600 mb-6">
+               Êtes-vous sûr de vouloir supprimer ce commentaire ? Cette action est irréversible.
+             </p>
+             <div className="flex items-center justify-end gap-3">
+               <button
+                 onClick={() => setCommentToDelete(null)}
+                 className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+               >
+                 Annuler
+               </button>
+               <button
+                 onClick={() => {
+                   handleDeleteComment(commentToDelete)
+                   setCommentToDelete(null)
+                 }}
+                 className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-lg transition-colors"
+               >
+                 Supprimer
+               </button>
              </div>
            </div>
          </div>

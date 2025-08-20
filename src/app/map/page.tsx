@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import dynamic from 'next/dynamic'
-import { MapPin, Search, Calendar, Users, Building, Plus, X } from 'lucide-react'
+import { MapPin, Search, Calendar, Users, Building, Plus, X, Info, Eye, Globe, Mail, Phone } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
+import Image from 'next/image'
 
 // Import dynamique de la carte pour éviter les erreurs SSR
 const MapComponent = dynamic(() => import('@/components/MapComponent'), {
@@ -68,6 +69,46 @@ export default function MapPage() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<{[key: string]: string}>({})
+  
+  // Modal détails
+  const [selectedInitiativeForDetails, setSelectedInitiativeForDetails] = useState<Initiative | null>(null)
+  const [selectedInitiativeId, setSelectedInitiativeId] = useState<string | undefined>(undefined)
+
+  // Bloquer le scroll quand une modale est ouverte
+  useEffect(() => {
+    if (isModalOpen || selectedInitiativeForDetails) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+
+    // Nettoyer lors du démontage du composant
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isModalOpen, selectedInitiativeForDetails])
+
+  // Fermer les modales avec Échap
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (isModalOpen) {
+          closeModal()
+        }
+        if (selectedInitiativeForDetails) {
+          closeDetailsModal()
+        }
+      }
+    }
+
+    if (isModalOpen || selectedInitiativeForDetails) {
+      document.addEventListener('keydown', handleEscape)
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isModalOpen, selectedInitiativeForDetails])
 
   const filterInitiatives = useCallback(() => {
     let filtered = initiatives.filter(initiative => initiative.isApproved)
@@ -180,7 +221,7 @@ export default function MapPage() {
     }
 
     if (!newInitiative.address.trim()) {
-      newErrors.address = 'L\'adresse est obligatoire'
+      newErrors.address = "L'adresse est obligatoire"
     }
 
     if (!newInitiative.city.trim()) {
@@ -216,7 +257,7 @@ export default function MapPage() {
 
     if (field === 'address') {
       if (!value.trim()) {
-        newErrors.address = 'L\'adresse est obligatoire'
+        newErrors.address = "L'adresse est obligatoire"
       } else {
         delete newErrors.address
       }
@@ -304,6 +345,27 @@ export default function MapPage() {
     setErrors({})
   }
 
+  const handleInitiativeClick = (initiative: Initiative) => {
+    setSelectedInitiativeId(initiative.id)
+  }
+
+  const handleShowDetails = (initiative: Initiative) => {
+    setSelectedInitiativeForDetails(initiative)
+  }
+
+  const closeDetailsModal = () => {
+    setSelectedInitiativeForDetails(null)
+  }
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return ''
+    return new Date(dateString).toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    })
+  }
+
   return (
     <div className="bg-gray-50">
       {/* Page Header */}
@@ -374,11 +436,11 @@ export default function MapPage() {
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
               {loading ? (
-                <div className="h-96 bg-gray-100 rounded-lg flex items-center justify-center">
+                <div className="h-[600px] bg-gray-100 rounded-lg flex items-center justify-center">
                   <div className="text-gray-500">Chargement de la carte...</div>
                 </div>
               ) : (
-                <MapComponent initiatives={filteredInitiatives} />
+                <MapComponent initiatives={filteredInitiatives} selectedInitiativeId={selectedInitiativeId} />
               )}
             </div>
           </div>
@@ -390,7 +452,7 @@ export default function MapPage() {
                 Initiatives ({filteredInitiatives.length})
               </h3>
               
-              <div className="space-y-4 max-h-96 overflow-y-auto">
+              <div className="space-y-4 max-h-[600px] overflow-y-auto">
                 {filteredInitiatives.length === 0 ? (
                   <div className="text-center text-gray-500 py-8">
                     Aucune initiative trouvée
@@ -399,9 +461,12 @@ export default function MapPage() {
                   filteredInitiatives.map((initiative) => (
                     <div
                       key={initiative.id}
-                      className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+                      className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
                     >
-                      <div className="flex items-start gap-3">
+                      <div 
+                        className="flex items-start gap-3 cursor-pointer"
+                        onClick={() => handleInitiativeClick(initiative)}
+                      >
                         <div className="flex-shrink-0">
                           {getTypeIcon(initiative.type)}
                         </div>
@@ -410,7 +475,7 @@ export default function MapPage() {
                             {initiative.title}
                           </h4>
                           <p className="text-xs text-gray-500 mt-1">
-                            {initiative.city}
+                            📍 {initiative.city}
                           </p>
                           <div className="flex items-center gap-2 mt-2">
                             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -418,7 +483,7 @@ export default function MapPage() {
                             </span>
                             {initiative.startDate && (
                               <span className="text-xs text-gray-500">
-                                {new Date(initiative.startDate).toLocaleDateString('fr-FR')}
+                                📅 {new Date(initiative.startDate).toLocaleDateString('fr-FR')}
                               </span>
                             )}
                           </div>
@@ -426,6 +491,24 @@ export default function MapPage() {
                             {initiative.description}
                           </p>
                         </div>
+                      </div>
+                      
+                      {/* Boutons d'action */}
+                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                        <button
+                          onClick={() => handleInitiativeClick(initiative)}
+                          className="flex items-center gap-1 text-xs text-green-600 hover:text-green-700 transition-colors"
+                        >
+                          <Eye className="h-3 w-3" />
+                          Voir sur la carte
+                        </button>
+                        <button
+                          onClick={() => handleShowDetails(initiative)}
+                          className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 transition-colors"
+                        >
+                          <Info className="h-3 w-3" />
+                          Détails
+                        </button>
                       </div>
                     </div>
                   ))
@@ -438,8 +521,14 @@ export default function MapPage() {
 
       {/* Modal de création d'initiative */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-gray-900/20 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white/95 backdrop-blur-sm rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div 
+          className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={closeModal} // Fermer en cliquant sur le backdrop
+        >
+          <div 
+            className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()} // Empêcher la fermeture en cliquant sur la modale
+          >
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-gray-900">Nouvelle Initiative</h2>
@@ -669,11 +758,192 @@ export default function MapPage() {
                         Publication...
                       </>
                     ) : (
-                      'Publier l&apos;initiative'
+                      "Publier l'initiative"
                     )}
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de détails d'initiative */}
+      {selectedInitiativeForDetails && (
+        <div 
+          className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={closeDetailsModal} // Fermer en cliquant sur le backdrop
+        >
+          <div 
+            className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()} // Empêcher la fermeture en cliquant sur la modale
+          >
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Détails de l&apos;initiative</h2>
+                <button
+                  onClick={closeDetailsModal}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                {/* En-tête avec type et titre */}
+                <div>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-12 h-12 flex items-center justify-center rounded-lg bg-green-100">
+                      {getTypeIcon(selectedInitiativeForDetails.type)}
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {selectedInitiativeForDetails.title}
+                      </h3>
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        {getTypeLabel(selectedInitiativeForDetails.type)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Description</h4>
+                  <p className="text-gray-600 leading-relaxed">
+                    {selectedInitiativeForDetails.description}
+                  </p>
+                </div>
+
+                {/* Localisation */}
+                <div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Localisation</h4>
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <p className="text-gray-600">
+                      <span className="font-medium">Adresse :</span> {selectedInitiativeForDetails.address}
+                    </p>
+                    <p className="text-gray-600">
+                      <span className="font-medium">Ville :</span> {selectedInitiativeForDetails.city}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Dates */}
+                {(selectedInitiativeForDetails.startDate || selectedInitiativeForDetails.endDate) && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">Dates</h4>
+                    <div className="bg-gray-50 rounded-lg p-3 space-y-1">
+                      {selectedInitiativeForDetails.startDate && (
+                        <p className="text-gray-600 flex items-center gap-2">
+                          <Calendar className="h-4 w-4" />
+                          <span className="font-medium">Début :</span> {formatDate(selectedInitiativeForDetails.startDate)}
+                        </p>
+                      )}
+                      {selectedInitiativeForDetails.endDate && (
+                        <p className="text-gray-600 flex items-center gap-2">
+                          <Calendar className="h-4 w-4" />
+                          <span className="font-medium">Fin :</span> {formatDate(selectedInitiativeForDetails.endDate)}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Informations de contact */}
+                {(selectedInitiativeForDetails.website || selectedInitiativeForDetails.contactEmail || selectedInitiativeForDetails.contactPhone) && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">Contact</h4>
+                    <div className="bg-gray-50 rounded-lg p-3 space-y-2">
+                      {selectedInitiativeForDetails.website && (
+                        <p className="text-gray-600 flex items-center gap-2">
+                          <Globe className="h-4 w-4" />
+                          <span className="font-medium">Site web :</span>
+                          <a 
+                            href={selectedInitiativeForDetails.website} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-green-600 hover:text-green-700 underline"
+                          >
+                            {selectedInitiativeForDetails.website}
+                          </a>
+                        </p>
+                      )}
+                      {selectedInitiativeForDetails.contactEmail && (
+                        <p className="text-gray-600 flex items-center gap-2">
+                          <Mail className="h-4 w-4" />
+                          <span className="font-medium">Email :</span>
+                          <a 
+                            href={`mailto:${selectedInitiativeForDetails.contactEmail}`}
+                            className="text-green-600 hover:text-green-700 underline"
+                          >
+                            {selectedInitiativeForDetails.contactEmail}
+                          </a>
+                        </p>
+                      )}
+                      {selectedInitiativeForDetails.contactPhone && (
+                        <p className="text-gray-600 flex items-center gap-2">
+                          <Phone className="h-4 w-4" />
+                          <span className="font-medium">Téléphone :</span>
+                          <a 
+                            href={`tel:${selectedInitiativeForDetails.contactPhone}`}
+                            className="text-green-600 hover:text-green-700 underline"
+                          >
+                            {selectedInitiativeForDetails.contactPhone}
+                          </a>
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Auteur */}
+                <div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Publié par</h4>
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <p className="text-gray-600">
+                      {selectedInitiativeForDetails.author.name || selectedInitiativeForDetails.author.username}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Image */}
+                {selectedInitiativeForDetails.imageUrl && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">Image</h4>
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <div className="relative w-full h-48 rounded-lg overflow-hidden">
+                        <Image 
+                          src={selectedInitiativeForDetails.imageUrl} 
+                          alt={selectedInitiativeForDetails.title}
+                          fill
+                          sizes="(max-width: 768px) 100vw, 576px"
+                          className="object-cover"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Boutons d'action */}
+                <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+                  <button
+                    onClick={() => {
+                      handleInitiativeClick(selectedInitiativeForDetails)
+                      closeDetailsModal()
+                    }}
+                    className="flex items-center gap-2 text-green-600 hover:text-green-700 font-medium transition-colors"
+                  >
+                    <Eye className="h-4 w-4" />
+                    Voir sur la carte
+                  </button>
+                  <button
+                    onClick={closeDetailsModal}
+                    className="px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
+                  >
+                    Fermer
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

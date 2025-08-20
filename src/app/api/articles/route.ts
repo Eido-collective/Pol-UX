@@ -14,7 +14,6 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit
 
     const where: Prisma.ArticleWhereInput = {
-      isApproved: true,
       isPublished: true
     }
 
@@ -126,10 +125,8 @@ export async function POST(request: NextRequest) {
         excerpt,
         category,
         imageUrl,
-        authorId: session.user.id,
-        isApproved: session.user.role === 'ADMIN',
-        isPublished: session.user.role === 'ADMIN',
-        publishedAt: session.user.role === 'ADMIN' ? new Date() : null
+        authorId: session.user.id
+        // isPublished et publishedAt sont par défaut gérés dans le schéma
       },
       include: {
         author: {

@@ -32,7 +32,6 @@ export async function POST(
     const article = await prisma.article.findUnique({
       where: {
         id: id,
-        isApproved: true,
         isPublished: true
       }
     })

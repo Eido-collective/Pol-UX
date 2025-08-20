@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "rm -rf .next && next dev",
     "build": "npm run cleanCache && npx prisma generate && next build",
-    "cleanCache": "rm -rf .next",
+    "cleanCache": "rm -rf .next && rm -rf node_modules/.prisma",
     "start": "next start",
     "lint": "next lint",
     "db:seed": "tsx prisma/seed.ts"
