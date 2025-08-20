@@ -391,7 +391,7 @@ export default function AdminPage() {
     switch (type) {
       case 'EVENT': return 'Événement'
       case 'PROJECT': return 'Projet'
-      case 'ASSOCIATION': return 'Association'
+      case 'ACTOR': return 'Acteur'
       case 'COMPANY': return 'Entreprise'
       default: return type
     }

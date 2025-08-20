@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
+import { sendEmail, generateConfirmationEmail } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   try {
@@ -63,16 +64,49 @@ export async function POST(request: NextRequest) {
     // Hasher le mot de passe
     const hashedPassword = await bcrypt.hash(password, 12)
 
-    // Créer l'utilisateur
+    // Créer l'utilisateur (email non confirmé)
     const user = await prisma.user.create({
       data: {
         name: `${firstName} ${lastName}`,
         email,
         username,
         password: hashedPassword,
-        role: 'EXPLORER'
+        role: 'EXPLORER',
+        emailConfirmed: false
       }
     })
+
+    // Créer un token de vérification
+    const verificationToken = crypto.randomUUID()
+    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 heures
+
+    await prisma.verificationToken.create({
+      data: {
+        identifier: email,
+        token: verificationToken,
+        expires
+      }
+    })
+
+    // Envoyer l'email de confirmation
+    try {
+      const confirmationUrl = `${process.env.NEXTAUTH_URL}/confirm-email?token=${verificationToken}`
+      const emailHtml = generateConfirmationEmail(user.name || `${firstName} ${lastName}`, confirmationUrl)
+      await sendEmail({
+        to: user.email,
+        subject: '🌱 Confirmez votre email - Pol-UX',
+        html: emailHtml
+      })
+      console.log('Email de confirmation envoyé à:', user.email)
+    } catch (emailError) {
+      console.error('Erreur lors de l\'envoi de l\'email de confirmation:', emailError)
+      // Supprimer l'utilisateur si l'email ne peut pas être envoyé
+      await prisma.user.delete({ where: { id: user.id } })
+      return NextResponse.json(
+        { error: 'Erreur lors de l\'envoi de l\'email de confirmation. Veuillez réessayer.' },
+        { status: 500 }
+      )
+    }
 
     // Retourner la réponse sans le mot de passe
     const userWithoutPassword = {
@@ -86,7 +120,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       { 
-        message: 'Compte créé avec succès',
+        message: 'Compte créé avec succès ! Veuillez vérifier votre boîte email pour confirmer votre adresse.',
         user: userWithoutPassword
       },
       { status: 201 }

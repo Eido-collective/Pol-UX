@@ -22,7 +22,7 @@ interface Initiative {
   id: string
   title: string
   description: string
-  type: 'EVENT' | 'PROJECT' | 'ASSOCIATION' | 'COMPANY'
+  type: 'EVENT' | 'PROJECT' | 'ACTOR' | 'COMPANY'
   latitude: number
   longitude: number
   address: string
@@ -55,7 +55,7 @@ export default function MapPage() {
   const [newInitiative, setNewInitiative] = useState({
     title: '',
     description: '',
-    type: 'EVENT' as 'EVENT' | 'PROJECT' | 'ASSOCIATION' | 'COMPANY',
+    type: 'EVENT' as 'EVENT' | 'PROJECT' | 'ACTOR' | 'COMPANY',
     latitude: 0,
     longitude: 0,
     address: '',
@@ -163,7 +163,7 @@ export default function MapPage() {
         return <Calendar className="h-4 w-4 text-blue-500" />
       case 'PROJECT':
         return <MapPin className="h-4 w-4 text-green-500" />
-      case 'ASSOCIATION':
+      case 'ACTOR':
         return <Users className="h-4 w-4 text-purple-500" />
       case 'COMPANY':
         return <Building className="h-4 w-4 text-orange-500" />
@@ -178,8 +178,8 @@ export default function MapPage() {
         return 'Événement'
       case 'PROJECT':
         return 'Projet'
-      case 'ASSOCIATION':
-        return 'Association'
+      case 'ACTOR':
+        return 'Acteur'
       case 'COMPANY':
         return 'Entreprise'
       default:
@@ -413,7 +413,7 @@ export default function MapPage() {
                 <option value="all">Tous les types</option>
                 <option value="EVENT">Événements</option>
                 <option value="PROJECT">Projets</option>
-                <option value="ASSOCIATION">Associations</option>
+                <option value="ACTOR">Acteurs</option>
                 <option value="COMPANY">Entreprises</option>
               </select>
 
@@ -571,13 +571,13 @@ export default function MapPage() {
                   <select
                     id="type"
                     value={newInitiative.type}
-                    onChange={(e) => setNewInitiative(prev => ({ ...prev, type: e.target.value as 'EVENT' | 'PROJECT' | 'ASSOCIATION' | 'COMPANY' }))}
+                    onChange={(e) => setNewInitiative(prev => ({ ...prev, type: e.target.value as 'EVENT' | 'PROJECT' | 'ACTOR' | 'COMPANY' }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                     required
                   >
                     <option value="EVENT">Événement</option>
                     <option value="PROJECT">Projet</option>
-                    <option value="ASSOCIATION">Association</option>
+                    <option value="ACTOR">Acteur</option>
                     <option value="COMPANY">Entreprise</option>
                   </select>
                 </div>

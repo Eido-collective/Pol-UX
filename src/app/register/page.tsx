@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Leaf, Eye, EyeOff } from 'lucide-react'
 
@@ -19,7 +18,6 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  const router = useRouter()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -89,10 +87,8 @@ export default function RegisterPage() {
       if (!response.ok) {
         setError(data.error || 'Une erreur est survenue')
       } else {
-        setSuccess('Compte créé avec succès ! Vous pouvez maintenant vous connecter.')
-        setTimeout(() => {
-          router.push('/login')
-        }, 2000)
+        setSuccess(data.message || 'Compte créé avec succès ! Veuillez vérifier votre boîte email pour confirmer votre adresse.')
+        // Ne pas rediriger automatiquement, l'utilisateur doit confirmer son email
       }
     } catch (error) {
       setError(`Une erreur est survenue: ${error}`)

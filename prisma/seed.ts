@@ -17,6 +17,7 @@ async function main() {
       username: 'admin',
       password: hashedPassword,
       role: 'ADMIN',
+      emailConfirmed: true,
     },
   })
 
@@ -30,6 +31,7 @@ async function main() {
       username: 'jean_dupont',
       password: await bcrypt.hash('password123', 12),
       role: 'CONTRIBUTOR',
+      emailConfirmed: true,
     },
   })
 
@@ -42,6 +44,7 @@ async function main() {
       username: 'marie_martin',
       password: await bcrypt.hash('password123', 12),
       role: 'EXPLORER',
+      emailConfirmed: true,
     },
   })
 
@@ -69,7 +72,7 @@ async function main() {
     data: {
       title: 'Association Éco-Citoyens Lyon',
       description: 'Association locale dédiée à la promotion de pratiques écologiques dans la région lyonnaise.',
-      type: 'ASSOCIATION',
+      type: 'ACTOR',
       latitude: 45.7578,
       longitude: 4.8320,
       address: '15 Rue de la République',
