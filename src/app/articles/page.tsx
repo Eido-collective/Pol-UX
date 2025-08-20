@@ -3,10 +3,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Search, Plus, ChevronUp, ChevronDown, Calendar, User, BookOpen, X } from 'lucide-react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
+import ArticleImage from '@/components/ArticleImage'
 
 interface Article {
   id: string
@@ -424,24 +424,17 @@ export default function ArticlesPage() {
                 key={article.id}
                 className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
               >
-                                 <div className="flex flex-col md:flex-row h-full">
-                   {/* Image de l'article */}
-                   {article.imageUrl ? (
-                     <div className="w-full md:w-64 h-48 md:h-auto flex-shrink-0 relative overflow-hidden">
-                       <Image
-                         src={article.imageUrl}
-                         alt={article.title}
-                         fill
-                         sizes="(max-width: 768px) 100vw, 256px"
-                         className="object-cover object-center"
-                         priority={false}
-                       />
-                     </div>
-                   ) : (
-                     <div className="w-full md:w-64 h-48 md:h-auto flex-shrink-0 bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center">
-                       <BookOpen className="h-12 w-12 text-green-600" />
-                     </div>
-                   )}
+                                                 <div className="flex flex-col md:flex-row h-full">
+                  {/* Image de l'article */}
+                  <div className="w-full md:w-64 h-48 md:h-auto flex-shrink-0">
+                    <ArticleImage
+                      src={article.imageUrl}
+                      alt={article.title}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 256px"
+                      className="w-full h-full"
+                    />
+                  </div>
 
                    {/* Contenu de l'article */}
                    <div className="flex-1 p-6 flex flex-col">

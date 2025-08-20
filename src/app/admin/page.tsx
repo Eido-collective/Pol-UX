@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { Users, FileText, MessageSquare, Lightbulb, BookOpen, Eye, EyeOff, Trash2, UserPlus, Shield } from 'lucide-react'
 import Image from 'next/image'
 import toast from 'react-hot-toast'
+import ContentFilters from '@/components/ContentFilters'
+import ArticleImage from '@/components/ArticleImage'
 
 interface User {
   id: string
@@ -143,6 +145,31 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true)
   const [selectedItem, setSelectedItem] = useState<ContentWithOptionalProps & { type: string } | null>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
+  
+  // États pour les filtres et la pagination
+  const [filters, setFilters] = useState<{
+    initiatives: 'all' | 'published' | 'unpublished'
+    posts: 'all' | 'published' | 'unpublished'
+    tips: 'all' | 'published' | 'unpublished'
+    articles: 'all' | 'published' | 'unpublished'
+  }>({
+    initiatives: 'all',
+    posts: 'all',
+    tips: 'all',
+    articles: 'all'
+  })
+  
+  const [pagination, setPagination] = useState<{
+    initiatives: { page: number; limit: number }
+    posts: { page: number; limit: number }
+    tips: { page: number; limit: number }
+    articles: { page: number; limit: number }
+  }>({
+    initiatives: { page: 1, limit: 10 },
+    posts: { page: 1, limit: 10 },
+    tips: { page: 1, limit: 10 },
+    articles: { page: 1, limit: 10 }
+  })
 
   // États pour la gestion du scroll et de la fermeture des modales
   useEffect(() => {
@@ -181,7 +208,7 @@ export default function AdminPage() {
     fetchContent('posts')
     fetchContent('tips')
     fetchContent('articles')
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (activeTab === 'role-requests') {
@@ -189,7 +216,7 @@ export default function AdminPage() {
     } else if (['initiatives', 'posts', 'tips', 'articles'].includes(activeTab)) {
       fetchContent(activeTab as ContentType)
     }
-  }, [activeTab])
+  }, [activeTab]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchUsers = async () => {
     try {
@@ -208,7 +235,20 @@ export default function AdminPage() {
 
   const fetchContent = async (type: ContentType) => {
     try {
-      const response = await fetch(`/api/admin/content?type=${type}`)
+      const currentFilter = filters[type]
+      const currentPagination = pagination[type]
+      
+      const params = new URLSearchParams({
+        type,
+        page: currentPagination.page.toString(),
+        limit: currentPagination.limit.toString()
+      })
+      
+      if (currentFilter !== 'all') {
+        params.append('status', currentFilter)
+      }
+      
+      const response = await fetch(`/api/admin/content?${params}`)
       if (response.ok) {
         const data = await response.json()
         setContent(prevContent => ({
@@ -324,6 +364,20 @@ export default function AdminPage() {
     setSelectedItem(null)
   }
 
+  const handleFilterChange = (type: ContentType, filter: 'all' | 'published' | 'unpublished') => {
+    setFilters(prev => ({ ...prev, [type]: filter }))
+    setPagination(prev => ({ ...prev, [type]: { ...prev[type], page: 1 } }))
+    // Recharger le contenu avec le nouveau filtre
+    setTimeout(() => fetchContent(type), 0)
+  }
+
+  // Fonction pour la pagination (prête pour une utilisation future)
+  // const handlePageChange = (type: ContentType, page: number) => {
+  //   setPagination(prev => ({ ...prev, [type]: { ...prev[type], page } }))
+  //   // Recharger le contenu avec la nouvelle page
+  //   setTimeout(() => fetchContent(type), 0)
+  // }
+
   const getRoleLabel = (role: string) => {
     switch (role) {
       case 'EXPLORER': return 'Explorateur'
@@ -394,77 +448,100 @@ export default function AdminPage() {
   }
 
   const renderContentList = (items: ContentWithCount[], type: ContentType) => {
-    if (!items || items.length === 0) {
-      return (
-        <p className="text-gray-500 text-center py-8">Aucun contenu trouvé</p>
-      )
-    }
+    const currentFilter = filters[type]
+    
+    // Filtrer les éléments côté client pour l'affichage
+    const filteredItems = items.filter(item => {
+      if (currentFilter === 'published') return item.isPublished
+      if (currentFilter === 'unpublished') return !item.isPublished
+      return true
+    })
+
+    const filterOptions = [
+      { value: 'all', label: 'Tous', count: items.length },
+      { value: 'published', label: 'Publiés', count: items.filter(item => item.isPublished).length },
+      { value: 'unpublished', label: 'Dépubliés', count: items.filter(item => !item.isPublished).length }
+    ]
 
     return (
       <div className="space-y-4">
-        {items.map((item) => (
-          <div key={item.id} className="border border-gray-200 rounded-lg p-4">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <h4 className="text-sm font-medium text-gray-900">{item.title}</h4>
-                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                    item.isPublished 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-red-100 text-red-800'
-                  }`}>
-                    {item.isPublished ? 'Publié' : 'Dépublié'}
-                  </span>
+        {/* Filtres */}
+        <ContentFilters
+          options={filterOptions}
+          currentFilter={currentFilter}
+          onFilterChange={(filter) => handleFilterChange(type, filter as 'all' | 'published' | 'unpublished')}
+        />
+
+        {/* Liste des éléments */}
+        {filteredItems.length === 0 ? (
+          <p className="text-gray-500 text-center py-8">Aucun contenu trouvé</p>
+        ) : (
+          <div className="space-y-4">
+            {filteredItems.map((item) => (
+              <div key={item.id} className="border border-gray-200 rounded-lg p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h4 className="text-sm font-medium text-gray-900">{item.title}</h4>
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        item.isPublished 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {item.isPublished ? 'Publié' : 'Dépublié'}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-2">
+                      {type === 'initiatives' && `${getTypeLabel((item as Initiative).type)} • ${(item as Initiative).city}`}
+                      {(type === 'posts' || type === 'tips' || type === 'articles') && getCategoryLabel((item as ForumPost | Tip | Article).category, type)}
+                      {' • Par '}{item.author.name || item.author.username}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      Créé le {formatDate(item.createdAt)}
+                      {item._count && (
+                        <span className="ml-2">
+                          {type === 'posts' && `• ${item._count.comments} commentaires • ${item._count.votes} votes`}
+                          {(type === 'tips' || type === 'articles') && `• ${item._count.votes} votes`}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                  <div className="flex gap-2 ml-4">
+                    <button
+                      onClick={() => showDetails(item, type)}
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                      title="Voir les détails"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleContentAction(type, item.id, item.isPublished ? 'unpublish' : 'publish')}
+                      className={`p-2 rounded-lg ${
+                        item.isPublished 
+                          ? 'text-orange-600 hover:bg-orange-50' 
+                          : 'text-green-600 hover:bg-green-50'
+                      }`}
+                      title={item.isPublished ? 'Dépublier' : 'Publier'}
+                    >
+                      {item.isPublished ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (confirm('Êtes-vous sûr de vouloir supprimer ce contenu ? Cette action est irréversible.')) {
+                          handleContentAction(type, item.id, 'delete')
+                        }
+                      }}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                      title="Supprimer"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
-                <p className="text-sm text-gray-600 mb-2">
-                  {type === 'initiatives' && `${getTypeLabel((item as Initiative).type)} • ${(item as Initiative).city}`}
-                  {(type === 'posts' || type === 'tips' || type === 'articles') && getCategoryLabel((item as ForumPost | Tip | Article).category, type)}
-                  {' • Par '}{item.author.name || item.author.username}
-                </p>
-                <p className="text-xs text-gray-400">
-                  Créé le {formatDate(item.createdAt)}
-                  {item._count && (
-                    <span className="ml-2">
-                      {type === 'posts' && `• ${item._count.comments} commentaires • ${item._count.votes} votes`}
-                      {(type === 'tips' || type === 'articles') && `• ${item._count.votes} votes`}
-                    </span>
-                  )}
-                </p>
               </div>
-              <div className="flex gap-2 ml-4">
-                <button
-                  onClick={() => showDetails(item, type)}
-                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
-                  title="Voir les détails"
-                >
-                  <Eye className="h-4 w-4" />
-                </button>
-                <button
-                  onClick={() => handleContentAction(type, item.id, item.isPublished ? 'unpublish' : 'publish')}
-                  className={`p-2 rounded-lg ${
-                    item.isPublished 
-                      ? 'text-orange-600 hover:bg-orange-50' 
-                      : 'text-green-600 hover:bg-green-50'
-                  }`}
-                  title={item.isPublished ? 'Dépublier' : 'Publier'}
-                >
-                  {item.isPublished ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-                <button
-                  onClick={() => {
-                    if (confirm('Êtes-vous sûr de vouloir supprimer ce contenu ? Cette action est irréversible.')) {
-                      handleContentAction(type, item.id, 'delete')
-                    }
-                  }}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                  title="Supprimer"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
+            ))}
           </div>
-        ))}
+        )}
       </div>
     )
   }
@@ -849,13 +926,24 @@ export default function AdminPage() {
                   <div>
                     <h4 className="font-medium text-gray-900 mb-2">Image</h4>
                     <div className="relative w-full h-64 rounded-lg overflow-hidden">
-                      <Image 
-                        src={selectedItem.imageUrl} 
-                        alt={selectedItem.title}
-                        fill
-                        sizes="(max-width: 768px) 100vw, 800px"
-                        className="object-cover"
-                      />
+                      {selectedItem.type === 'articles' ? (
+                        <ArticleImage 
+                          src={selectedItem.imageUrl} 
+                          alt={selectedItem.title}
+                          fill
+                          sizes="(max-width: 768px) 100vw, 800px"
+                          className="w-full h-full"
+                          fallbackIcon={<BookOpen className="h-16 w-16 text-green-600" />}
+                        />
+                      ) : (
+                        <Image 
+                          src={selectedItem.imageUrl} 
+                          alt={selectedItem.title}
+                          fill
+                          sizes="(max-width: 768px) 100vw, 800px"
+                          className="object-cover"
+                        />
+                      )}
                     </div>
                   </div>
                 )}

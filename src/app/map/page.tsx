@@ -33,7 +33,7 @@ interface Initiative {
   contactEmail?: string
   contactPhone?: string
   imageUrl?: string
-  isApproved: boolean
+  isPublished: boolean
   author: {
     name: string
     username: string
@@ -111,7 +111,7 @@ export default function MapPage() {
   }, [isModalOpen, selectedInitiativeForDetails])
 
   const filterInitiatives = useCallback(() => {
-    let filtered = initiatives.filter(initiative => initiative.isApproved)
+    let filtered = initiatives.filter(initiative => initiative.isPublished)
 
     // Filtre par recherche
     if (searchTerm) {

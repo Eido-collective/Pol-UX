@@ -14,7 +14,7 @@ interface Tip {
   category: string
   imageUrl?: string
   createdAt: string
-  isApproved: boolean
+  isPublished: boolean
   author: {
     name: string
     username: string
@@ -83,7 +83,7 @@ export default function TipsPage() {
   }, [session?.user?.id])
 
   const filterAndSortTips = useCallback(() => {
-    let filtered = tips.filter(tip => tip.isApproved)
+    let filtered = tips.filter(tip => tip.isPublished)
 
     // Filtre par recherche
     if (searchTerm) {

@@ -13,7 +13,7 @@ interface ForumPost {
   content: string
   category: string
   createdAt: string
-  isApproved: boolean
+  isPublished: boolean
   author: {
     name: string
     username: string
@@ -30,7 +30,7 @@ interface ForumComment {
   id: string
   content: string
   createdAt: string
-  isApproved: boolean
+  isPublished: boolean
   author: {
     name: string
     username: string
@@ -127,7 +127,7 @@ export default function ForumPage() {
   }, [session?.user?.id])
 
   const filterAndSortPosts = useCallback(() => {
-    let filtered = posts.filter(post => post.isApproved)
+    let filtered = posts.filter(post => post.isPublished)
 
     // Filtre par recherche
     if (searchTerm) {

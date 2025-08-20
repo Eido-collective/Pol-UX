@@ -5,8 +5,8 @@ import { useParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { ArrowLeft, ChevronUp, ChevronDown, User, Calendar, BookOpen } from 'lucide-react'
 import Link from 'next/link'
-import Image from 'next/image'
 import toast from 'react-hot-toast'
+import ArticleImage from '@/components/ArticleImage'
 
 interface Article {
   id: string
@@ -201,22 +201,17 @@ export default function ArticlePage() {
         {/* Article principal */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           {/* Image de l'article */}
-          {article.imageUrl ? (
-            <div className="w-full h-80 md:h-96 relative overflow-hidden">
-              <Image
-                src={article.imageUrl}
-                alt={article.title}
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1024px"
-                className="object-cover object-center"
-                priority={true}
-              />
-            </div>
-          ) : (
-            <div className="w-full h-80 md:h-96 bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center">
-              <BookOpen className="h-24 w-24 text-green-600" />
-            </div>
-          )}
+          <div className="w-full h-80 md:h-96">
+            <ArticleImage
+              src={article.imageUrl}
+              alt={article.title}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1024px"
+              priority={true}
+              className="w-full h-full"
+              fallbackIcon={<BookOpen className="h-24 w-24 text-green-600" />}
+            />
+          </div>
 
           <div className="p-6">
             {/* En-tête de l'article */}
