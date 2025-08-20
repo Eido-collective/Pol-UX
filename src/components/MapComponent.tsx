@@ -72,6 +72,7 @@ const MapComponent = ({ initiatives, selectedInitiativeId, onInitiativeClick }: 
     }
   }, [onInitiativeClick])
 
+  // Effet pour créer les marqueurs (séparé de l'ajustement de vue)
   useEffect(() => {
     if (!mapInstanceRef.current || !isMapLoaded) return
 
@@ -135,15 +136,13 @@ const MapComponent = ({ initiatives, selectedInitiativeId, onInitiativeClick }: 
         })
       }
 
-      // Nettoyer les marqueurs stockés
-      markersRef.current = {}
-
       // Ajouter les marqueurs pour chaque initiative
       initiatives.forEach((initiative) => {
         // Vérifier que les coordonnées sont valides
         if (!initiative.latitude || !initiative.longitude || 
             isNaN(initiative.latitude) || isNaN(initiative.longitude) ||
             initiative.latitude === 0 && initiative.longitude === 0) {
+          console.log('Initiative ignorée (coordonnées invalides):', initiative.title, initiative.latitude, initiative.longitude)
           return
         }
 
@@ -154,6 +153,7 @@ const MapComponent = ({ initiatives, selectedInitiativeId, onInitiativeClick }: 
 
           // Stocker le marqueur
           markersRef.current[initiative.id] = marker
+          console.log('Marqueur créé pour:', initiative.title, 'ID:', initiative.id, 'Coords:', initiative.latitude, initiative.longitude)
 
           const getTypeLabel = (type: string) => {
             switch (type) {
@@ -206,8 +206,20 @@ const MapComponent = ({ initiatives, selectedInitiativeId, onInitiativeClick }: 
           console.warn(`Erreur lors de l'ajout du marqueur pour l'initiative ${initiative.id}:`, error)
         }
       })
+    }, 100) // Délai de 100ms
 
-      // Ajuster la vue si des initiatives sont présentes
+    return () => {
+      clearTimeout(timeoutId)
+    }
+  }, [initiatives, isMapLoaded])
+
+  // Effet séparé pour l'ajustement initial de la vue (seulement au chargement)
+  useEffect(() => {
+    if (!mapInstanceRef.current || !isMapLoaded || selectedInitiativeId) return
+
+    const map = mapInstanceRef.current
+
+    const timeoutId = setTimeout(() => {
       try {
         if (initiatives.length > 0) {
           // Filtrer les initiatives avec des coordonnées valides
@@ -225,38 +237,43 @@ const MapComponent = ({ initiatives, selectedInitiativeId, onInitiativeClick }: 
             
             // Si les initiatives sont dispersées, ajuster la vue pour les voir toutes
             if (bounds.isValid()) {
-              map.fitBounds(bounds.pad(0.2)) // Augmenter le padding pour mieux voir tous les points
+              console.log('Ajustement initial de la vue pour', validInitiatives.length, 'initiatives')
+              map.fitBounds(bounds.pad(0.2))
             } else {
-              // Si pas de bounds valides, centrer sur la France avec un zoom adapté
+              console.log('Bounds invalides, centrage sur la France')
               map.setView([46.603354, 1.888334], 5)
             }
           } else {
-            // Si aucune initiative valide, centrer sur la France
+            console.log('Aucune initiative valide, centrage sur la France')
             map.setView([46.603354, 1.888334], 5)
           }
         } else {
-          // Si aucune initiative, centrer sur la France
+          console.log('Aucune initiative, centrage sur la France')
           map.setView([46.603354, 1.888334], 5)
         }
       } catch (error) {
         console.warn('Erreur lors de l\'ajustement de la vue:', error)
-        // En cas d'erreur, centrer sur la France
         map.setView([46.603354, 1.888334], 5)
       }
-    }, 100) // Délai de 100ms
+    }, 200)
 
     return () => {
       clearTimeout(timeoutId)
     }
-  }, [initiatives, isMapLoaded])
+  }, [isMapLoaded, initiatives, selectedInitiativeId]) // Ajouter les dépendances manquantes
 
   // Effet pour centrer sur une initiative sélectionnée
   useEffect(() => {
+    console.log('MapComponent: Effet zoom - selectedInitiativeId =', selectedInitiativeId)
     if (!mapInstanceRef.current || !selectedInitiativeId) return
 
     const map = mapInstanceRef.current
     const selectedInitiative = initiatives.find(i => i.id === selectedInitiativeId)
     const marker = markersRef.current[selectedInitiativeId]
+
+    console.log('MapComponent: Initiative trouvée =', selectedInitiative?.title)
+    console.log('MapComponent: Coordonnées =', selectedInitiative?.latitude, selectedInitiative?.longitude)
+    console.log('MapComponent: Marker trouvé =', !!marker)
 
     if (selectedInitiative && marker) {
       // Utiliser un délai pour s'assurer que la carte est stable
@@ -264,6 +281,7 @@ const MapComponent = ({ initiatives, selectedInitiativeId, onInitiativeClick }: 
         try {
           // Vérifier que la carte est toujours valide
           if (!map.getContainer()) {
+            console.log('MapComponent: Carte non valide')
             return
           }
 
@@ -273,27 +291,35 @@ const MapComponent = ({ initiatives, selectedInitiativeId, onInitiativeClick }: 
               !(selectedInitiative.latitude === 0 && selectedInitiative.longitude === 0)) {
             
             // Centrer la carte sur l'initiative avec un zoom plus proche
+            console.log('MapComponent: Zoom sur', selectedInitiative.title, 'aux coordonnées', selectedInitiative.latitude, selectedInitiative.longitude)
             map.setView([selectedInitiative.latitude, selectedInitiative.longitude], 16)
             
             // Ouvrir la popup après un court délai pour s'assurer que la carte est centrée
             setTimeout(() => {
               try {
                 if (marker && map.hasLayer(marker)) {
+                  console.log('MapComponent: Ouverture de la popup')
                   marker.openPopup()
+                } else {
+                  console.log('MapComponent: Marqueur non trouvé sur la carte')
                 }
               } catch (error) {
                 console.warn('Erreur lors de l\'ouverture de la popup:', error)
               }
-            }, 300)
+            }, 500) // Délai plus long pour l'ouverture de la popup
+          } else {
+            console.log('MapComponent: Coordonnées invalides pour le zoom')
           }
         } catch (error) {
           console.warn('Erreur lors du centrage sur l\'initiative sélectionnée:', error)
         }
-      }, 200) // Délai plus long pour le centrage
+      }, 300) // Délai plus long pour le centrage
 
       return () => {
         clearTimeout(timeoutId)
       }
+    } else {
+      console.log('MapComponent: Initiative ou marqueur non trouvé')
     }
   }, [selectedInitiativeId, initiatives])
 

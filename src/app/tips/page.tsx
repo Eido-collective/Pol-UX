@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Lightbulb, Search, ThumbsUp, ThumbsDown, Leaf, Zap, Car, Utensils, Droplets, ShoppingBag, Plus, X } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
@@ -8,6 +8,7 @@ import Link from 'next/link'
 import toast from 'react-hot-toast'
 import TipImage from '@/components/TipImage'
 import Pagination from '@/components/Pagination'
+import useSWR from 'swr'
 
 interface Tip {
   id: string
@@ -37,8 +38,6 @@ interface Vote {
 export default function TipsPage() {
   const { data: session } = useSession()
   const router = useRouter()
-  const [tips, setTips] = useState<Tip[]>([])
-  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [sortBy, setSortBy] = useState<string>('mostVoted')
@@ -46,7 +45,18 @@ export default function TipsPage() {
   
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
+  
+  // Utilisation de SWR pour récupérer les tips
+  const { data: tipsData, error, mutate } = useSWR(
+    `/api/tips?page=${currentPage}&limit=9${selectedCategory !== 'all' ? `&category=${selectedCategory}` : ''}${searchTerm ? `&search=${searchTerm}` : ''}`
+  )
+  const tips = useMemo(() => tipsData?.data || [], [tipsData?.data])
+  const pagination = tipsData?.pagination
+  const isLoading = !tipsData && !error
+  
+  // Récupération des catégories disponibles
+  const { data: categoriesData } = useSWR('/api/tips/categories')
+  const availableCategories = categoriesData?.categories || []
   
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -60,53 +70,23 @@ export default function TipsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<{[key: string]: string}>({})
 
-  const fetchTips = useCallback(async () => {
-    try {
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: '9'
+  // Charger les votes utilisateur quand les tips changent
+  useEffect(() => {
+    if (tips && session?.user?.id) {
+      const userVotesData: {[key: string]: number} = {}
+      
+      tips.forEach((tip: Tip) => {
+        if (tip.votes) {
+          const userVote = tip.votes.find((vote: Vote) => vote.userId === session.user.id)
+          if (userVote) {
+            userVotesData[tip.id] = userVote.value
+          }
+        }
       })
       
-      if (selectedCategory !== 'all') {
-        params.append('category', selectedCategory)
-      }
-      
-      if (searchTerm) {
-        params.append('search', searchTerm)
-      }
-
-      const response = await fetch(`/api/tips?${params}`)
-      if (response.ok) {
-        const data = await response.json()
-        setTips(data.tips)
-        setTotalPages(data.pagination.pages)
-        
-        // Charger les votes de l'utilisateur connecté
-        if (session?.user?.id) {
-          const userVotesData: {[key: string]: number} = {}
-          
-          data.tips.forEach((tip: Tip) => {
-            if (tip.votes) {
-              const userVote = tip.votes.find((vote: Vote) => vote.userId === session.user.id)
-              if (userVote) {
-                userVotesData[tip.id] = userVote.value
-              }
-            }
-          })
-          
-          setUserVotes(userVotesData)
-        }
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des conseils:', error)
-    } finally {
-      setLoading(false)
+      setUserVotes(userVotesData)
     }
-  }, [session?.user?.id, currentPage, selectedCategory, searchTerm])
-
-  useEffect(() => {
-    fetchTips()
-  }, [fetchTips])
+  }, [tips, session?.user?.id])
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -249,7 +229,7 @@ export default function TipsPage() {
         setIsModalOpen(false)
         setNewTip({ title: '', content: '', category: 'WASTE_REDUCTION', imageUrl: '', source: '' })
         setErrors({})
-        fetchTips() // Recharger les tips
+        mutate() // Recharger les tips
         toast.success('Conseil publié avec succès ! Il sera visible après modération.')
       } else {
         const errorData = await response.json()
@@ -292,7 +272,7 @@ export default function TipsPage() {
         }))
         
         // Recharger les tips pour mettre à jour les compteurs
-        fetchTips()
+        mutate()
       } else {
         const errorData = await response.json()
         toast.error(errorData.error || 'Erreur lors du vote')
@@ -348,13 +328,11 @@ export default function TipsPage() {
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
               >
                 <option value="all">Toutes les catégories</option>
-                <option value="WASTE_REDUCTION">Réduction des déchets</option>
-                <option value="ENERGY_SAVING">Économies d&apos;énergie</option>
-                <option value="TRANSPORT">Transport</option>
-                <option value="FOOD">Alimentation</option>
-                <option value="WATER">Eau</option>
-                <option value="CONSUMPTION">Consommation</option>
-                <option value="OTHER">Autre</option>
+                {availableCategories.map((category: { value: string; label: string; count: number }) => (
+                  <option key={category.value} value={category.value}>
+                    {getCategoryLabel(category.value)} ({category.count})
+                  </option>
+                ))}
               </select>
 
               <select
@@ -371,7 +349,7 @@ export default function TipsPage() {
         </div>
 
         {/* Grille des conseils */}
-        {loading ? (
+        {isLoading ? (
           <div className="text-center py-12">
             <div className="text-gray-500">Chargement des conseils...</div>
           </div>
@@ -383,7 +361,7 @@ export default function TipsPage() {
           </div>
                  ) : (
            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-             {tips.map((tip) => (
+             {tips.map((tip: Tip) => (
               <div
                 key={tip.id}
                 className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
@@ -468,11 +446,11 @@ export default function TipsPage() {
                  )}
 
          {/* Pagination */}
-         {totalPages > 1 && (
+         {pagination && pagination.totalPages > 1 && (
            <div className="mt-8">
              <Pagination
                currentPage={currentPage}
-               totalPages={totalPages}
+               totalPages={pagination.totalPages}
                onPageChange={setCurrentPage}
              />
            </div>

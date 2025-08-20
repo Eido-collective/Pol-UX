@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import { MapPin, Search, Calendar, Users, Building, Plus, X, Info, Eye, Globe, Mail, Phone } from 'lucide-react'
 import { useSession } from 'next-auth/react'
@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import Image from 'next/image'
 import Pagination from '@/components/Pagination'
-import { useInitiatives } from '@/hooks/useInitiatives'
+import { useInitiatives, useCities } from '@/hooks/useInitiatives'
 
 // Import dynamique de la carte pour éviter les erreurs SSR
 const MapComponent = dynamic(() => import('@/components/MapComponent'), {
@@ -45,16 +45,36 @@ interface Initiative {
 export default function MapPage() {
   const { data: session } = useSession()
   const router = useRouter()
-  const [loading, setLoading] = useState(true)
+
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedType, setSelectedType] = useState<string>('all')
   const [selectedCity, setSelectedCity] = useState<string>('all')
+  const [selectedInitiativeId, setSelectedInitiativeId] = useState<string | undefined>(undefined)
   
   // Utilisation de SWR pour récupérer les initiatives
-  const { initiatives, mutate } = useInitiatives({
+  const { initiatives, isLoading, mutate } = useInitiatives({
     city: selectedCity !== 'all' ? selectedCity : undefined,
     type: selectedType !== 'all' ? selectedType : undefined
   })
+
+  // Récupérer toutes les villes disponibles (sans filtres)
+  const { cities: availableCities } = useCities()
+
+  // Revalidation manuelle uniquement quand les filtres changent (pas automatique)
+  const revalidateData = useCallback(() => {
+    if (mutate && !selectedInitiativeId) { // Ne pas revalider si on a une initiative sélectionnée
+      mutate()
+    }
+  }, [mutate, selectedInitiativeId])
+
+  // Revalider seulement quand les filtres changent, pas en continu
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      revalidateData()
+    }, 200) // Délai pour éviter les conflits
+
+    return () => clearTimeout(timeoutId)
+  }, [selectedCity, selectedType, revalidateData])
 
   // Filtrage temporaire (à optimiser plus tard)
   const filteredInitiatives = initiatives.filter(initiative => {
@@ -89,11 +109,34 @@ export default function MapPage() {
   
   // Modal détails
   const [selectedInitiativeForDetails, setSelectedInitiativeForDetails] = useState<Initiative | null>(null)
-  const [selectedInitiativeId, setSelectedInitiativeId] = useState<string | undefined>(undefined)
 
   // Pagination pour les initiatives sans localisation
   const [currentPageWithoutAddress, setCurrentPageWithoutAddress] = useState(1)
   const [itemsPerPageWithoutAddress] = useState(6)
+
+  const closeModal = () => {
+    setIsModalOpen(false)
+    setNewInitiative({
+      title: '',
+      description: '',
+      type: 'EVENT',
+      latitude: 0,
+      longitude: 0,
+      address: '',
+      city: '',
+      startDate: '',
+      endDate: '',
+      website: '',
+      contactEmail: '',
+      contactPhone: '',
+      imageUrl: ''
+    })
+    setErrors({})
+  }
+
+  const closeDetailsModal = () => {
+    setSelectedInitiativeForDetails(null)
+  }
 
   // Bloquer le scroll quand une modale est ouverte
   useEffect(() => {
@@ -163,8 +206,6 @@ export default function MapPage() {
       }
     } catch (error) {
       console.error('Erreur lors du chargement des initiatives:', error)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -198,13 +239,8 @@ export default function MapPage() {
     }
   }
 
-  // Filtrer et normaliser les villes (supprimer les vides et normaliser la casse)
-  const cities = Array.from(new Set(
-    initiatives
-      .map(i => i.city?.trim())
-      .filter(city => city && city.length > 0)
-      .map(city => city.charAt(0).toUpperCase() + city.slice(1).toLowerCase())
-  )).sort()
+  // Utiliser les villes disponibles depuis l'API
+  const cities = availableCities
 
   const handleCreateInitiative = () => {
     if (!session) {
@@ -342,36 +378,24 @@ export default function MapPage() {
     }
   }
 
-  const closeModal = () => {
-    setIsModalOpen(false)
-    setNewInitiative({
-      title: '',
-      description: '',
-      type: 'EVENT',
-      latitude: 0,
-      longitude: 0,
-      address: '',
-      city: '',
-      startDate: '',
-      endDate: '',
-      website: '',
-      contactEmail: '',
-      contactPhone: '',
-      imageUrl: ''
-    })
-    setErrors({})
-  }
-
   const handleInitiativeClick = (initiative: Initiative) => {
-    setSelectedInitiativeId(initiative.id)
+    // Vérifier que l'initiative a des coordonnées valides
+    if (!initiative.latitude || !initiative.longitude || 
+        isNaN(initiative.latitude) || isNaN(initiative.longitude) ||
+        (initiative.latitude === 0 && initiative.longitude === 0)) {
+      console.warn('Initiative sans coordonnées valides:', initiative.title)
+      return
+    }
+    
+    // Forcer la mise à jour même si c'est le même ID
+    setSelectedInitiativeId(undefined)
+    setTimeout(() => {
+      setSelectedInitiativeId(initiative.id)
+    }, 100) // Délai suffisant pour éviter les conflits SWR
   }
 
   const handleShowDetails = (initiative: Initiative) => {
     setSelectedInitiativeForDetails(initiative)
-  }
-
-  const closeDetailsModal = () => {
-    setSelectedInitiativeForDetails(null)
   }
 
   const formatDate = (dateString?: string) => {
@@ -452,7 +476,7 @@ export default function MapPage() {
           {/* Carte */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-              {loading ? (
+              {isLoading ? (
                 <div className="h-[700px] bg-gray-100 rounded-lg flex items-center justify-center">
                   <div className="text-gray-500">Chargement de la carte...</div>
                 </div>
