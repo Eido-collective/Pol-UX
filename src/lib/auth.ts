@@ -75,6 +75,17 @@ export const authOptions: NextAuthOptions = {
         session.user.username = token.username as string
       }
       return session
+    },
+    async redirect({ url, baseUrl }) {
+      // Rediriger vers le dashboard après connexion
+      if (url.startsWith(baseUrl)) {
+        return `${baseUrl}/dashboard`
+      }
+      // Permettre les redirections externes pour OAuth
+      else if (url.startsWith('/')) {
+        return `${baseUrl}${url}`
+      }
+      return baseUrl
     }
   },
   pages: {
