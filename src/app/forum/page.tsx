@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { MessageSquare, ThumbsUp, ThumbsDown, Plus, Filter, Search } from 'lucide-react'
+import { MessageSquare, ChevronUp, ChevronDown, Plus, Filter, Search } from 'lucide-react'
 import Link from 'next/link'
 
 interface ForumPost {
@@ -47,7 +47,7 @@ export default function ForumPage() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
-  const [sortBy, setSortBy] = useState<string>('newest')
+  const [sortBy, setSortBy] = useState<string>('mostVoted')
   const [userVotes, setUserVotes] = useState<{[key: string]: number}>({})
 
   useEffect(() => {
@@ -226,9 +226,9 @@ export default function ForumPage() {
                 onChange={(e) => setSortBy(e.target.value)}
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
               >
+                <option value="mostVoted">Plus populaires</option>
                 <option value="newest">Plus récents</option>
                 <option value="oldest">Plus anciens</option>
-                <option value="mostVoted">Plus votés</option>
                 <option value="mostCommented">Plus commentés</option>
               </select>
             </div>
@@ -256,35 +256,38 @@ export default function ForumPage() {
               >
                 <div className="flex items-start gap-4">
                   {/* Votes */}
-                  <div className="flex flex-col items-center gap-2" onClick={(e) => e.preventDefault()}>
+                  <div className="flex flex-col items-center gap-1" onClick={(e) => e.preventDefault()}>
                     <button 
                       className={`p-1 rounded transition-colors ${
                         userVotes[post.id] === 1 
-                          ? 'text-green-600 bg-green-50' 
-                          : 'text-gray-400 hover:text-green-600 hover:bg-gray-100'
+                          ? 'text-orange-500 bg-orange-50' 
+                          : 'text-gray-400 hover:text-orange-500 hover:bg-gray-100'
                       }`}
                       onClick={(e) => {
                         e.stopPropagation()
                         handleVote(post.id, 1)
                       }}
                     >
-                      <ThumbsUp className="h-4 w-4" />
+                      <ChevronUp className="h-5 w-5" />
                     </button>
-                    <span className="text-sm font-medium text-gray-900">
+                    <span className={`text-sm font-medium ${
+                      getVoteCount(post.votes) > 0 ? 'text-orange-500' : 
+                      getVoteCount(post.votes) < 0 ? 'text-blue-500' : 'text-gray-900'
+                    }`}>
                       {getVoteCount(post.votes)}
                     </span>
                     <button 
                       className={`p-1 rounded transition-colors ${
                         userVotes[post.id] === -1 
-                          ? 'text-red-600 bg-red-50' 
-                          : 'text-gray-400 hover:text-red-600 hover:bg-gray-100'
+                          ? 'text-blue-500 bg-blue-50' 
+                          : 'text-gray-400 hover:text-blue-500 hover:bg-gray-100'
                       }`}
                       onClick={(e) => {
                         e.stopPropagation()
                         handleVote(post.id, -1)
                       }}
                     >
-                      <ThumbsDown className="h-4 w-4" />
+                      <ChevronDown className="h-5 w-5" />
                     </button>
                   </div>
 

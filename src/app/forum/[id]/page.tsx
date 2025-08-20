@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { ArrowLeft, MessageSquare, ThumbsUp, ThumbsDown, User, Calendar, Send, Loader2, Trash2, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, MessageSquare, ChevronUp, ChevronDown, User, Calendar, Send, Loader2, Trash2, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 
 interface Reply {
@@ -298,7 +298,7 @@ export default function ForumPostPage() {
                 <span>{post._count.comments} commentaires</span>
               </div>
               <div className="flex items-center space-x-1">
-                <ThumbsUp className="h-4 w-4" />
+                <ChevronUp className="h-4 w-4" />
                 <span>{post._count.votes} votes</span>
               </div>
             </div>
@@ -318,22 +318,22 @@ export default function ForumPostPage() {
                 onClick={() => handleVote('post', post.id, 1)}
                 className={`flex items-center space-x-1 transition-colors ${
                   userVotes[post.id] === 1 
-                    ? 'text-green-600' 
-                    : 'text-gray-600 hover:text-green-600'
+                    ? 'text-orange-500' 
+                    : 'text-gray-600 hover:text-orange-500'
                 }`}
               >
-                <ThumbsUp className="h-4 w-4" />
+                <ChevronUp className="h-4 w-4" />
                 <span>Voter</span>
               </button>
               <button 
                 onClick={() => handleVote('post', post.id, -1)}
                 className={`flex items-center space-x-1 transition-colors ${
                   userVotes[post.id] === -1 
-                    ? 'text-red-600' 
-                    : 'text-gray-600 hover:text-red-600'
+                    ? 'text-blue-500' 
+                    : 'text-gray-600 hover:text-blue-500'
                 }`}
               >
-                <ThumbsDown className="h-4 w-4" />
+                <ChevronDown className="h-4 w-4" />
                 <span>Voter contre</span>
               </button>
             </div>
@@ -437,22 +437,22 @@ export default function ForumPostPage() {
                            onClick={() => handleVote('comment', comment.id, 1)}
                            className={`flex items-center space-x-1 px-2 py-1 rounded transition-colors ${
                              userVotes[comment.id] === 1 
-                               ? 'text-green-600 bg-green-50' 
-                               : 'text-gray-600 hover:text-green-600 hover:bg-gray-100'
+                               ? 'text-orange-500 bg-orange-50' 
+                               : 'text-gray-600 hover:text-orange-500 hover:bg-gray-100'
                            }`}
                          >
-                           <ThumbsUp className="h-3 w-3" />
+                           <ChevronUp className="h-3 w-3" />
                            <span className="text-xs">Voter</span>
                          </button>
                          <button 
                            onClick={() => handleVote('comment', comment.id, -1)}
                            className={`flex items-center space-x-1 px-2 py-1 rounded transition-colors ${
                              userVotes[comment.id] === -1 
-                               ? 'text-red-600 bg-red-50' 
-                               : 'text-gray-600 hover:text-red-600 hover:bg-gray-100'
+                               ? 'text-blue-500 bg-blue-50' 
+                               : 'text-gray-600 hover:text-blue-500 hover:bg-gray-100'
                            }`}
                          >
-                           <ThumbsDown className="h-3 w-3" />
+                           <ChevronDown className="h-3 w-3" />
                            <span className="text-xs">Voter contre</span>
                          </button>
                          {session && (
@@ -569,22 +569,22 @@ export default function ForumPostPage() {
                                    onClick={() => handleVote('comment', reply.id, 1)}
                                    className={`flex items-center space-x-1 px-2 py-1 rounded transition-colors ${
                                      userVotes[reply.id] === 1 
-                                       ? 'text-green-600 bg-green-50' 
-                                       : 'text-gray-600 hover:text-green-600 hover:bg-gray-100'
+                                       ? 'text-orange-500 bg-orange-50' 
+                                       : 'text-gray-600 hover:text-orange-500 hover:bg-gray-100'
                                    }`}
                                  >
-                                   <ThumbsUp className="h-2 w-2" />
+                                   <ChevronUp className="h-2 w-2" />
                                    <span className="text-xs">Voter</span>
                                  </button>
                                  <button 
                                    onClick={() => handleVote('comment', reply.id, -1)}
                                    className={`flex items-center space-x-1 px-2 py-1 rounded transition-colors ${
                                      userVotes[reply.id] === -1 
-                                       ? 'text-red-600 bg-red-50' 
-                                       : 'text-gray-600 hover:text-red-600 hover:bg-gray-100'
+                                       ? 'text-blue-500 bg-blue-50' 
+                                       : 'text-gray-600 hover:text-blue-500 hover:bg-gray-100'
                                    }`}
                                  >
-                                   <ThumbsDown className="h-2 w-2" />
+                                   <ChevronDown className="h-2 w-2" />
                                    <span className="text-xs">Voter contre</span>
                                  </button>
                                </div>
