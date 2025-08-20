@@ -9,6 +9,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const category = searchParams.get('category')
     const search = searchParams.get('search')
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '10')
+    const skip = (page - 1) * limit
 
     // Construire les filtres
     const where: Prisma.ForumPostWhereInput = {
@@ -26,43 +29,53 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    const posts = await prisma.forumPost.findMany({
-      where,
-      include: {
-        author: {
-          select: {
-            name: true,
-            username: true
+    const [posts, total] = await Promise.all([
+      prisma.forumPost.findMany({
+        where,
+        include: {
+          author: {
+            select: {
+              name: true,
+              username: true
+            }
+          },
+          comments: {
+            where: { isPublished: true },
+            include: {
+              author: {
+                select: {
+                  name: true,
+                  username: true
+                }
+              },
+              votes: true
+            }
+          },
+          votes: true,
+          _count: {
+            select: {
+              comments: true,
+              votes: true
+            }
           }
         },
-        comments: {
-          where: { isPublished: true },
-          include: {
-            author: {
-              select: {
-                name: true,
-                username: true
-              }
-            },
-            votes: true
-          }
+        orderBy: {
+          createdAt: 'desc'
         },
-        votes: true,
-        _count: {
-          select: {
-            comments: true,
-            votes: true
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    })
+        skip,
+        take: limit
+      }),
+      prisma.forumPost.count({ where })
+    ])
 
     return NextResponse.json({
       posts,
-      count: posts.length
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
     })
 
   } catch (error) {

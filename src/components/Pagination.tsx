@@ -43,40 +43,65 @@ export default function Pagination({
     return rangeWithDots
   }
 
-  return (
-    <div className={`flex items-center justify-center space-x-1 ${className}`}>
-      <button
-        onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-        className="p-2 text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg hover:bg-gray-100"
-      >
-        <ChevronLeft className="h-4 w-4" />
-      </button>
+  const handlePageChange = (page: number) => {
+    onPageChange(page)
+    // Scroll vers le haut de la page
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
-      {getVisiblePages().map((page, index) => (
+  return (
+    <div className={`flex items-center justify-center ${className}`}>
+      <nav className="flex items-center gap-2 bg-white rounded-xl shadow-lg border border-gray-200 p-2" aria-label="Pagination">
+        {/* Bouton Précédent */}
         <button
-          key={index}
-          onClick={() => typeof page === 'number' && onPageChange(page)}
-          disabled={page === '...'}
-          className={`px-3 py-2 text-sm font-medium rounded-lg ${
-            page === currentPage
-              ? 'bg-green-600 text-white'
-              : page === '...'
-              ? 'text-gray-400 cursor-default'
-              : 'text-gray-700 hover:bg-gray-100'
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${
+            currentPage === 1
+              ? 'text-gray-400 bg-gray-50 cursor-not-allowed'
+              : 'text-gray-700 bg-white hover:bg-green-50 hover:text-green-700 hover:shadow-md border border-gray-200 hover:border-green-300'
           }`}
         >
-          {page}
+          <ChevronLeft className="h-4 w-4" />
+          Précédent
         </button>
-      ))}
 
-      <button
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-        className="p-2 text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg hover:bg-gray-100"
-      >
-        <ChevronRight className="h-4 w-4" />
-      </button>
+        {/* Numéros de pages */}
+        <div className="flex items-center gap-1">
+          {getVisiblePages().map((page, index) => (
+            <div key={index}>
+              {page === '...' ? (
+                <span className="px-3 py-2.5 text-gray-400 font-medium">...</span>
+              ) : (
+                <button
+                  onClick={() => handlePageChange(page as number)}
+                  className={`px-4 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${
+                    currentPage === page
+                      ? 'bg-green-600 text-white shadow-lg shadow-green-200 border border-green-600'
+                      : 'text-gray-700 bg-white hover:bg-green-50 hover:text-green-700 hover:shadow-md border border-gray-200 hover:border-green-300'
+                  }`}
+                >
+                  {page}
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Bouton Suivant */}
+        <button
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${
+            currentPage === totalPages
+              ? 'text-gray-400 bg-gray-50 cursor-not-allowed'
+              : 'text-gray-700 bg-white hover:bg-green-50 hover:text-green-700 hover:shadow-md border border-gray-200 hover:border-green-300'
+          }`}
+        >
+          Suivant
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </nav>
     </div>
   )
 }

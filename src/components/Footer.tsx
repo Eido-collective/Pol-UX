@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Leaf, MapPin, MessageSquare, Lightbulb, Github, Twitter, Mail, Heart } from 'lucide-react'
+import { Leaf, MapPin, MessageSquare, Lightbulb, Mail, Heart, BookOpen } from 'lucide-react'
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
@@ -10,21 +10,12 @@ export default function Footer() {
       { name: 'Carte', href: '/map', icon: MapPin },
       { name: 'Forum', href: '/forum', icon: MessageSquare },
       { name: 'Conseils', href: '/tips', icon: Lightbulb },
+      { name: 'Articles', href: '/articles', icon: BookOpen },
     ],
     social: [
       {
-        name: 'GitHub',
-        href: '#',
-        icon: Github,
-      },
-      {
-        name: 'Twitter',
-        href: '#',
-        icon: Twitter,
-      },
-      {
         name: 'Email',
-        href: 'mailto:contact@polux.fr',
+        href: 'mailto:solene@pol-ux.fr',
         icon: Mail,
       },
     ],
@@ -120,6 +111,14 @@ export default function Footer() {
                       className="text-base text-gray-500 hover:text-green-600 transition-colors"
                     >
                       Conditions d&apos;utilisation
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/legals"
+                      className="text-base text-gray-500 hover:text-green-600 transition-colors"
+                    >
+                      Mentions légales
                     </Link>
                   </li>
                 </ul>

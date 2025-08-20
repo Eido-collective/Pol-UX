@@ -9,6 +9,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const category = searchParams.get('category')
     const search = searchParams.get('search')
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '10')
+    const skip = (page - 1) * limit
 
     // Construire les filtres
     const where: Prisma.TipWhereInput = {
@@ -26,30 +29,40 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    const tips = await prisma.tip.findMany({
-      where,
-      include: {
-        author: {
-          select: {
-            name: true,
-            username: true
+    const [tips, total] = await Promise.all([
+      prisma.tip.findMany({
+        where,
+        include: {
+          author: {
+            select: {
+              name: true,
+              username: true
+            }
+          },
+          votes: true,
+          _count: {
+            select: {
+              votes: true
+            }
           }
         },
-        votes: true,
-        _count: {
-          select: {
-            votes: true
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    })
+        orderBy: {
+          createdAt: 'desc'
+        },
+        skip,
+        take: limit
+      }),
+      prisma.tip.count({ where })
+    ])
 
     return NextResponse.json({
       tips,
-      count: tips.length
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
     })
 
   } catch (error) {
@@ -81,7 +94,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { title, content, category, imageUrl } = body
+    const { title, content, category, imageUrl, source } = body
 
     // Validation des données
     if (!title || !content || !category) {
@@ -111,6 +124,7 @@ export async function POST(request: NextRequest) {
         content,
         category,
         imageUrl,
+        source,
         authorId: session.user.id
         // isPublished est par défaut à true dans le schéma
       },
