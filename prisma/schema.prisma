@@ -45,6 +45,12 @@ enum TipCategory {
   OTHER
 }
 
+enum RoleRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -91,6 +97,8 @@ model User {
   forumComments ForumComment[]
   tips          Tip[]
   votes         Vote[]
+  roleRequests  RoleRequest[]
+  processedRoleRequests RoleRequest[] @relation("AdminRoleRequests")
 }
 
 model VerificationToken {
@@ -99,6 +107,22 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model RoleRequest {
+  id          String           @id @default(cuid())
+  requestedRole UserRole
+  reason      String
+  status      RoleRequestStatus @default(PENDING)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  processedAt DateTime?
+  adminNotes  String?
+
+  userId      String
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  processedBy String?
+  admin       User?            @relation("AdminRoleRequests", fields: [processedBy], references: [id])
 }
 
 model Initiative {

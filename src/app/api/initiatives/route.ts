@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
   try {
@@ -60,6 +62,23 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session) {
+      return NextResponse.json(
+        { error: 'Vous devez être connecté pour créer une initiative' },
+        { status: 401 }
+      )
+    }
+
+    // Vérifier que l'utilisateur a le rôle CONTRIBUTOR ou ADMIN
+    if (session.user.role === 'EXPLORER') {
+      return NextResponse.json(
+        { error: 'Vous devez être Contributeur ou Administrateur pour créer des initiatives. Demandez une promotion de rôle.' },
+        { status: 403 }
+      )
+    }
+
     const body = await request.json()
     const {
       title,
@@ -79,16 +98,12 @@ export async function POST(request: NextRequest) {
     } = body
 
     // Validation des données
-    if (!title || !description || !type || !latitude || !longitude || !address || !city || !postalCode) {
+    if (!title || !description || !type || !latitude || !longitude || !address || !city) {
       return NextResponse.json(
         { error: 'Tous les champs obligatoires doivent être remplis' },
         { status: 400 }
       )
     }
-
-    // TODO: Récupérer l'utilisateur connecté depuis la session
-    // Pour l'instant, on utilise un utilisateur par défaut
-    const defaultUserId = 'default-user-id'
 
     const initiative = await prisma.initiative.create({
       data: {
@@ -106,8 +121,8 @@ export async function POST(request: NextRequest) {
         contactEmail,
         contactPhone,
         imageUrl,
-        authorId: defaultUserId,
-        isApproved: false // Les nouvelles initiatives doivent être approuvées
+        authorId: session.user.id,
+        isApproved: session.user.role === 'ADMIN'
       },
       include: {
         author: {

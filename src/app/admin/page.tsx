@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Users, FileText, MessageSquare, Lightbulb, CheckCircle, XCircle, Eye, Trash2, Shield } from 'lucide-react'
+import { Users, FileText, MessageSquare, Lightbulb, CheckCircle, XCircle, Eye, Trash2, Shield, UserPlus } from 'lucide-react'
 
 interface User {
   id: string
@@ -48,6 +48,8 @@ interface Tip {
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState('users')
+  const [roleRequests, setRoleRequests] = useState([])
+  const [loadingRequests, setLoadingRequests] = useState(false)
   const [users, setUsers] = useState<User[]>([])
   const [initiatives, setInitiatives] = useState<Initiative[]>([])
   const [posts, setPosts] = useState<ForumPost[]>([])
@@ -57,6 +59,12 @@ export default function AdminPage() {
   useEffect(() => {
     fetchData()
   }, [])
+
+  useEffect(() => {
+    if (activeTab === 'role-requests') {
+      fetchRoleRequests()
+    }
+  }, [activeTab])
 
   const fetchData = async () => {
     try {
@@ -143,6 +151,39 @@ export default function AdminPage() {
       case 'CONTRIBUTOR': return 'Contributeur'
       case 'ADMIN': return 'Administrateur'
       default: return role
+    }
+  }
+
+  const fetchRoleRequests = async () => {
+    setLoadingRequests(true)
+    try {
+      const response = await fetch('/api/role-requests')
+      if (response.ok) {
+        const data = await response.json()
+        setRoleRequests(data.roleRequests)
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération des demandes de promotion:', error)
+    } finally {
+      setLoadingRequests(false)
+    }
+  }
+
+  const handleProcessRoleRequest = async (requestId: string, action: 'approve' | 'reject', adminNotes?: string) => {
+    try {
+      const response = await fetch(`/api/role-requests/${requestId}/process`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ action, adminNotes })
+      })
+      if (response.ok) {
+        fetchRoleRequests()
+        fetchData() // Recharger les utilisateurs aussi
+      }
+    } catch (error) {
+      console.error('Erreur lors du traitement de la demande:', error)
     }
   }
 
@@ -241,6 +282,19 @@ export default function AdminPage() {
                 <div className="flex items-center gap-2">
                   <Lightbulb className="h-4 w-4" />
                   Conseils ({tips.filter(t => !t.isApproved).length})
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab('role-requests')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'role-requests'
+                    ? 'border-green-500 text-green-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <UserPlus className="h-4 w-4" />
+                  Demandes de Promotion ({roleRequests.filter((r: any) => r.status === 'PENDING').length})
                 </div>
               </button>
             </nav>
@@ -416,6 +470,94 @@ export default function AdminPage() {
                     <p className="text-gray-500 text-center py-8">Aucun conseil en attente d'approbation</p>
                   )}
                 </div>
+              </div>
+            )}
+
+            {activeTab === 'role-requests' && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium text-gray-900">Demandes de promotion</h3>
+                {loadingRequests ? (
+                  <div className="text-center py-8">
+                    <div className="text-gray-500">Chargement...</div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {roleRequests.map((request: any) => (
+                      <div key={request.id} className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h4 className="text-sm font-medium text-gray-900">
+                                {request.user.name} ({request.user.username})
+                              </h4>
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                {getRoleLabel(request.user.role)} → {getRoleLabel(request.requestedRole)}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-600 mb-2">
+                              <strong>Raison :</strong> {request.reason}
+                            </p>
+                            <p className="text-xs text-gray-400">
+                              Demande créée le {formatDate(request.createdAt)}
+                            </p>
+                            {request.status === 'PENDING' && (
+                              <div className="mt-3">
+                                <textarea
+                                  placeholder="Note optionnelle pour l'utilisateur..."
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none"
+                                  rows={2}
+                                  id={`notes-${request.id}`}
+                                />
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex gap-2 ml-4">
+                            {request.status === 'PENDING' ? (
+                              <>
+                                <button
+                                  onClick={() => {
+                                    const notes = (document.getElementById(`notes-${request.id}`) as HTMLTextAreaElement)?.value
+                                    handleProcessRoleRequest(request.id, 'approve', notes)
+                                  }}
+                                  className="p-2 text-green-600 hover:bg-green-50 rounded-lg"
+                                  title="Approuver"
+                                >
+                                  <CheckCircle className="h-5 w-5" />
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    const notes = (document.getElementById(`notes-${request.id}`) as HTMLTextAreaElement)?.value
+                                    handleProcessRoleRequest(request.id, 'reject', notes)
+                                  }}
+                                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                                  title="Rejeter"
+                                >
+                                  <XCircle className="h-5 w-5" />
+                                </button>
+                              </>
+                            ) : (
+                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                request.status === 'APPROVED' 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-red-100 text-red-800'
+                              }`}>
+                                {request.status === 'APPROVED' ? 'Approuvée' : 'Rejetée'}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        {request.adminNotes && (
+                          <div className="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-600">
+                            <strong>Note de l'admin :</strong> {request.adminNotes}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    {roleRequests.length === 0 && (
+                      <p className="text-gray-500 text-center py-8">Aucune demande de promotion</p>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>

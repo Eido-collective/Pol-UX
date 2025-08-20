@@ -199,6 +199,25 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Section Promotion (si pas admin) */}
+        {session.user.role !== 'ADMIN' && (
+          <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-blue-900 mb-4 flex items-center gap-2">
+              <User className="h-5 w-5" />
+              Demande de Promotion
+            </h3>
+            <p className="text-blue-700 mb-4">
+              Souhaitez-vous accéder à plus de fonctionnalités ? Demandez une promotion de rôle pour créer des initiatives, conseils et articles.
+            </p>
+            <button 
+              onClick={() => router.push('/promotion')}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Demander une promotion
+            </button>
+          </div>
+        )}
+
         {/* Section Admin (si admin) */}
         {session.user.role === 'ADMIN' && (
           <div className="mt-6 bg-red-50 border border-red-200 rounded-lg p-6">
