@@ -283,7 +283,7 @@ export default function HomePage() {
             </Link>
             <Link
               href="/map"
-              className="border-2 border-theme-card text-theme-card hover:bg-theme-card hover:text-green-500 px-8 py-3 rounded-lg font-semibold transition-colors"
+              className="border-2 border-white text-white hover:bg-white hover:text-green-500 px-8 py-3 rounded-lg font-semibold transition-colors"
             >
               Explorer maintenant
             </Link>
