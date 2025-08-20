@@ -40,10 +40,14 @@ export function useInitiatives(options: UseInitiativesOptions = {}) {
   const { data, error, isLoading, mutate } = useSWR<{ initiatives: Initiative[] }>(
     key,
     {
-      // Les initiatives changent moins souvent, cache plus long
-      dedupingInterval: 45000, // 45 secondes
+      // Configuration moins agressive pour éviter les conflits avec le zoom
+      dedupingInterval: 5000, // 5 secondes
       revalidateOnMount: true,
-      refreshInterval: 15 * 60 * 1000, // 15 minutes
+      revalidateOnFocus: false, // Désactivé pour éviter les conflits
+      revalidateOnReconnect: false, // Désactivé pour éviter les conflits
+      refreshInterval: 0, // Pas de refresh automatique
+      errorRetryCount: 2,
+      errorRetryInterval: 2000,
     }
   )
   
@@ -52,5 +56,23 @@ export function useInitiatives(options: UseInitiativesOptions = {}) {
     isLoading,
     error,
     mutate
+  }
+}
+
+// Hook pour récupérer toutes les villes disponibles (sans filtres)
+export function useCities() {
+  const { data, error, isLoading } = useSWR<{ cities: string[] }>(
+    '/api/initiatives/cities',
+    {
+      dedupingInterval: 60000, // 1 minute
+      revalidateOnMount: true,
+      refreshInterval: 30 * 60 * 1000, // 30 minutes
+    }
+  )
+  
+  return {
+    cities: data?.cities || [],
+    isLoading,
+    error
   }
 }

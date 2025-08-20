@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
       isPublished: true
     }
 
-    if (category && category !== 'all') {
+    if (category && category !== 'all' && category !== '') {
       where.category = category as TipCategory
     }
 
@@ -56,12 +56,12 @@ export async function GET(request: NextRequest) {
     ])
 
     return NextResponse.json({
-      tips,
+      data: tips,
       pagination: {
         page,
         limit,
         total,
-        pages: Math.ceil(total / limit)
+        totalPages: Math.ceil(total / limit)
       }
     })
 

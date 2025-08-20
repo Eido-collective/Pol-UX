@@ -69,12 +69,12 @@ export async function GET(request: NextRequest) {
     ])
 
     return NextResponse.json({
-      posts,
+      data: posts,
       pagination: {
         page,
         limit,
         total,
-        pages: Math.ceil(total / limit)
+        totalPages: Math.ceil(total / limit)
       }
     })
 

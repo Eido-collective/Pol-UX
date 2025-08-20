@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { MessageSquare, ChevronUp, ChevronDown, Plus, Search, X } from 'lucide-react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import Pagination from '@/components/Pagination'
+import useSWR from 'swr'
 
 interface ForumPost {
   id: string
@@ -48,8 +49,6 @@ interface Vote {
 export default function ForumPage() {
   const { data: session } = useSession()
   const router = useRouter()
-  const [posts, setPosts] = useState<ForumPost[]>([])
-  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [sortBy, setSortBy] = useState<string>('mostVoted')
@@ -57,7 +56,14 @@ export default function ForumPage() {
   
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
+  
+  // Utilisation de SWR pour récupérer les posts
+  const { data: postsData, error, mutate } = useSWR(
+    `/api/forum/posts?page=${currentPage}&limit=10${selectedCategory !== 'all' ? `&category=${selectedCategory}` : ''}${searchTerm ? `&search=${searchTerm}` : ''}`
+  )
+  const posts = useMemo(() => postsData?.data || [], [postsData?.data])
+  const pagination = postsData?.pagination
+  const isLoading = !postsData && !error
   
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -100,53 +106,23 @@ export default function ForumPage() {
     }
   }, [isModalOpen])
 
-  const fetchPosts = useCallback(async () => {
-    try {
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: '10'
+  // Charger les votes utilisateur quand les posts changent
+  useEffect(() => {
+    if (posts && session?.user?.id) {
+      const userVotesData: {[key: string]: number} = {}
+      
+      posts.forEach((post: ForumPost) => {
+        if (post.votes) {
+          const userVote = post.votes.find((vote: Vote) => vote.userId === session.user.id)
+          if (userVote) {
+            userVotesData[post.id] = userVote.value
+          }
+        }
       })
       
-      if (selectedCategory !== 'all') {
-        params.append('category', selectedCategory)
-      }
-      
-      if (searchTerm) {
-        params.append('search', searchTerm)
-      }
-
-      const response = await fetch(`/api/forum/posts?${params}`)
-      if (response.ok) {
-        const data = await response.json()
-        setPosts(data.posts)
-        setTotalPages(data.pagination.pages)
-        
-        // Charger les votes de l'utilisateur connecté
-        if (session?.user?.id) {
-          const userVotesData: {[key: string]: number} = {}
-          
-          data.posts.forEach((post: ForumPost) => {
-            if (post.votes) {
-              const userVote = post.votes.find((vote: Vote) => vote.userId === session.user.id)
-              if (userVote) {
-                userVotesData[post.id] = userVote.value
-              }
-            }
-          })
-          
-          setUserVotes(userVotesData)
-        }
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des posts:', error)
-    } finally {
-      setLoading(false)
+      setUserVotes(userVotesData)
     }
-  }, [session?.user?.id, currentPage, selectedCategory, searchTerm])
-
-  useEffect(() => {
-    fetchPosts()
-  }, [fetchPosts])
+  }, [posts, session?.user?.id])
 
   const getCategoryLabel = (category: string) => {
     switch (category) {
@@ -204,7 +180,7 @@ export default function ForumPage() {
         }))
         
         // Recharger les posts pour mettre à jour les compteurs
-        fetchPosts()
+        mutate()
       } else {
         const errorData = await response.json()
         toast.error(errorData.error || 'Erreur lors du vote')
@@ -293,7 +269,7 @@ export default function ForumPage() {
         setIsModalOpen(false)
         setNewPost({ title: '', content: '', category: 'GENERAL' })
         setErrors({})
-        fetchPosts() // Recharger les posts
+        mutate() // Recharger les posts
         toast.success('Post publié avec succès ! Il sera visible après modération.')
       } else {
         const errorData = await response.json()
@@ -382,7 +358,7 @@ export default function ForumPage() {
 
         {/* Liste des posts */}
         <div className="space-y-4">
-          {loading ? (
+          {isLoading ? (
             <div className="text-center py-12">
               <div className="text-gray-500">Chargement des posts...</div>
             </div>
@@ -393,7 +369,7 @@ export default function ForumPage() {
               <p className="text-gray-500">Essayez de modifier vos filtres ou créez le premier post !</p>
             </div>
           ) : (
-            posts.map((post) => (
+            posts.map((post: ForumPost) => (
               <Link
                 key={post.id}
                 href={`/forum/${post.id}`}
@@ -477,11 +453,11 @@ export default function ForumPage() {
         </div>
 
         {/* Pagination */}
-        {totalPages > 1 && (
+        {pagination && pagination.totalPages > 1 && (
           <div className="mt-8">
             <Pagination
               currentPage={currentPage}
-              totalPages={totalPages}
+              totalPages={pagination.totalPages}
               onPageChange={setCurrentPage}
             />
           </div>

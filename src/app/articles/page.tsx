@@ -9,6 +9,7 @@ import toast from 'react-hot-toast'
 import ArticleImage from '@/components/ArticleImage'
 import Pagination from '@/components/Pagination'
 import { useArticles } from '@/hooks/useArticles'
+import useSWR from 'swr'
 
 interface Vote {
   id: string
@@ -30,6 +31,10 @@ export default function ArticlesPage() {
     search: searchTerm || undefined,
     category: selectedCategory !== 'all' ? selectedCategory : undefined
   })
+
+  // Récupération des catégories disponibles
+  const { data: categoriesData } = useSWR('/api/articles/categories')
+  const availableCategories = categoriesData?.categories || []
   
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -359,16 +364,11 @@ export default function ArticlesPage() {
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
               >
                 <option value="all">Toutes les catégories</option>
-                <option value="ENVIRONMENT">Environnement</option>
-                <option value="SUSTAINABILITY">Développement durable</option>
-                <option value="CLIMATE_CHANGE">Changement climatique</option>
-                <option value="BIODIVERSITY">Biodiversité</option>
-                <option value="RENEWABLE_ENERGY">Énergies renouvelables</option>
-                <option value="CIRCULAR_ECONOMY">Économie circulaire</option>
-                <option value="GREEN_TECHNOLOGY">Technologies vertes</option>
-                <option value="CONSERVATION">Conservation</option>
-                <option value="EDUCATION">Éducation</option>
-                <option value="POLICY">Politique</option>
+                {availableCategories.map((category: { value: string; label: string; count: number }) => (
+                  <option key={category.value} value={category.value}>
+                    {getCategoryLabel(category.value)} ({category.count})
+                  </option>
+                ))}
               </select>
             </div>
           </div>
