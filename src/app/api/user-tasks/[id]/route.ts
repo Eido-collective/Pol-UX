@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { Prisma } from '@prisma/client'
 
 // PUT - Mettre à jour une tâche (titre, description ou statut)
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -51,7 +52,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     // Construire l'objet de mise à jour
-    const updateData: any = {}
+    const updateData: Prisma.UserTaskUpdateInput = {}
     if (title !== undefined) updateData.title = title.trim()
     if (description !== undefined) updateData.description = description?.trim() || null
     if (completed !== undefined) updateData.completed = Boolean(completed)

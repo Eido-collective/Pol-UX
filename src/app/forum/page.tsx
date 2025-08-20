@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { MessageSquare, ChevronUp, ChevronDown, Plus, Filter, Search } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import { MessageSquare, ChevronUp, ChevronDown, Plus, Search } from 'lucide-react'
 import Link from 'next/link'
 
 interface ForumPost {
@@ -50,29 +50,7 @@ export default function ForumPage() {
   const [sortBy, setSortBy] = useState<string>('mostVoted')
   const [userVotes, setUserVotes] = useState<{[key: string]: number}>({})
 
-  useEffect(() => {
-    fetchPosts()
-  }, [])
-
-  useEffect(() => {
-    filterAndSortPosts()
-  }, [posts, searchTerm, selectedCategory, sortBy])
-
-  const fetchPosts = async () => {
-    try {
-      const response = await fetch('/api/forum/posts')
-      if (response.ok) {
-        const data = await response.json()
-        setPosts(data.posts)
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des posts:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const filterAndSortPosts = () => {
+  const filterAndSortPosts = useCallback(() => {
     let filtered = posts.filter(post => post.isApproved)
 
     // Filtre par recherche
@@ -106,6 +84,28 @@ export default function ForumPage() {
     })
 
     setFilteredPosts(filtered)
+  }, [posts, searchTerm, selectedCategory, sortBy])
+
+  useEffect(() => {
+    fetchPosts()
+  }, [])
+
+  useEffect(() => {
+    filterAndSortPosts()
+  }, [filterAndSortPosts])
+
+  const fetchPosts = async () => {
+    try {
+      const response = await fetch('/api/forum/posts')
+      if (response.ok) {
+        const data = await response.json()
+        setPosts(data.posts)
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des posts:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const getCategoryLabel = (category: string) => {
@@ -264,6 +264,7 @@ export default function ForumPage() {
                           : 'text-gray-400 hover:text-orange-500 hover:bg-gray-100'
                       }`}
                       onClick={(e) => {
+                        e.preventDefault()
                         e.stopPropagation()
                         handleVote(post.id, 1)
                       }}
@@ -283,6 +284,7 @@ export default function ForumPage() {
                           : 'text-gray-400 hover:text-blue-500 hover:bg-gray-100'
                       }`}
                       onClick={(e) => {
+                        e.preventDefault()
                         e.stopPropagation()
                         handleVote(post.id, -1)
                       }}

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Leaf, MapPin, MessageSquare, Lightbulb, Users } from 'lucide-react'
+import { MapPin, MessageSquare, Lightbulb, Users } from 'lucide-react'
 
 export default function HomePage() {
   return (
@@ -16,7 +16,7 @@ export default function HomePage() {
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
             Rejoignez la communauté Pol-UX pour explorer, partager et contribuer 
-            aux projets environnementaux qui façonnent l'avenir de notre planète.
+            aux projets environnementaux qui façonnent l&apos;avenir de notre planète.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/map" className="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition-colors text-lg font-semibold">

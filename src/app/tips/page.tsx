@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Lightbulb, Search, Filter, ThumbsUp, ThumbsDown, Leaf, Zap, Car, Utensils, Droplets, ShoppingBag } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import { Lightbulb, Search, ThumbsUp, ThumbsDown, Leaf, Zap, Car, Utensils, Droplets, ShoppingBag } from 'lucide-react'
+import Image from 'next/image'
 
 interface Tip {
   id: string
@@ -35,29 +36,7 @@ export default function TipsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [sortBy, setSortBy] = useState<string>('newest')
 
-  useEffect(() => {
-    fetchTips()
-  }, [])
-
-  useEffect(() => {
-    filterAndSortTips()
-  }, [tips, searchTerm, selectedCategory, sortBy])
-
-  const fetchTips = async () => {
-    try {
-      const response = await fetch('/api/tips')
-      if (response.ok) {
-        const data = await response.json()
-        setTips(data.tips)
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des conseils:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const filterAndSortTips = () => {
+  const filterAndSortTips = useCallback(() => {
     let filtered = tips.filter(tip => tip.isApproved)
 
     // Filtre par recherche
@@ -89,6 +68,28 @@ export default function TipsPage() {
     })
 
     setFilteredTips(filtered)
+  }, [tips, searchTerm, selectedCategory, sortBy])
+
+  useEffect(() => {
+    fetchTips()
+  }, [])
+
+  useEffect(() => {
+    filterAndSortTips()
+  }, [filterAndSortTips])
+
+  const fetchTips = async () => {
+    try {
+      const response = await fetch('/api/tips')
+      if (response.ok) {
+        const data = await response.json()
+        setTips(data.tips)
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des conseils:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const getCategoryIcon = (category: string) => {
@@ -187,7 +188,7 @@ export default function TipsPage() {
               >
                 <option value="all">Toutes les catégories</option>
                 <option value="WASTE_REDUCTION">Réduction des déchets</option>
-                <option value="ENERGY_SAVING">Économies d'énergie</option>
+                <option value="ENERGY_SAVING">Économies d&apos;énergie</option>
                 <option value="TRANSPORT">Transport</option>
                 <option value="FOOD">Alimentation</option>
                 <option value="WATER">Eau</option>
@@ -228,7 +229,7 @@ export default function TipsPage() {
               >
                 {tip.imageUrl && (
                   <div className="h-48 bg-gray-200">
-                    <img
+                    <Image
                       src={tip.imageUrl}
                       alt={tip.title}
                       className="w-full h-full object-cover"

@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import dynamic from 'next/dynamic'
-import { MapPin, Filter, Search, Calendar, Users, Building } from 'lucide-react'
+import { MapPin, Search, Calendar, Users, Building } from 'lucide-react'
 
 // Import dynamique de la carte pour éviter les erreurs SSR
 const MapComponent = dynamic(() => import('@/components/MapComponent'), {
@@ -29,6 +29,7 @@ interface Initiative {
   contactEmail?: string
   contactPhone?: string
   imageUrl?: string
+  isApproved: boolean
   author: {
     name: string
     username: string
@@ -43,29 +44,7 @@ export default function MapPage() {
   const [selectedType, setSelectedType] = useState<string>('all')
   const [selectedCity, setSelectedCity] = useState<string>('all')
 
-  useEffect(() => {
-    fetchInitiatives()
-  }, [])
-
-  useEffect(() => {
-    filterInitiatives()
-  }, [initiatives, searchTerm, selectedType, selectedCity])
-
-  const fetchInitiatives = async () => {
-    try {
-      const response = await fetch('/api/initiatives')
-      if (response.ok) {
-        const data = await response.json()
-        setInitiatives(data.initiatives)
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des initiatives:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const filterInitiatives = () => {
+  const filterInitiatives = useCallback(() => {
     let filtered = initiatives.filter(initiative => initiative.isApproved)
 
     // Filtre par recherche
@@ -88,6 +67,28 @@ export default function MapPage() {
     }
 
     setFilteredInitiatives(filtered)
+  }, [initiatives, searchTerm, selectedType, selectedCity])
+
+  useEffect(() => {
+    fetchInitiatives()
+  }, [])
+
+  useEffect(() => {
+    filterInitiatives()
+  }, [filterInitiatives])
+
+  const fetchInitiatives = async () => {
+    try {
+      const response = await fetch('/api/initiatives')
+      if (response.ok) {
+        const data = await response.json()
+        setInitiatives(data.initiatives)
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des initiatives:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const getTypeIcon = (type: string) => {

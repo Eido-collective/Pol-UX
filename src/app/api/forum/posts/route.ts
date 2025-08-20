@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { Prisma, ForumCategory } from '@prisma/client'
 
 export async function GET(request: NextRequest) {
   try {
@@ -8,12 +9,12 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search')
 
     // Construire les filtres
-    const where: any = {
+    const where: Prisma.ForumPostWhereInput = {
       isApproved: true
     }
 
     if (category && category !== 'all') {
-      where.category = category
+      where.category = category as ForumCategory
     }
 
     if (search) {

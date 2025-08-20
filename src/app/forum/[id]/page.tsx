@@ -1,10 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useState, useEffect, useCallback } from 'react'
+import { useParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { ArrowLeft, MessageSquare, ChevronUp, ChevronDown, User, Calendar, Send, Loader2, Trash2, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
+
+interface Vote {
+  id: string
+  value: number
+  userId: string
+}
 
 interface Reply {
   id: string
@@ -15,7 +21,7 @@ interface Reply {
     name: string
     username: string
   }
-  votes: any[]
+  votes: Vote[]
 }
 
 interface Comment {
@@ -28,7 +34,7 @@ interface Comment {
     username: string
   }
   replies: Reply[]
-  votes: any[]
+  votes: Vote[]
 }
 
 interface ForumPost {
@@ -42,7 +48,7 @@ interface ForumPost {
     username: string
   }
   comments: Comment[]
-  votes: any[]
+  votes: Vote[]
   _count: {
     comments: number
     votes: number
@@ -51,7 +57,6 @@ interface ForumPost {
 
 export default function ForumPostPage() {
   const params = useParams()
-  const router = useRouter()
   const { data: session } = useSession()
   const [post, setPost] = useState<ForumPost | null>(null)
   const [loading, setLoading] = useState(true)
@@ -63,13 +68,7 @@ export default function ForumPostPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [commentToDelete, setCommentToDelete] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (params.id) {
-      fetchPost()
-    }
-  }, [params.id])
-
-  const fetchPost = async () => {
+  const fetchPost = useCallback(async () => {
     try {
       const response = await fetch(`/api/forum/posts/${params.id}`)
       if (response.ok) {
@@ -83,7 +82,13 @@ export default function ForumPostPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [params.id])
+
+  useEffect(() => {
+    if (params.id) {
+      fetchPost()
+    }
+  }, [fetchPost, params.id])
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -246,7 +251,7 @@ export default function ForumPostPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Post non trouvé</h1>
-          <p className="text-gray-600 mb-6">Le post que vous recherchez n'existe pas ou a été supprimé.</p>
+          <p className="text-gray-600 mb-6">Le post que vous recherchez n&apos;existe pas ou a été supprimé.</p>
           <Link
             href="/forum"
             className="inline-flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"

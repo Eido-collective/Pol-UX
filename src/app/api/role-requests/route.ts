@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { Prisma, RoleRequestStatus } from '@prisma/client'
 
 // POST - Créer une demande de promotion
 export async function POST(request: NextRequest) {
@@ -99,9 +100,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
 
-    const where: any = {}
+    const where: Prisma.RoleRequestWhereInput = {}
     if (status && ['PENDING', 'APPROVED', 'REJECTED'].includes(status)) {
-      where.status = status
+      where.status = status as RoleRequestStatus
     }
 
     const roleRequests = await prisma.roleRequest.findMany({
