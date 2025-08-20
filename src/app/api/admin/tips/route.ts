@@ -1,0 +1,58 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session || session.user.role !== 'ADMIN') {
+      return NextResponse.json(
+        { error: 'Accès non autorisé' },
+        { status: 403 }
+      )
+    }
+
+    const { searchParams } = new URL(request.url)
+    const status = searchParams.get('status') // 'pending', 'approved', 'all'
+
+    const where: any = {}
+    
+    if (status === 'pending') {
+      where.isApproved = false
+    } else if (status === 'approved') {
+      where.isApproved = true
+    }
+
+    const tips = await prisma.tip.findMany({
+      where,
+      include: {
+        author: {
+          select: {
+            name: true,
+            username: true,
+            email: true
+          }
+        },
+        _count: {
+          select: {
+            votes: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    })
+
+    return NextResponse.json({ tips })
+
+  } catch (error) {
+    console.error('Erreur lors de la récupération des conseils:', error)
+    return NextResponse.json(
+      { error: 'Une erreur est survenue lors de la récupération des conseils' },
+      { status: 500 }
+    )
+  }
+}
