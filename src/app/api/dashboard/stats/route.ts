@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
+
+// Force dynamic rendering for this API route
+export const dynamic = 'force-dynamic'
 import { authOptions } from '@/lib/auth'
 
 export async function GET() {

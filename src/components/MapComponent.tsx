@@ -8,7 +8,7 @@ interface Initiative {
   id: string
   title: string
   description: string
-  type: 'EVENT' | 'PROJECT' | 'ASSOCIATION' | 'COMPANY'
+  type: 'EVENT' | 'PROJECT' | 'ACTOR' | 'COMPANY'
   latitude: number
   longitude: number
   address: string
@@ -81,7 +81,7 @@ const MapComponent = ({ initiatives, selectedInitiativeId }: MapComponentProps) 
       const colors = {
         EVENT: '#3B82F6',
         PROJECT: '#10B981',
-        ASSOCIATION: '#8B5CF6',
+        ACTOR: '#8B5CF6',
         COMPANY: '#F59E0B'
       }
 
@@ -126,7 +126,7 @@ const MapComponent = ({ initiatives, selectedInitiativeId }: MapComponentProps) 
         switch (type) {
           case 'EVENT': return 'Événement'
           case 'PROJECT': return 'Projet'
-          case 'ASSOCIATION': return 'Association'
+          case 'ACTOR': return 'Acteur'
           case 'COMPANY': return 'Entreprise'
           default: return type
         }

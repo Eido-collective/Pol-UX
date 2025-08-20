@@ -38,6 +38,11 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
+        // Vérifier que l'email est confirmé
+        if (!user.emailConfirmed) {
+          throw new Error('Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte email.')
+        }
+
         const isPasswordValid = await bcrypt.compare(
           credentials.password,
           user.password

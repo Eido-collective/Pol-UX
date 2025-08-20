@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+
+// Force dynamic rendering for this API route
+export const dynamic = 'force-dynamic'
 import { Prisma } from '@prisma/client'
 
 // PUT - Mettre à jour une tâche (titre, description ou statut)
