@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { Prisma, InitiativeType } from '@prisma/client'
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,12 +12,12 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search')
 
     // Construire les filtres
-    const where: any = {
+    const where: Prisma.InitiativeWhereInput = {
       isApproved: true
     }
 
     if (type && type !== 'all') {
-      where.type = type
+      where.type = type as InitiativeType
     }
 
     if (city && city !== 'all') {

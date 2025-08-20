@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { signIn, getSession } from 'next-auth/react'
+import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Leaf, Eye, EyeOff, Github } from 'lucide-react'
@@ -32,7 +32,7 @@ export default function LoginPage() {
         router.push('/dashboard')
       }
     } catch (error) {
-      setError('Une erreur est survenue')
+      setError(`Une erreur est survenue: ${error}`)
     } finally {
       setIsLoading(false)
     }

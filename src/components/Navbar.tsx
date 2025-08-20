@@ -65,21 +65,19 @@ export default function Navbar() {
                 )}
                 
                 {/* User menu */}
-                <div className="relative">
-                  <div className="flex items-center space-x-2 text-gray-700">
-                    <User className="h-4 w-4" />
-                    <Link
-                      href="/dashboard"
-                      className="hidden sm:inline text-sm font-medium hover:text-green-600 transition-colors"
-                    >
-                      {session.user.name || session.user.username}
-                    </Link>
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      {session.user.role === 'ADMIN' ? 'Admin' : 
-                       session.user.role === 'CONTRIBUTOR' ? 'Contributeur' : 'Explorateur'}
-                    </span>
-                  </div>
-                </div>
+                <Link
+                  href="/dashboard"
+                  className="flex items-center space-x-2 text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                >
+                  <User className="h-4 w-4" />
+                  <span className="hidden sm:inline">
+                    {session.user.name || session.user.username}
+                  </span>
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    {session.user.role === 'ADMIN' ? 'Admin' : 
+                     session.user.role === 'CONTRIBUTOR' ? 'Contributeur' : 'Explorateur'}
+                  </span>
+                </Link>
                 
                 {/* Logout button */}
                 <button

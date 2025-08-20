@@ -43,19 +43,6 @@ const config: Config = {
     },
   },
   plugins: [],
-  // Optimisation pour réduire la taille du CSS
-  corePlugins: {
-    preflight: true,
-  },
-  // Purge CSS pour production
-  purge: {
-    enabled: process.env.NODE_ENV === 'production',
-    content: [
-      './src/**/*.{js,ts,jsx,tsx}',
-      './src/app/**/*.{js,ts,jsx,tsx}',
-      './src/components/**/*.{js,ts,jsx,tsx}',
-    ],
-  },
 };
 
 export default config;

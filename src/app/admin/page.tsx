@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Users, FileText, MessageSquare, Lightbulb, CheckCircle, XCircle, Eye, Trash2, Shield, UserPlus } from 'lucide-react'
+import { Users, FileText, MessageSquare, Lightbulb, CheckCircle, XCircle, Eye, Shield, UserPlus } from 'lucide-react'
 
 interface User {
   id: string
@@ -46,9 +46,23 @@ interface Tip {
   }
 }
 
+interface RoleRequest {
+  id: string
+  status: string
+  reason: string
+  createdAt: string
+  adminNotes?: string
+  user: {
+    name: string
+    username: string
+    role: string
+  }
+  requestedRole: string
+}
+
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState('users')
-  const [roleRequests, setRoleRequests] = useState([])
+  const [roleRequests, setRoleRequests] = useState<RoleRequest[]>([])
   const [loadingRequests, setLoadingRequests] = useState(false)
   const [users, setUsers] = useState<User[]>([])
   const [initiatives, setInitiatives] = useState<Initiative[]>([])
@@ -294,7 +308,7 @@ export default function AdminPage() {
               >
                 <div className="flex items-center gap-2">
                   <UserPlus className="h-4 w-4" />
-                  Demandes de Promotion ({roleRequests.filter((r: any) => r.status === 'PENDING').length})
+                  Demandes de Promotion ({roleRequests.filter((r: RoleRequest) => r.status === 'PENDING').length})
                 </div>
               </button>
             </nav>
@@ -316,7 +330,7 @@ export default function AdminPage() {
                           Rôle
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Date d'inscription
+                          Date d&apos;inscription
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Actions
@@ -361,7 +375,7 @@ export default function AdminPage() {
 
             {activeTab === 'initiatives' && (
               <div className="space-y-4">
-                <h3 className="text-lg font-medium text-gray-900">Initiatives en attente d'approbation</h3>
+                <h3 className="text-lg font-medium text-gray-900">Initiatives en attente d&apos;approbation</h3>
                 <div className="space-y-4">
                   {initiatives.filter(i => !i.isApproved).map((initiative) => (
                     <div key={initiative.id} className="border border-gray-200 rounded-lg p-4">
@@ -391,7 +405,7 @@ export default function AdminPage() {
                     </div>
                   ))}
                   {initiatives.filter(i => !i.isApproved).length === 0 && (
-                    <p className="text-gray-500 text-center py-8">Aucune initiative en attente d'approbation</p>
+                    <p className="text-gray-500 text-center py-8">Aucune initiative en attente d&apos;approbation</p>
                   )}
                 </div>
               </div>
@@ -399,7 +413,7 @@ export default function AdminPage() {
 
             {activeTab === 'posts' && (
               <div className="space-y-4">
-                <h3 className="text-lg font-medium text-gray-900">Posts en attente d'approbation</h3>
+                <h3 className="text-lg font-medium text-gray-900">Posts en attente d&apos;approbation</h3>
                 <div className="space-y-4">
                   {posts.filter(p => !p.isApproved).map((post) => (
                     <div key={post.id} className="border border-gray-200 rounded-lg p-4">
@@ -429,7 +443,7 @@ export default function AdminPage() {
                     </div>
                   ))}
                   {posts.filter(p => !p.isApproved).length === 0 && (
-                    <p className="text-gray-500 text-center py-8">Aucun post en attente d'approbation</p>
+                    <p className="text-gray-500 text-center py-8">Aucun post en attente d&apos;approbation</p>
                   )}
                 </div>
               </div>
@@ -437,7 +451,7 @@ export default function AdminPage() {
 
             {activeTab === 'tips' && (
               <div className="space-y-4">
-                <h3 className="text-lg font-medium text-gray-900">Conseils en attente d'approbation</h3>
+                <h3 className="text-lg font-medium text-gray-900">Conseils en attente d&apos;approbation</h3>
                 <div className="space-y-4">
                   {tips.filter(t => !t.isApproved).map((tip) => (
                     <div key={tip.id} className="border border-gray-200 rounded-lg p-4">
@@ -467,7 +481,7 @@ export default function AdminPage() {
                     </div>
                   ))}
                   {tips.filter(t => !t.isApproved).length === 0 && (
-                    <p className="text-gray-500 text-center py-8">Aucun conseil en attente d'approbation</p>
+                    <p className="text-gray-500 text-center py-8">Aucun conseil en attente d&apos;approbation</p>
                   )}
                 </div>
               </div>
@@ -482,7 +496,7 @@ export default function AdminPage() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {roleRequests.map((request: any) => (
+                    {roleRequests.map((request: RoleRequest) => (
                       <div key={request.id} className="border border-gray-200 rounded-lg p-4">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
@@ -548,7 +562,7 @@ export default function AdminPage() {
                         </div>
                         {request.adminNotes && (
                           <div className="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-600">
-                            <strong>Note de l'admin :</strong> {request.adminNotes}
+                            <strong>Note de l&apos;admin :</strong> {request.adminNotes}
                           </div>
                         )}
                       </div>

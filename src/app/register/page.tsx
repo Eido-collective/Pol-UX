@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Leaf, Eye, EyeOff, Github } from 'lucide-react'
+import { Leaf, Eye, EyeOff } from 'lucide-react'
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -95,7 +95,7 @@ export default function RegisterPage() {
         }, 2000)
       }
     } catch (error) {
-      setError('Une erreur est survenue')
+      setError(`Une erreur est survenue: ${error}`)
     } finally {
       setIsLoading(false)
     }
@@ -185,7 +185,7 @@ export default function RegisterPage() {
 
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                Nom d'utilisateur
+                Nom d&apos;utilisateur
               </label>
               <input
                 id="username"

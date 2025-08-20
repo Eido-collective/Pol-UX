@@ -188,7 +188,7 @@ export default function PromotionPage() {
                   </span>
                 </div>
                 <p className="text-yellow-700 mt-2 text-sm">
-                  Veuillez attendre la réponse de l'équipe d'administration avant de faire une nouvelle demande.
+                  Veuillez attendre la réponse de l&apos;équipe d&apos;administration avant de faire une nouvelle demande.
                 </p>
               </div>
             ) : (
@@ -286,7 +286,7 @@ export default function PromotionPage() {
                       )}
                       {request.adminNotes && (
                         <p className="mt-1">
-                          <strong>Note de l'admin :</strong> {request.adminNotes}
+                          <strong>Note de l&apos;admin :</strong> {request.adminNotes}
                         </p>
                       )}
                     </div>
@@ -318,9 +318,9 @@ export default function PromotionPage() {
               <h3 className="font-medium text-gray-900 mb-2">Contributeur</h3>
               <ul className="text-sm text-gray-600 space-y-1">
                 <li>• Toutes les fonctionnalités Explorateur</li>
-                <li>• Création d'initiatives</li>
+                <li>• Création d&apos;initiatives</li>
                 <li>• Publication de conseils</li>
-                <li>• Création d'articles</li>
+                <li>• Création d&apos;articles</li>
               </ul>
             </div>
             

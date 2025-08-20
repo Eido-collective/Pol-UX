@@ -3,7 +3,7 @@
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Leaf, MapPin, MessageSquare, Lightbulb, User, Calendar, TrendingUp, CheckCircle, PlusCircle, Share, ThumbsUp, UserPlus, Plus, X, Edit3, Trash2, AlertTriangle } from 'lucide-react'
+import { Leaf, MapPin, MessageSquare, Lightbulb, User, Calendar, TrendingUp, CheckCircle, Plus, X, Edit3, Trash2, AlertTriangle } from 'lucide-react'
 
 interface DashboardStats {
   initiatives: number
@@ -47,7 +47,6 @@ export default function DashboardPage() {
   })
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
   const [userTasks, setUserTasks] = useState<UserTask[]>([])
-  const [loading, setLoading] = useState(true)
   const [showTaskForm, setShowTaskForm] = useState(false)
   const [editingTask, setEditingTask] = useState<UserTask | null>(null)
   const [newTaskTitle, setNewTaskTitle] = useState('')
@@ -82,8 +81,6 @@ export default function DashboardPage() {
       }
     } catch (error) {
       console.error('Erreur lors du chargement des données:', error)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -305,7 +302,7 @@ export default function DashboardPage() {
                   <span className="font-medium">Email :</span> {session?.user?.email || 'Non renseigné'}
                 </p>
                 <p className="text-gray-600">
-                  <span className="font-medium">Nom d'utilisateur :</span> {session?.user?.username || 'Non renseigné'}
+                  <span className="font-medium">Nom d&apos;utilisateur :</span> {session?.user?.username || 'Non renseigné'}
                 </p>
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-gray-600">Rôle :</span>
@@ -466,7 +463,7 @@ export default function DashboardPage() {
             <div className="space-y-3">
               {userTasks.length === 0 ? (
                 <div className="text-sm text-gray-500 text-center py-8">
-                  Aucune tâche créée. Cliquez sur "Ajouter" pour créer votre première tâche !
+                  Aucune tâche créée. Cliquez sur &quot;Ajouter&quot; pour créer votre première tâche !
                 </div>
               ) : (
                 userTasks.map((task) => (
@@ -555,13 +552,13 @@ export default function DashboardPage() {
               Espace Administrateur
             </h3>
             <p className="text-red-700 mb-4">
-              En tant qu'administrateur, vous avez accès à des fonctionnalités de modération et de gestion.
+              En tant qu&apos;administrateur, vous avez accès à des fonctionnalités de modération et de gestion.
             </p>
             <button 
               onClick={() => router.push('/admin')}
               className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
             >
-              Accéder à l'administration
+              Accéder à l&apos;administration
             </button>
           </div>
         )}
