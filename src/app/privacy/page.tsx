@@ -12,7 +12,7 @@ export default function PrivacyPage() {
           <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-green-100 mb-4">
             <Shield className="h-6 w-6 text-green-600" />
           </div>
-          <h1 className="text-3xl font-bold text-theme-primary mb-4">Politique de Confidentialité</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-theme-primary mb-4">Politique de Confidentialité</h1>
           <p className="text-theme-secondary">Dernière mise à jour : {new Date().toLocaleDateString('fr-FR')}</p>
         </div>
 

@@ -33,7 +33,7 @@ export default function TipImage({
   // Si pas d'image ou erreur de chargement, afficher le placeholder
   if (!src || imageError) {
     return (
-      <div className={`bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center ${className}`}>
+      <div className={`bg-theme-tertiary flex items-center justify-center ${className}`}>
         {fallbackIcon}
       </div>
     )
@@ -59,7 +59,7 @@ export default function TipImage({
         }}
       />
       {imageLoading && (
-        <div className="absolute inset-0 bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center">
+        <div className="absolute inset-0 bg-theme-tertiary flex items-center justify-center">
           {fallbackIcon}
         </div>
       )}

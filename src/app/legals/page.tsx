@@ -8,7 +8,7 @@ export default function LegalPage() {
       <div className="max-w-4xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-theme-primary mb-4">Mentions légales</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-theme-primary mb-4">Mentions légales</h1>
           <p className="text-xl text-theme-secondary max-w-2xl mx-auto">
             Informations légales concernant le site PolUX et ses services
           </p>

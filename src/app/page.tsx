@@ -277,7 +277,7 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/register"
-              className="bg-white text-green-500 hover:bg-gray-100 px-8 py-3 rounded-lg font-semibold transition-colors"
+              className="bg-theme-card text-green-500 hover:bg-theme-tertiary px-8 py-3 rounded-lg font-semibold transition-colors"
             >
               Créer un compte
             </Link>

@@ -324,18 +324,20 @@ export default function ArticlesPage() {
       {/* Page Header */}
       <div className="bg-theme-card shadow-theme-sm border-b border-theme-primary">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-col gap-4">
+            <div className="text-center sm:text-left">
               <h1 className="text-2xl font-bold text-theme-primary">Articles Écologiques</h1>
               <p className="text-theme-secondary">Découvrez des articles approfondis sur l&apos;écologie et le développement durable</p>
             </div>
-            <button 
-              onClick={handleCreateArticle}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Nouvel article
-            </button>
+            <div className="flex justify-center sm:justify-start">
+              <button 
+                onClick={handleCreateArticle}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Nouvel article
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -357,11 +359,11 @@ export default function ArticlesPage() {
               </div>
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-theme-card text-theme-primary"
               >
                 <option value="all">Toutes les catégories</option>
                 {availableCategories.map((category: { value: string; label: string; count: number }) => (
@@ -557,7 +559,7 @@ export default function ArticlesPage() {
                       id="category"
                       value={newArticle.category}
                       onChange={(e) => setNewArticle(prev => ({ ...prev, category: e.target.value as 'ENVIRONMENT' | 'SUSTAINABILITY' | 'CLIMATE_CHANGE' | 'BIODIVERSITY' | 'RENEWABLE_ENERGY' | 'CIRCULAR_ECONOMY' | 'GREEN_TECHNOLOGY' | 'CONSERVATION' | 'EDUCATION' | 'POLICY' }))}
-                      className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-theme-card text-theme-primary"
                       required
                     >
                       <option value="ENVIRONMENT">Environnement</option>

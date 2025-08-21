@@ -175,3 +175,63 @@ body {
   color: var(--text-muted);
   opacity: 1;
 }
+
+/* Select and Option styles for dark mode */
+select {
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+}
+
+select option {
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+}
+
+/* Dark mode specific select styles */
+.theme-black select {
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+}
+
+.theme-black select option {
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+}
+
+.theme-black select option:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.theme-black select option:checked {
+  background-color: var(--accent-primary);
+  color: var(--text-primary);
+}
+
+/* Light mode select styles (keep default browser behavior) */
+.theme-white select {
+  background-color: white;
+  color: black;
+}
+
+.theme-white select option {
+  background-color: white;
+  color: black;
+}
+
+/* Override Tailwind classes for select elements */
+select.bg-theme-card {
+  background-color: var(--bg-card) !important;
+}
+
+select.text-theme-primary {
+  color: var(--text-primary) !important;
+}
+
+/* Ensure select elements with theme classes work properly */
+select[class*="bg-theme-"] {
+  background-color: var(--bg-card) !important;
+}
+
+select[class*="text-theme-"] {
+  color: var(--text-primary) !important;
+}

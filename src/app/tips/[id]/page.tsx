@@ -232,7 +232,7 @@ export default function TipPage() {
                 </div>
               </div>
 
-              <h1 className="text-3xl font-bold text-theme-primary mb-4">
+              <h1 className="text-2xl md:text-3xl font-bold text-theme-primary mb-4">
                 {tip.title}
               </h1>
 

@@ -104,7 +104,7 @@ export default function RegisterPage() {
           <div className="flex justify-center">
             <Leaf className="h-12 w-12 text-green-600" />
           </div>
-          <h2 className="mt-6 text-3xl font-bold text-theme-primary">
+                      <h2 className="mt-6 text-2xl md:text-3xl font-bold text-theme-primary">
             Créer un compte Pol-UX
           </h2>
           <p className="mt-2 text-sm text-theme-secondary">
@@ -132,7 +132,7 @@ export default function RegisterPage() {
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="firstName" className="block text-sm font-medium text-theme-primary">
                   Prénom

@@ -77,7 +77,7 @@ export default function ContactPage() {
       <div className="max-w-4xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-theme-primary mb-4">Contact</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-theme-primary mb-4">Contact</h1>
           <p className="text-xl text-theme-secondary max-w-2xl mx-auto">
             Nous sommes là pour vous accompagner dans votre démarche de numérique écoresponsable. 
             N&apos;hésitez pas à nous contacter !

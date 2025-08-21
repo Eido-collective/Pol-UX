@@ -158,7 +158,7 @@ export default function PromotionPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-theme-primary mb-4">Demande de Promotion</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-theme-primary mb-4">Demande de Promotion</h1>
           <p className="text-theme-secondary">Demandez une promotion de rôle pour contribuer davantage à la communauté</p>
         </div>
 
@@ -176,7 +176,7 @@ export default function PromotionPage() {
                 id="role"
                 value={requestedRole}
                 onChange={(e) => setRequestedRole(e.target.value)}
-                className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-theme-card text-theme-primary"
                 required
               >
                 <option value="">Sélectionnez un rôle</option>

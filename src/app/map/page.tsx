@@ -412,26 +412,28 @@ export default function MapPage() {
       {/* Page Header */}
       <div className="bg-theme-card shadow-theme-sm border-b border-theme-primary">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-col gap-4">
+            <div className="text-center sm:text-left">
               <h1 className="text-2xl font-bold text-theme-primary">Carte des Initiatives</h1>
               <p className="text-theme-secondary">Découvrez les initiatives écologiques près de chez vous</p>
             </div>
-            <button 
-              onClick={handleCreateInitiative}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Ajouter initiative
-            </button>
+            <div className="flex justify-center sm:justify-start">
+              <button 
+                onClick={handleCreateInitiative}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Ajouter initiative
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Section de recherche et filtres */}
-        <div className="bg-theme-card rounded-lg shadow-theme-sm border border-theme-primary p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-theme-card rounded-lg shadow-theme-sm border border-theme-primary p-4 sm:p-6 mb-6">
+          <div className="space-y-4">
             {/* Barre de recherche */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-theme-secondary h-4 w-4" />
@@ -444,44 +446,47 @@ export default function MapPage() {
               />
             </div>
 
-            {/* Filtre par type */}
-            <select
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-              className="px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            >
-              <option value="all">Tous les types</option>
-              <option value="EVENT">Événement</option>
-              <option value="PROJECT">Projet</option>
-              <option value="ACTOR">Acteur</option>
-              <option value="COMPANY">Entreprise</option>
-            </select>
+            {/* Filtres */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Filtre par type */}
+              <select
+                value={selectedType}
+                onChange={(e) => setSelectedType(e.target.value)}
+                className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-theme-card text-theme-primary"
+              >
+                <option value="all">Tous les types</option>
+                <option value="EVENT">Événement</option>
+                <option value="PROJECT">Projet</option>
+                <option value="ACTOR">Acteur</option>
+                <option value="COMPANY">Entreprise</option>
+              </select>
 
-            {/* Filtre par ville */}
-            <select
-              value={selectedCity}
-              onChange={(e) => setSelectedCity(e.target.value)}
-              className="px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            >
-              <option value="all">Toutes les villes</option>
-              {cities.map((city) => (
-                <option key={city} value={city}>
-                  {city}
-                </option>
-              ))}
-            </select>
+              {/* Filtre par ville */}
+              <select
+                value={selectedCity}
+                onChange={(e) => setSelectedCity(e.target.value)}
+                className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-theme-card text-theme-primary"
+              >
+                <option value="all">Toutes les villes</option>
+                {cities.map((city) => (
+                  <option key={city} value={city}>
+                    {city}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             {/* Bouton d'ajout */}
 
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6">
           {/* Carte */}
-          <div className="lg:col-span-2">
+          <div className="xl:col-span-2">
             <div className="bg-theme-card rounded-lg shadow-theme-sm border border-theme-primary p-4">
               {isLoading ? (
-                <div className="h-[700px] bg-theme-tertiary rounded-lg flex items-center justify-center">
+                <div className="h-[400px] sm:h-[500px] lg:h-[600px] xl:h-[700px] bg-theme-tertiary rounded-lg flex items-center justify-center">
                   <div className="text-theme-secondary">Chargement de la carte...</div>
                 </div>
               ) : (
@@ -495,13 +500,13 @@ export default function MapPage() {
           </div>
 
           {/* Liste des initiatives avec adresse */}
-          <div className="lg:col-span-1">
+          <div className="xl:col-span-1">
             <div className="bg-theme-card rounded-lg shadow-theme-sm border border-theme-primary p-4">
               <h3 className="text-lg font-semibold text-theme-primary mb-4">
                 Initiatives localisées ({initiativesWithAddress.length})
               </h3>
               
-              <div className="space-y-4 max-h-[657px] overflow-y-auto">
+              <div className="space-y-4 max-h-[400px] sm:max-h-[500px] lg:max-h-[600px] xl:max-h-[657px] overflow-y-auto">
                 {initiativesWithAddress.length === 0 ? (
                   <div className="text-center text-theme-secondary py-8">
                     Aucune initiative localisée trouvée
@@ -510,10 +515,10 @@ export default function MapPage() {
                   initiativesWithAddress.map((initiative) => (
                     <div
                       key={initiative.id}
-                      className="border border-theme-primary rounded-lg p-4 hover:shadow-theme-md transition-shadow"
+                      className="border border-theme-primary rounded-lg p-3 sm:p-4 hover:shadow-theme-md transition-shadow"
                     >
                       <div 
-                        className="flex items-start gap-3 cursor-pointer"
+                        className="flex items-start gap-2 sm:gap-3 cursor-pointer"
                         onClick={() => handleInitiativeClick(initiative)}
                       >
                         <div className="flex-shrink-0">
@@ -526,8 +531,8 @@ export default function MapPage() {
                           <p className="text-xs text-theme-secondary mt-1">
                             📍 {initiative.city}
                           </p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-2">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 w-fit">
                               {getTypeLabel(initiative.type)}
                             </span>
                             {initiative.startDate && (
@@ -543,7 +548,7 @@ export default function MapPage() {
                       </div>
                       
                       {/* Boutons d'action */}
-                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-theme-secondary">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mt-3 pt-3 border-t border-theme-secondary">
                         <button
                           onClick={() => handleInitiativeClick(initiative)}
                           className="flex items-center gap-1 text-xs text-green-600 hover:text-green-700 transition-colors"
@@ -570,18 +575,18 @@ export default function MapPage() {
         {/* Liste des initiatives sans adresse */}
         {initiativesWithoutAddress.length > 0 && (
           <div className="mt-6">
-            <div className="bg-theme-card rounded-lg shadow-theme-sm border border-theme-primary p-6">
+            <div className="bg-theme-card rounded-lg shadow-theme-sm border border-theme-primary p-4 sm:p-6">
               <h3 className="text-lg font-semibold text-theme-primary mb-4">
                 Initiatives sans localisation ({initiativesWithoutAddress.length})
               </h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {paginatedInitiativesWithoutAddress.map((initiative) => (
                   <div
                     key={initiative.id}
-                    className="border border-theme-primary rounded-lg p-4 hover:shadow-theme-md transition-shadow"
+                    className="border border-theme-primary rounded-lg p-3 sm:p-4 hover:shadow-theme-md transition-shadow"
                   >
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-2 sm:gap-3">
                       <div className="flex-shrink-0">
                         {getTypeIcon(initiative.type)}
                       </div>
@@ -589,8 +594,8 @@ export default function MapPage() {
                         <h4 className="text-sm font-medium text-theme-primary truncate">
                           {initiative.title}
                         </h4>
-                        <div className="flex items-center gap-2 mt-2">
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-theme-tertiary text-theme-secondary">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-2">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-theme-tertiary text-theme-secondary w-fit">
                             {getTypeLabel(initiative.type)}
                           </span>
                           {initiative.startDate && (
@@ -687,7 +692,7 @@ export default function MapPage() {
                     id="type"
                     value={newInitiative.type}
                     onChange={(e) => setNewInitiative(prev => ({ ...prev, type: e.target.value as 'EVENT' | 'PROJECT' | 'ACTOR' | 'COMPANY' }))}
-                    className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-theme-card text-theme-primary"
                     required
                   >
                     <option value="EVENT">Événement</option>
@@ -766,7 +771,7 @@ export default function MapPage() {
                   )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="startDate" className="block text-sm font-medium text-theme-primary mb-2">
                       Date de début

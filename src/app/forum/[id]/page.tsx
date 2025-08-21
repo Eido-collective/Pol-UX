@@ -434,15 +434,7 @@ export default function ForumPostDetailPage() {
               <MessageSquare className="h-5 w-5" />
               <span>Commentaires ({post._count.comments})</span>
             </h2>
-            {/* Supprimer les variables et fonctions inutilisées */}
-            {/* <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as 'newest' | 'mostVoted')}
-              className="px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
-            >
-              <option value="mostVoted">Plus populaires</option>
-              <option value="newest">Plus récents</option>
-            </select> */}
+
           </div>
 
           {/* Formulaire de commentaire */}
