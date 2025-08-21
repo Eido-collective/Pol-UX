@@ -29,17 +29,19 @@ export default function Footer() {
   return (
     <footer className="bg-theme-card border-t border-theme-primary">
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div className="xl:grid xl:grid-cols-3 xl:gap-8">
+        <div className="xl:grid xl:grid-cols-4 xl:gap-8">
           {/* Logo et description */}
           <div className="space-y-8 xl:col-span-1">
             <div className="flex items-center space-x-2">
-              <Image 
-                src='/logo-black.svg'
-                id='logo-footer'
-                alt="Pol-UX" 
-                width={110} 
-                height={110}
-              />
+              <Link href="/" className="flex items-center space-x-2">
+                <Image 
+                  src='/logo-black.svg'
+                  id='logo-footer'
+                  alt="Pol-UX" 
+                  width={110} 
+                  height={110}
+                />
+              </Link>
             </div>
             <p className="text-theme-secondary text-base">
               Plateforme collaborative pour promouvoir les initiatives écologiques 
@@ -62,78 +64,79 @@ export default function Footer() {
             </div>
           </div>
 
+          {/* Espace vide pour équilibrer */}
+          <div className="xl:col-span-1"></div>
+
           {/* Navigation */}
-          <div className="mt-12 grid grid-cols-2 gap-8 xl:mt-0 xl:col-span-2">
-            <div className="md:grid md:grid-cols-2 md:gap-8">
-              <div>
-                <h3 className="text-sm font-semibold text-theme-tertiary tracking-wider uppercase">
-                  Navigation
-                </h3>
-                <ul className="mt-4 space-y-4">
-                  {navigation.main.map((item) => {
-                    const Icon = item.icon
-                    return (
-                      <li key={item.name}>
-                        <Link
-                          href={item.href}
-                          className="flex items-center space-x-2 text-base text-theme-secondary hover:text-green-500 transition-colors"
-                        >
-                          <Icon className="h-4 w-4" />
-                          <span>{item.name}</span>
-                        </Link>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </div>
-              <div className="mt-12 md:mt-0">
-                <h3 className="text-sm font-semibold text-theme-tertiary tracking-wider uppercase">
-                  Ressources
-                </h3>
-                <ul className="mt-4 space-y-4">
-                  <li>
+          <div className="mt-12 xl:mt-0 xl:col-span-1">
+            <h3 className="text-sm font-semibold text-theme-tertiary tracking-wider uppercase">
+              Navigation
+            </h3>
+            <ul className="mt-4 space-y-4">
+              {navigation.main.map((item) => {
+                const Icon = item.icon
+                return (
+                  <li key={item.name}>
                     <Link
-                      href="/about"
-                      className="text-base text-theme-secondary hover:text-green-500 transition-colors"
+                      href={item.href}
+                      className="flex items-center space-x-2 text-base text-theme-secondary hover:text-green-500 transition-colors"
                     >
-                      À propos
+                      <Icon className="h-4 w-4" />
+                      <span>{item.name}</span>
                     </Link>
                   </li>
-                  <li>
-                    <Link
-                      href="/contact"
-                      className="text-base text-theme-secondary hover:text-green-500 transition-colors"
-                    >
-                      Contact
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/privacy"
-                      className="text-base text-theme-secondary hover:text-green-500 transition-colors"
-                    >
-                      Politique de confidentialité
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/terms"
-                      className="text-base text-theme-secondary hover:text-green-500 transition-colors"
-                    >
-                      Conditions d&apos;utilisation
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/legals"
-                      className="text-base text-theme-secondary hover:text-green-500 transition-colors"
-                    >
-                      Mentions légales
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </div>
+                )
+              })}
+            </ul>
+          </div>
+
+          {/* Ressources */}
+          <div className="mt-12 xl:mt-0 xl:col-span-1">
+            <h3 className="text-sm font-semibold text-theme-tertiary tracking-wider uppercase">
+              Ressources
+            </h3>
+            <ul className="mt-4 space-y-4">
+              <li>
+                <Link
+                  href="/about"
+                  className="text-base text-theme-secondary hover:text-green-500 transition-colors"
+                >
+                  À propos
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/contact"
+                  className="text-base text-theme-secondary hover:text-green-500 transition-colors"
+                >
+                  Contact
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/privacy"
+                  className="text-base text-theme-secondary hover:text-green-500 transition-colors"
+                >
+                  Politique de confidentialité
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/terms"
+                  className="text-base text-theme-secondary hover:text-green-500 transition-colors"
+                >
+                  Conditions d&apos;utilisation
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/legals"
+                  className="text-base text-theme-secondary hover:text-green-500 transition-colors"
+                >
+                  Mentions légales
+                </Link>
+              </li>
+            </ul>
           </div>
         </div>
 

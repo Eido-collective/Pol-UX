@@ -324,18 +324,20 @@ export default function ArticlesPage() {
       {/* Page Header */}
       <div className="bg-theme-card shadow-theme-sm border-b border-theme-primary">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-col gap-4">
+            <div className="text-center sm:text-left">
               <h1 className="text-2xl font-bold text-theme-primary">Articles Écologiques</h1>
               <p className="text-theme-secondary">Découvrez des articles approfondis sur l&apos;écologie et le développement durable</p>
             </div>
-            <button 
-              onClick={handleCreateArticle}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Nouvel article
-            </button>
+            <div className="flex justify-center sm:justify-start">
+              <button 
+                onClick={handleCreateArticle}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Nouvel article
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -357,7 +359,7 @@ export default function ArticlesPage() {
               </div>
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}

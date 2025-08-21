@@ -310,18 +310,20 @@ export default function ForumPage() {
       {/* Page Header */}
       <div className="bg-theme-card shadow-theme-sm border-b border-theme-primary">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-col gap-4">
+            <div className="text-center sm:text-left">
               <h1 className="text-2xl font-bold text-theme-primary">Forum Collaboratif</h1>
               <p className="text-theme-secondary">Échangez avec la communauté sur les sujets écologiques</p>
             </div>
-            <button 
-              onClick={handleCreatePost}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Nouveau post
-            </button>
+            <div className="flex justify-center sm:justify-start">
+              <button 
+                onClick={handleCreatePost}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Nouveau post
+              </button>
+            </div>
           </div>
         </div>
       </div>

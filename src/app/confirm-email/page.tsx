@@ -58,7 +58,7 @@ function ConfirmEmailContent() {
           <div className="flex justify-center">
             <Mail className="h-12 w-12 text-green-600" />
           </div>
-          <h2 className="mt-6 text-3xl font-bold text-theme-primary">
+                      <h2 className="mt-6 text-2xl md:text-3xl font-bold text-theme-primary">
             Confirmation d&apos;email
           </h2>
           <p className="mt-2 text-sm text-theme-secondary">

@@ -739,7 +739,7 @@ export default function AdminPage() {
                 {selectedItem.type && (
                   <div>
                     <h4 className="font-medium text-theme-primary mb-2">Informations</h4>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <span className="text-sm text-theme-secondary">Type:</span>
                         <p className="text-theme-secondary">{selectedItem.type}</p>
@@ -757,7 +757,7 @@ export default function AdminPage() {
                 {selectedItem.startDate && selectedItem.endDate && (
                   <div>
                     <h4 className="font-medium text-theme-primary mb-2">Dates</h4>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <span className="text-sm text-theme-secondary">Début:</span>
                         <p className="text-theme-secondary">{new Date(selectedItem.startDate).toLocaleDateString('fr-FR')}</p>

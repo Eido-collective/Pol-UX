@@ -288,44 +288,46 @@ export default function TipsPage() {
       {/* Page Header */}
       <div className="bg-theme-card shadow-theme-sm border-b border-theme-primary">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-col gap-4">
+            <div className="text-center sm:text-left">
               <h1 className="text-2xl font-bold text-theme-primary">Conseils Écologiques</h1>
               <p className="text-theme-secondary">Découvrez des astuces pour réduire votre impact environnemental</p>
             </div>
-            <button 
-              onClick={handleCreateTip}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Nouveau conseil
-            </button>
+            <div className="flex justify-center sm:justify-start">
+              <button 
+                onClick={handleCreateTip}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Nouveau conseil
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Filtres */}
-        <div className="bg-theme-card rounded-lg shadow-sm border border-theme-primary p-6 mb-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-theme-secondary h-4 w-4" />
-                <input
-                  type="text"
-                  placeholder="Rechercher un conseil..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                />
-              </div>
+        <div className="bg-theme-card rounded-lg shadow-sm border border-theme-primary p-4 sm:p-6 mb-6">
+          <div className="space-y-4">
+            {/* Barre de recherche */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-theme-secondary h-4 w-4" />
+              <input
+                type="text"
+                placeholder="Rechercher un conseil..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              />
             </div>
 
-            <div className="flex gap-4">
+            {/* Filtres */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-theme-card text-theme-primary"
+                className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-theme-card text-theme-primary"
               >
                 <option value="all">Toutes les catégories</option>
                 {availableCategories.map((category: { value: string; label: string; count: number }) => (
@@ -338,7 +340,7 @@ export default function TipsPage() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-theme-card text-theme-primary"
+                className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-theme-card text-theme-primary"
               >
                 <option value="mostVoted">Plus populaires</option>
                 <option value="newest">Plus récents</option>
