@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { MessageSquare, ChevronUp, ChevronDown, Plus, Search, X } from 'lucide-react'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
@@ -9,36 +9,9 @@ import toast from 'react-hot-toast'
 import Pagination from '@/components/Pagination'
 import { useForumPosts } from '@/hooks/useForumPosts'
 
-interface ForumPost {
-  id: string
-  title: string
-  content: string
-  category: string
-  createdAt: string
-  isPublished: boolean
-  author: {
-    name: string
-    username: string
-  }
-  comments: ForumComment[]
-  votes: Vote[]
-  _count: {
-    comments: number
-    votes: number
-  }
-}
 
-interface ForumComment {
-  id: string
-  content: string
-  createdAt: string
-  isPublished: boolean
-  author: {
-    name: string
-    username: string
-  }
-  votes: Vote[]
-}
+
+
 
 interface Vote {
   id: string
@@ -58,7 +31,7 @@ export default function ForumPage() {
   const [currentPage, setCurrentPage] = useState(1)
   
   // Utilisation du hook useForumPosts
-  const { posts, pagination, isLoading, error, mutate } = useForumPosts({
+  const { posts, pagination, isLoading, mutate } = useForumPosts({
     page: currentPage,
     limit: 10,
     search: searchTerm,
@@ -108,12 +81,12 @@ export default function ForumPage() {
 
   // Charger les votes utilisateur quand les posts changent
   useEffect(() => {
-    if (posts && session?.id) {
+    if (posts && session?.user?.id) {
       const userVotesData: {[key: string]: number} = {}
       
-      posts.forEach((post: ForumPost) => {
+      posts.forEach((post) => {
         if (post.votes) {
-          const userVote = post.votes.find((vote: Vote) => vote.userId === session?.id)
+          const userVote = post.votes.find((vote: Vote) => vote.userId === session?.user?.id)
           if (userVote) {
             userVotesData[post.id] = userVote.value
           }
@@ -122,7 +95,7 @@ export default function ForumPage() {
       
       setUserVotes(userVotesData)
     }
-  }, [posts, session?.id])
+  }, [posts, session?.user?.id])
 
   const getCategoryLabel = (category: string) => {
     switch (category) {
@@ -393,7 +366,7 @@ export default function ForumPage() {
               <p className="text-theme-secondary">Essayez de modifier vos filtres ou créez le premier post !</p>
             </div>
           ) : (
-            posts.map((post: ForumPost) => (
+            posts.map((post) => (
               <Link
                 key={post.id}
                 href={`/forum/${post.id}`}

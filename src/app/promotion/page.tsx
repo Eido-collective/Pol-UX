@@ -27,12 +27,14 @@ export default function PromotionPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/register')
-    } else if (status === 'authenticated') {
-      fetchUserRequests()
+    if (!status) {
+      if (!session) {
+        router.push('/register')
+      } else {
+        fetchUserRequests()
+      }
     }
-  }, [status, router])
+  }, [status, session, router])
 
   const fetchUserRequests = async () => {
     try {

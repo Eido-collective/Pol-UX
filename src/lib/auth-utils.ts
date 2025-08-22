@@ -110,7 +110,7 @@ export async function getSessionByToken(sessionToken: string): Promise<SessionUs
 // Supprimer une session
 export async function deleteSession(sessionToken: string): Promise<boolean> {
   try {
-    const result = await prisma.session.delete({
+    await prisma.session.delete({
       where: { sessionToken }
     })
     console.log('✅ Session supprimée:', sessionToken.substring(0, 8) + '...')
@@ -284,5 +284,5 @@ export function isAuthenticated(session: SessionUser | null): boolean {
 
 // Vérifier si l'utilisateur a un rôle spécifique
 export function hasRole(session: SessionUser | null, role: string): boolean {
-  return isAuthenticated(session) && (session.role === role || session.role === 'ADMIN')
+  return isAuthenticated(session) && session !== null && (session.role === role || session.role === 'ADMIN')
 }

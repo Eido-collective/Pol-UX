@@ -40,28 +40,27 @@ export default function TipPage() {
   const [userVotes, setUserVotes] = useState<{[key: string]: number}>({})
 
   const fetchTip = useCallback(async () => {
+    if (!params.id) return
+
+    setLoading(true)
     try {
       const response = await fetch(`/api/tips/${params.id}`)
       if (response.ok) {
         const data = await response.json()
         setTip(data.tip)
         
-        // Charger les votes de l'utilisateur
-        if (session?.user?.id) {
-          const userVotesData: {[key: string]: number} = {}
-          
-          if (data.tip.votes) {
-            const userVote = data.tip.votes.find((vote: Vote) => vote.userId === session?.id)
-            if (userVote) {
-              userVotesData[data.tip.id] = userVote.value
-            }
+        // Charger les votes utilisateur
+        if (session?.id && data.tip.votes) {
+          const userVote = data.tip.votes.find((vote: Vote) => vote.userId === session.id)
+          if (userVote) {
+            setUserVotes(prev => ({
+              ...prev,
+              [data.tip.id]: userVote.value
+            }))
           }
-          
-          setUserVotes(userVotesData)
         }
       } else {
-        console.error('Erreur lors du chargement du conseil')
-        toast.error('Erreur lors du chargement du conseil')
+        toast.error('Conseil non trouvé')
       }
     } catch (error) {
       console.error('Erreur:', error)
@@ -69,7 +68,7 @@ export default function TipPage() {
     } finally {
       setLoading(false)
     }
-  }, [params.id, session?.user?.id])
+  }, [params.id, session?.id])
 
   useEffect(() => {
     fetchTip()

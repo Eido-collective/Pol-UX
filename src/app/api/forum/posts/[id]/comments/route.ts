@@ -77,7 +77,7 @@ export async function POST(
         content: content.trim(),
         postId: id,
         parentId: parentId || null,
-        authorId: session.user.id,
+        authorId: session.id,
         // isPublished est par défaut à true dans le schéma
       },
       include: {

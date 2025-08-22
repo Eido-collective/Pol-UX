@@ -249,7 +249,7 @@ export default function MapPage() {
         return
       }
     
-    if (session.user?.role === 'EXPLORER') {
+    if (session?.user?.role === 'EXPLORER') {
       toast.error('Vous devez être Contributeur ou Administrateur pour créer des initiatives')
       router.push('/promotion')
       return

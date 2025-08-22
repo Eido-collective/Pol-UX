@@ -9,7 +9,7 @@ export async function PUT(
   try {
     const session = await getServerSession()
     
-    if (!session || session.user.role !== 'ADMIN') {
+    if (!session || session.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Accès non autorisé' },
         { status: 403 }

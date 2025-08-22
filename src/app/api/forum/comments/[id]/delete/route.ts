@@ -38,8 +38,8 @@ export async function DELETE(
     }
 
     // Vérifier les permissions (auteur ou admin)
-    const isAuthor = comment.author.id === session.user.id
-    const isAdmin = session.user.role === 'ADMIN'
+    const isAuthor = comment.author.id === session.id
+    const isAdmin = session.role === 'ADMIN'
 
     if (!isAuthor && !isAdmin) {
       return NextResponse.json(

@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Vérifier que l'utilisateur a le rôle CONTRIBUTOR ou ADMIN
-    if (session.user.role === 'EXPLORER') {
+    if (session.role === 'EXPLORER') {
       return NextResponse.json(
         { error: 'Vous devez être Contributeur ou Administrateur pour créer des conseils. Demandez une promotion de rôle.' },
         { status: 403 }
@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
         category,
         imageUrl,
         source,
-        authorId: session.user.id
+        authorId: session.id
         // isPublished est par défaut à true dans le schéma
       },
       include: {

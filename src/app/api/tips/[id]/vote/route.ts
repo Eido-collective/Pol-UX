@@ -52,7 +52,7 @@ export async function POST(
     const existingVote = await prisma.vote.findFirst({
       where: {
         tipId: id,
-        userId: session.user.id
+        userId: session.id
       }
     })
 
@@ -75,7 +75,7 @@ export async function POST(
         data: {
           value,
           tipId: id,
-          userId: session.user.id
+          userId: session.id
         }
       })
     }
