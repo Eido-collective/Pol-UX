@@ -15,6 +15,8 @@ export default function Navbar() {
   const { user } = useAuth()
   useTheme()
 
+
+
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
   }
