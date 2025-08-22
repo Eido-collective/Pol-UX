@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getServerSession } from '@/lib/auth-utils'
 import { Prisma } from '@prisma/client'
 
 export async function GET(request: NextRequest) {
@@ -76,8 +75,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-
+    const session = await getServerSession()
+    
     if (!session) {
       return NextResponse.json(
         { error: 'Vous devez être connecté pour créer un article' },
@@ -86,7 +85,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Vérifier que l'utilisateur a le rôle CONTRIBUTOR ou ADMIN
-    if (session.user.role === 'EXPLORER') {
+    if (session.role === 'EXPLORER') {
       return NextResponse.json(
         { error: 'Vous devez être Contributeur ou Administrateur pour créer des articles. Demandez une promotion de rôle.' },
         { status: 403 }
@@ -126,7 +125,7 @@ export async function POST(request: NextRequest) {
         category,
         imageUrl,
         source,
-        authorId: session.user.id
+        authorId: session.id
         // isPublished et publishedAt sont par défaut gérés dans le schéma
       },
       include: {

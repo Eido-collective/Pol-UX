@@ -1,22 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getServerSession } from '@/lib/auth-utils'
+
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params
   try {
-    const session = await getServerSession(authOptions)
-
+    const session = await getServerSession()
+    
     if (!session) {
       return NextResponse.json(
         { error: 'Vous devez être connecté pour voter' },
         { status: 401 }
       )
     }
+
+    const { id } = await params
 
     const body = await request.json()
     const { value } = body

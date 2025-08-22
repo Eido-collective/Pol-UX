@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getServerSession } from '@/lib/auth-utils'
 import { Prisma, RoleRequestStatus } from '@prisma/client'
 
 // POST - Créer une demande de promotion
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession()
     
     if (!session) {
       return NextResponse.json(
@@ -88,7 +87,7 @@ export async function POST(request: NextRequest) {
 // GET - Récupérer les demandes (admin seulement)
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession()
     
     if (!session || session.user.role !== 'ADMIN') {
       return NextResponse.json(
@@ -98,42 +97,59 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url)
-    const status = searchParams.get('status')
+    const status = searchParams.get('status') as RoleRequestStatus | null
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '10')
+    const skip = (page - 1) * limit
 
+    // Construire les filtres
     const where: Prisma.RoleRequestWhereInput = {}
-    if (status && ['PENDING', 'APPROVED', 'REJECTED'].includes(status)) {
-      where.status = status as RoleRequestStatus
+    if (status) {
+      where.status = status
     }
 
-    const roleRequests = await prisma.roleRequest.findMany({
-      where,
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            username: true,
-            email: true,
-            role: true
+    const [roleRequests, total] = await Promise.all([
+      prisma.roleRequest.findMany({
+        where,
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              username: true,
+              email: true,
+              role: true
+            }
+          },
+          admin: {
+            select: {
+              id: true,
+              name: true,
+              username: true
+            }
           }
         },
-        admin: {
-          select: {
-            id: true,
-            name: true,
-            username: true
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
+        orderBy: {
+          createdAt: 'desc'
+        },
+        skip,
+        take: limit
+      }),
+      prisma.roleRequest.count({ where })
+    ])
+
+    return NextResponse.json({
+      data: roleRequests,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
       }
     })
 
-    return NextResponse.json({ roleRequests })
-
   } catch (error) {
-    console.error('Erreur lors de la récupération des demandes de promotion:', error)
+    console.error('Erreur lors de la récupération des demandes:', error)
     return NextResponse.json(
       { error: 'Une erreur est survenue lors de la récupération des demandes' },
       { status: 500 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
-import { useSession } from 'next-auth/react'
+import { useAuth } from '@/hooks/useAuth'
 import { ArrowLeft, ChevronUp, ChevronDown, User, Calendar, MessageSquare, Trash2, Send, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
@@ -58,7 +58,7 @@ interface ForumPost {
 
 export default function ForumPostDetailPage() {
   const params = useParams()
-  const { data: session } = useSession()
+  const { user: session } = useAuth()
   const [post, setPost] = useState<ForumPost | null>(null)
   const [loading, setLoading] = useState(true)
   const [newComment, setNewComment] = useState('')
@@ -81,7 +81,7 @@ export default function ForumPostDetailPage() {
           
           // Votes sur le post
           if (data.post.votes) {
-            const userVote = data.post.votes.find((vote: Vote) => vote.userId === session.user.id)
+            const userVote = data.post.votes.find((vote: Vote) => vote.userId === session?.id)
             if (userVote) {
               userVotesData[data.post.id] = userVote.value
             }
@@ -91,7 +91,7 @@ export default function ForumPostDetailPage() {
           if (data.post.comments) {
             data.post.comments.forEach((comment: Comment) => {
               if (comment.votes) {
-                const userVote = comment.votes.find((vote: Vote) => vote.userId === session.user.id)
+                const userVote = comment.votes.find((vote: Vote) => vote.userId === session?.id)
                 if (userVote) {
                   userVotesData[comment.id] = userVote.value
                 }
@@ -101,7 +101,7 @@ export default function ForumPostDetailPage() {
               if (comment.replies) {
                 comment.replies.forEach((reply: Reply) => {
                   if (reply.votes) {
-                    const userVote = reply.votes.find((vote: Vote) => vote.userId === session.user.id)
+                    const userVote = reply.votes.find((vote: Vote) => vote.userId === session?.id)
                     if (userVote) {
                       userVotesData[reply.id] = userVote.value
                     }
@@ -198,7 +198,7 @@ export default function ForumPostDetailPage() {
   const handleVote = async (type: 'post' | 'comment', id: string, value: number) => {
     if (!session) {
       toast.error('Vous devez être connecté pour voter')
-      window.location.href = '/login'
+      window.location.href = '/register'
       return
     }
 
@@ -473,9 +473,9 @@ export default function ForumPostDetailPage() {
                 <p>Aucun commentaire pour le moment.</p>
                 {!session && (
                   <p className="text-sm mt-2">
-                    <Link href="/login" className="text-green-600 hover:underline">
-                      Connectez-vous
-                    </Link>{' '}
+                                    <Link href="/register" className="text-green-600 hover:underline">
+                  Inscrivez-vous
+                </Link>{' '}
                     pour ajouter un commentaire.
                   </p>
                 )}
@@ -500,7 +500,7 @@ export default function ForumPostDetailPage() {
                          </div>
                        </div>
                        {/* Bouton de suppression pour l'auteur ou l'admin */}
-                       {session && (session.user.id === comment.author.id || session.user.role === 'ADMIN') && (
+                       {session && (session.id === comment.author.id || session.role === 'ADMIN') && (
                          <button
                            onClick={() => handleDeleteComment(comment.id)}
                            className="p-1 text-theme-secondary hover:text-red-600 transition-colors rounded"
@@ -638,7 +638,7 @@ export default function ForumPostDetailPage() {
                                       {formatDate(reply.createdAt)}
                                     </span>
                                     {/* Bouton de suppression pour l'auteur de la réponse ou l'admin */}
-                                    {session && (session.user.id === reply.author.id || session.user.role === 'ADMIN') && (
+                                    {session && (session.id === reply.author.id || session.role === 'ADMIN') && (
                                       <button
                                         onClick={() => handleDeleteComment(reply.id)}
                                         className="p-1 text-theme-secondary hover:text-red-600 transition-colors rounded"

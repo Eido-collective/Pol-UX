@@ -34,10 +34,10 @@ function ConfirmEmailContent() {
         if (response.ok) {
           setStatus('success')
           setMessage(data.message)
-          // Rediriger vers la page de connexion après 3 secondes
-          setTimeout(() => {
-            router.push('/login')
-          }, 3000)
+                  // Rediriger vers la page d'accueil après 3 secondes
+        setTimeout(() => {
+          router.push('/')
+        }, 3000)
         } else {
           setStatus('error')
           setMessage(data.error || 'Une erreur est survenue')
@@ -80,13 +80,13 @@ function ConfirmEmailContent() {
               <h3 className="text-lg font-medium text-theme-primary">Email confirmé !</h3>
               <p className="text-theme-secondary">{message}</p>
               <p className="text-sm text-theme-secondary mt-2">
-                Vous pouvez maintenant vous connecter à votre compte.
+                Votre compte est maintenant activé.
               </p>
               <Link
-                href="/login"
+                href="/"
                 className="mt-4 inline-block bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
               >
-                Se connecter
+                Retour à l&apos;accueil
               </Link>
             </div>
           )}
@@ -109,14 +109,7 @@ function ConfirmEmailContent() {
           )}
         </div>
 
-        <div className="text-center">
-          <Link
-            href="/login"
-            className="text-sm text-theme-secondary hover:text-theme-primary transition-colors"
-          >
-            Déjà un compte ? Se connecter
-          </Link>
-        </div>
+
       </div>
     </div>
   )

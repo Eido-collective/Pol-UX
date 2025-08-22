@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getServerSession } from '@/lib/auth-utils'
+import { RoleRequestStatus } from '@prisma/client'
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession()
     
     if (!session || session.user.role !== 'ADMIN') {
       return NextResponse.json(
@@ -18,16 +18,18 @@ export async function PUT(
     }
 
     const { id } = await params
-    const { action, adminNotes } = await request.json()
+    const body = await request.json()
+    const { status, adminNotes } = body
 
-    if (!['approve', 'reject'].includes(action)) {
+    // Validation du statut
+    if (!['APPROVED', 'REJECTED'].includes(status)) {
       return NextResponse.json(
-        { error: 'Action invalide' },
+        { error: 'Statut invalide' },
         { status: 400 }
       )
     }
 
-    // Récupérer la demande
+    // Vérifier que la demande existe
     const roleRequest = await prisma.roleRequest.findUnique({
       where: { id },
       include: {
@@ -35,6 +37,7 @@ export async function PUT(
           select: {
             id: true,
             name: true,
+            username: true,
             email: true,
             role: true
           }
@@ -56,33 +59,52 @@ export async function PUT(
       )
     }
 
-    const newStatus = action === 'approve' ? 'APPROVED' : 'REJECTED'
-
     // Traiter la demande
-    await prisma.roleRequest.update({
+    const updatedRequest = await prisma.roleRequest.update({
       where: { id },
       data: {
-        status: newStatus,
-        adminNotes: adminNotes?.trim() || null,
+        status: status as RoleRequestStatus,
         processedAt: new Date(),
-        processedBy: session.user.id
+        processedBy: session.user.id,
+        adminNotes: adminNotes?.trim() || null
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            email: true,
+            role: true
+          }
+        },
+        admin: {
+          select: {
+            id: true,
+            name: true,
+            username: true
+          }
+        }
       }
     })
 
     // Si approuvée, mettre à jour le rôle de l'utilisateur
-    if (action === 'approve') {
+    if (status === 'APPROVED') {
       await prisma.user.update({
-        where: { id: roleRequest.userId },
+        where: { id: roleRequest.user.id },
         data: { role: roleRequest.requestedRole }
       })
     }
 
     return NextResponse.json({
-      message: `Demande ${action === 'approve' ? 'approuvée' : 'rejetée'} avec succès`
+      message: status === 'APPROVED' 
+        ? 'Demande approuvée et rôle mis à jour' 
+        : 'Demande rejetée',
+      roleRequest: updatedRequest
     })
 
   } catch (error) {
-    console.error('Erreur lors du traitement de la demande de promotion:', error)
+    console.error('Erreur lors du traitement de la demande:', error)
     return NextResponse.json(
       { error: 'Une erreur est survenue lors du traitement de la demande' },
       { status: 500 }

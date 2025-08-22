@@ -2,195 +2,234 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useSession, signOut } from 'next-auth/react'
-import { Leaf, Menu, X, MapPin, MessageSquare, Lightbulb, BookOpen, Shield, User, LogOut } from 'lucide-react'
-import Image from 'next/image'
+import { useAuth } from '@/hooks/useAuth'
 import ThemeToggle from './ThemeToggle'
+import LogoutConfirmation from './LogoutConfirmation'
+import { Menu, X, User, LogOut, Settings, MapPin, MessageSquare, Lightbulb, FileText } from 'lucide-react'
 import { useTheme } from '@/hooks/useTheme'
+import Image from 'next/image'
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const { data: session } = useSession()
+  const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false)
+  const { user } = useAuth()
   useTheme()
 
-  const navigation = [
-    { name: 'Accueil', href: '/', icon: Leaf },
-    { name: 'Carte', href: '/map', icon: MapPin },
-    { name: 'Forum', href: '/forum', icon: MessageSquare },
-    { name: 'Conseils', href: '/tips', icon: Lightbulb },
-    { name: 'Articles', href: '/articles', icon: BookOpen },
-  ]
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen)
+  }
 
-  const handleSignOut = () => {
-    signOut({ callbackUrl: '/' })
+  const handleLogoutClick = () => {
+    setShowLogoutConfirmation(true)
+    setIsMenuOpen(false)
   }
 
   return (
-    <nav className="bg-theme-card shadow-theme-md border-b border-theme-primary sticky top-0 z-50">
+    <nav className="bg-theme-card border-b border-theme-primary shadow-theme-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between h-16">
           {/* Logo et navigation principale */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
-              <Image 
-                src='/logo-black.svg'
-                id='logo-navbar'
-                alt="Pol-UX" 
-                width={110} 
-                height={110}
-              />
+              <div className="flex items-center space-x-2">
+                  <Image 
+                    src='/logo-black.svg'
+                    id='logo-navbar'
+                    alt="Pol-UX" 
+                    width={110} 
+                    height={110}
+                  />
+              </div>
             </Link>
-            
+
             {/* Navigation desktop */}
             <div className="hidden md:ml-10 md:flex md:space-x-8">
-              {navigation.map((item) => {
-                const Icon = item.icon
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className="flex items-center space-x-1 text-theme-secondary hover:text-green-500 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span>{item.name}</span>
-                  </Link>
-                )
-              })}
+              <Link 
+                href="/map" 
+                className="flex items-center space-x-1 text-theme-secondary hover:text-theme-primary transition-colors"
+              >
+                <MapPin className="h-4 w-4" />
+                <span>Carte</span>
+              </Link>
+              <Link 
+                href="/forum" 
+                className="flex items-center space-x-1 text-theme-secondary hover:text-theme-primary transition-colors"
+              >
+                <MessageSquare className="h-4 w-4" />
+                <span>Forum</span>
+              </Link>
+              <Link 
+                href="/tips" 
+                className="flex items-center space-x-1 text-theme-secondary hover:text-theme-primary transition-colors"
+              >
+                <Lightbulb className="h-4 w-4" />
+                <span>Conseils</span>
+              </Link>
+              <Link 
+                href="/articles" 
+                className="flex items-center space-x-1 text-theme-secondary hover:text-theme-primary transition-colors"
+              >
+                <FileText className="h-4 w-4" />
+                <span>Articles</span>
+              </Link>
             </div>
           </div>
 
-          {/* Actions utilisateur */}
+          {/* Actions côté droit */}
           <div className="flex items-center space-x-4">
-            {/* Theme Toggle */}
             <ThemeToggle />
-            
-            {session ? (
-              <div className="flex items-center space-x-4">
-                {/* Admin link */}
-                {session.user.role === 'ADMIN' && (
-                  <Link
-                    href="/admin"
-                    className="flex items-center space-x-1 text-theme-secondary hover:text-green-500 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-                  >
-                    <Shield className="h-4 w-4" />
-                    <span className="hidden sm:inline">Admin</span>
-                  </Link>
-                )}
-                
-                {/* User menu */}
-                <Link
-                  href="/dashboard"
-                  className="flex items-center space-x-2 text-theme-secondary hover:text-green-500 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-                >
-                  <User className="h-4 w-4" />
-                  <span className="hidden sm:inline">
-                    {session.user.name || session.user.username}
-                  </span>
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-500 text-white">
-                    {session.user.role === 'ADMIN' ? 'Admin' : 
-                     session.user.role === 'CONTRIBUTOR' ? 'Contributeur' : 'Explorateur'}
-                  </span>
-                </Link>
-                
-                {/* Logout button */}
+
+            {user ? (
+              /* Utilisateur connecté */
+              <div className="relative">
                 <button
-                  onClick={handleSignOut}
-                  className="flex items-center space-x-1 text-theme-secondary hover:text-red-500 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                  onClick={toggleMenu}
+                  className="flex items-center space-x-2 text-theme-secondary hover:text-theme-primary transition-colors"
                 >
-                  <LogOut className="h-4 w-4" />
-                  <span className="hidden sm:inline">Déconnexion</span>
+                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                    <User className="h-4 w-4 text-green-600" />
+                  </div>
+                  <span className="hidden sm:block">{user.name || user.username}</span>
+                  {isMenuOpen ? (
+                    <X className="h-4 w-4" />
+                  ) : (
+                    <Menu className="h-4 w-4" />
+                  )}
                 </button>
+
+                {/* Menu déroulant */}
+                {isMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-theme-card rounded-lg shadow-theme-lg border border-theme-primary py-2 z-50">
+                    <div className="px-4 py-2 border-b border-theme-primary">
+                      <p className="text-sm font-medium text-theme-primary">{user.name || user.username}</p>
+                      <p className="text-xs text-theme-secondary">{user.email}</p>
+                      <p className="text-xs text-green-600 capitalize">{user.role.toLowerCase()}</p>
+                    </div>
+                    
+                    <Link 
+                      href="/dashboard" 
+                      className="flex items-center space-x-2 px-4 py-2 text-sm text-theme-secondary hover:bg-theme-secondary transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <Settings className="h-4 w-4" />
+                      <span>Tableau de bord</span>
+                    </Link>
+                    
+                    <button
+                      onClick={handleLogoutClick}
+                      className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>Se déconnecter</span>
+                    </button>
+                    
+                    <Link 
+                      href="/logout" 
+                      className="flex items-center space-x-2 px-4 py-2 text-sm text-theme-secondary hover:bg-theme-secondary transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>Page de déconnexion</span>
+                    </Link>
+                  </div>
+                )}
               </div>
             ) : (
+              /* Utilisateur non connecté */
               <div className="flex items-center space-x-4">
-                <Link
-                  href="/login"
-                  className="text-theme-secondary hover:text-green-500 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                <Link 
+                  href="/login" 
+                  className="text-theme-secondary hover:text-theme-primary transition-colors"
                 >
                   Connexion
                 </Link>
-                <Link
-                  href="/register"
-                  className="bg-green-500 text-white hover:bg-green-600 px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                <Link 
+                  href="/register" 
+                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
                 >
                   Inscription
                 </Link>
               </div>
             )}
-
-            {/* Menu mobile button */}
-            <div className="md:hidden">
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="text-theme-secondary hover:text-green-500 p-2 rounded-md"
-              >
-                {isMenuOpen ? (
-                  <X className="h-6 w-6" />
-                ) : (
-                  <Menu className="h-6 w-6" />
-                )}
-              </button>
-            </div>
           </div>
         </div>
 
-        {/* Menu mobile */}
+        {/* Navigation mobile */}
         {isMenuOpen && (
           <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-theme-primary bg-theme-card">
-              {navigation.map((item) => {
-                const Icon = item.icon
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className="flex items-center space-x-2 text-theme-secondary hover:text-green-500 block px-3 py-2 rounded-md text-base font-medium transition-colors"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <Icon className="h-5 w-5" />
-                    <span>{item.name}</span>
-                  </Link>
-                )
-              })}
+            <div className="px-2 pt-2 pb-3 space-y-1 border-t border-theme-primary">
+              <Link 
+                href="/map" 
+                className="flex items-center space-x-2 px-3 py-2 text-theme-secondary hover:text-theme-primary transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <MapPin className="h-4 w-4" />
+                <span>Carte</span>
+              </Link>
+              <Link 
+                href="/forum" 
+                className="flex items-center space-x-2 px-3 py-2 text-theme-secondary hover:text-theme-primary transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <MessageSquare className="h-4 w-4" />
+                <span>Forum</span>
+              </Link>
+              <Link 
+                href="/tips" 
+                className="flex items-center space-x-2 px-3 py-2 text-theme-secondary hover:text-theme-primary transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Lightbulb className="h-4 w-4" />
+                <span>Conseils</span>
+              </Link>
+              <Link 
+                href="/articles" 
+                className="flex items-center space-x-2 px-3 py-2 text-theme-secondary hover:text-theme-primary transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <FileText className="h-4 w-4" />
+                <span>Articles</span>
+              </Link>
               
-              {session && (
+              {user && (
                 <>
-                  <Link
-                    href="/dashboard"
-                    className="flex items-center space-x-2 text-theme-secondary hover:text-green-500 block px-3 py-2 rounded-md text-base font-medium transition-colors"
+                  <Link 
+                    href="/dashboard" 
+                    className="flex items-center space-x-2 px-3 py-2 text-theme-secondary hover:text-theme-primary transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    <User className="h-5 w-5" />
+                    <Settings className="h-4 w-4" />
                     <span>Tableau de bord</span>
                   </Link>
-                  
-                  {session.user.role === 'ADMIN' && (
-                    <Link
-                      href="/admin"
-                      className="flex items-center space-x-2 text-theme-secondary hover:text-green-500 block px-3 py-2 rounded-md text-base font-medium transition-colors"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <Shield className="h-5 w-5" />
-                      <span>Administration</span>
-                    </Link>
-                  )}
-                  
                   <button
-                    onClick={() => {
-                      handleSignOut()
-                      setIsMenuOpen(false)
-                    }}
-                    className="flex items-center space-x-2 text-theme-secondary hover:text-red-500 block px-3 py-2 rounded-md text-base font-medium transition-colors w-full text-left"
+                    onClick={handleLogoutClick}
+                    className="flex items-center space-x-2 w-full px-3 py-2 text-left text-red-600 hover:bg-red-50 transition-colors"
                   >
-                    <LogOut className="h-5 w-5" />
-                    <span>Déconnexion</span>
+                    <LogOut className="h-4 w-4" />
+                    <span>Se déconnecter</span>
                   </button>
+                  
+                  <Link
+                    href="/logout"
+                    className="flex items-center space-x-2 px-3 py-2 text-theme-secondary hover:text-theme-primary transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Page de déconnexion</span>
+                  </Link>
                 </>
               )}
             </div>
           </div>
         )}
       </div>
+      
+      {/* Modal de confirmation de déconnexion */}
+      <LogoutConfirmation 
+        isOpen={showLogoutConfirmation} 
+        onClose={() => setShowLogoutConfirmation(false)} 
+      />
     </nav>
   )
 }
+

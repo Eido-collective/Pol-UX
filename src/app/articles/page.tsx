@@ -1,15 +1,32 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Search, Plus, ChevronUp, ChevronDown, Calendar, User, BookOpen, X } from 'lucide-react'
-import Link from 'next/link'
-import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { Plus, Search, Filter, ThumbsUp, Calendar, User, Eye } from 'lucide-react'
 import toast from 'react-hot-toast'
 import ArticleImage from '@/components/ArticleImage'
-import Pagination from '@/components/Pagination'
 import { useArticles } from '@/hooks/useArticles'
-import useSWR from 'swr'
+
+interface Article {
+  id: string
+  title: string
+  content: string
+  excerpt?: string
+  category: string
+  imageUrl?: string
+  source?: string
+  publishedAt?: string
+  createdAt: string
+  author: {
+    name: string
+    username: string
+  }
+  votes: Vote[]
+  _count: {
+    votes: number
+  }
+}
 
 interface Vote {
   id: string
@@ -18,87 +35,60 @@ interface Vote {
 }
 
 export default function ArticlesPage() {
-  const { data: session } = useSession()
-  const router = useRouter()
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
-  const [userVotes, setUserVotes] = useState<{[key: string]: number}>({})
+  const [selectedCategory, setSelectedCategory] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
-  
-  // Utilisation de SWR pour récupérer les articles
-  const { articles, pagination, isLoading, error, mutate } = useArticles({
-    page: currentPage,
-    search: searchTerm || undefined,
-    category: selectedCategory !== 'all' ? selectedCategory : undefined
-  })
-
-  // Récupération des catégories disponibles
-  const { data: categoriesData } = useSWR('/api/articles/categories')
-  const availableCategories = categoriesData?.categories || []
-  
-  // Modal states
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [newArticle, setNewArticle] = useState({
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [formData, setFormData] = useState({
     title: '',
     content: '',
     excerpt: '',
-    category: 'ENVIRONMENT' as 'ENVIRONMENT' | 'SUSTAINABILITY' | 'CLIMATE_CHANGE' | 'BIODIVERSITY' | 'RENEWABLE_ENERGY' | 'CIRCULAR_ECONOMY' | 'GREEN_TECHNOLOGY' | 'CONSERVATION' | 'EDUCATION' | 'POLICY',
+    category: 'ENVIRONMENT',
     imageUrl: '',
     source: ''
   })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [errors, setErrors] = useState<{[key: string]: string}>({})
+  const [errors, setErrors] = useState<{ [key: string]: string }>({})
+  const router = useRouter()
+
+  // Utilisation du hook useArticles
+  const { articles, pagination, isLoading, error, mutate } = useArticles({
+    page: currentPage,
+    limit: 10,
+    search: searchTerm,
+    category: selectedCategory
+  })
 
   // Bloquer le scroll quand la modale est ouverte
   useEffect(() => {
-    if (isModalOpen) {
+    if (showCreateModal) {
       document.body.style.overflow = 'hidden'
     } else {
       document.body.style.overflow = 'unset'
     }
 
-    // Nettoyer lors du démontage du composant
     return () => {
       document.body.style.overflow = 'unset'
     }
-  }, [isModalOpen])
+  }, [showCreateModal])
 
   // Fermer la modale avec Échap
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isModalOpen) {
+      if (e.key === 'Escape' && showCreateModal) {
         closeModal()
       }
     }
 
-    if (isModalOpen) {
+    if (showCreateModal) {
       document.addEventListener('keydown', handleEscape)
     }
 
     return () => {
       document.removeEventListener('keydown', handleEscape)
     }
-  }, [isModalOpen])
+  }, [showCreateModal])
 
-  // Charger les votes utilisateur quand les articles changent
-  useEffect(() => {
-    if (articles && session?.user?.id) {
-      const userVotesData: {[key: string]: number} = {}
-      
-      articles.forEach((article) => {
-        if (article.votes) {
-          const userVote = article.votes.find((vote) => vote.userId === session.user.id)
-          if (userVote) {
-            userVotesData[article.id] = userVote.value
-          }
-        }
-      })
-      
-      setUserVotes(userVotesData)
-    }
-  }, [articles, session?.user?.id])
-
-  // Gestion des erreurs SWR
+  // Gérer les erreurs de chargement
   useEffect(() => {
     if (error) {
       console.error('Erreur lors du chargement des articles:', error)
@@ -107,129 +97,134 @@ export default function ArticlesPage() {
   }, [error])
 
   const handleCreateArticle = () => {
-    if (!session) {
-      toast.error('Vous devez être connecté pour créer un article')
-      router.push('/login')
-      return
-    }
-    
-    if (session.user.role === 'EXPLORER') {
-      toast.error('Vous devez être Contributeur ou Administrateur pour créer des articles')
-      router.push('/promotion')
-      return
-    }
-    
-    setIsModalOpen(true)
+    // Rediriger vers la page de connexion car il n'y a plus de système de session
+    router.push('/login')
   }
 
   const validateForm = () => {
-    const newErrors: {[key: string]: string} = {}
-    
-    if (!newArticle.title.trim()) {
+    const newErrors: { [key: string]: string } = {}
+
+    if (!formData.title.trim()) {
       newErrors.title = 'Le titre est obligatoire'
-    } else if (newArticle.title.trim().length < 10) {
-      newErrors.title = 'Le titre doit contenir au moins 10 caractères'
-    }
-    
-    if (!newArticle.content.trim()) {
-      newErrors.content = 'Le contenu est obligatoire'
-    } else if (newArticle.content.trim().length < 100) {
-      newErrors.content = 'Le contenu doit contenir au moins 100 caractères'
+    } else if (formData.title.length < 5) {
+      newErrors.title = 'Le titre doit contenir au moins 5 caractères'
     }
 
-    if (!newArticle.excerpt.trim()) {
-      newErrors.excerpt = "L'extrait est obligatoire"
-    } else if (newArticle.excerpt.trim().length < 20) {
-      newErrors.excerpt = "L'extrait doit contenir au moins 20 caractères"
+    if (!formData.content.trim()) {
+      newErrors.content = 'Le contenu est obligatoire'
+    } else if (formData.content.length < 50) {
+      newErrors.content = 'Le contenu doit contenir au moins 50 caractères'
     }
-    
+
+    if (formData.excerpt && formData.excerpt.length > 200) {
+      newErrors.excerpt = 'L\'extrait ne doit pas dépasser 200 caractères'
+    }
+
+    if (formData.imageUrl && !isValidUrl(formData.imageUrl)) {
+      newErrors.imageUrl = 'URL d\'image invalide'
+    }
+
+    if (formData.source && !isValidUrl(formData.source)) {
+      newErrors.source = 'URL de source invalide'
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
-  const validateField = (field: string, value: string) => {
-    const newErrors = { ...errors }
-    
-    if (field === 'title') {
-      if (!value.trim()) {
-        newErrors.title = 'Le titre est obligatoire'
-      } else if (value.trim().length < 10) {
-        newErrors.title = 'Le titre doit contenir au moins 10 caractères'
-      } else {
-        delete newErrors.title
-      }
-    }
-    
-    if (field === 'content') {
-      if (!value.trim()) {
-        newErrors.content = 'Le contenu est obligatoire'
-      } else if (value.trim().length < 100) {
-        newErrors.content = 'Le contenu doit contenir au moins 100 caractères'
-      } else {
-        delete newErrors.content
-      }
-    }
+  // Fonction de validation des champs (non utilisée actuellement)
+  // const validateField = (field: string, value: string) => {
+  //   const newErrors = { ...errors }
 
-    if (field === 'excerpt') {
-      if (!value.trim()) {
-        newErrors.excerpt = "L'extrait est obligatoire"
-      } else if (value.trim().length < 20) {
-        newErrors.excerpt = "L'extrait doit contenir au moins 20 caractères"
-      } else {
-        delete newErrors.excerpt
-      }
-    }
-    
-    setErrors(newErrors)
-  }
+  //   switch (field) {
+  //     case 'title':
+  //       if (!value.trim()) {
+  //         newErrors.title = 'Le titre est obligatoire'
+  //       } else if (value.length < 5) {
+  //         newErrors.title = 'Le titre doit contenir au moins 5 caractères'
+  //       } else {
+  //         delete newErrors.title
+  //       }
+  //       break
+  //     case 'content':
+  //       if (!value.trim()) {
+  //         newErrors.content = 'Le contenu est obligatoire'
+  //       } else if (value.length < 50) {
+  //         newErrors.content = 'Le contenu doit contenir au moins 50 caractères'
+  //       } else {
+  //         delete newErrors.content
+  //       }
+  //       break
+  //     case 'excerpt':
+  //       if (value && value.length > 200) {
+  //         newErrors.excerpt = 'L\'extrait ne doit pas dépasser 200 caractères'
+  //       } else {
+  //         delete newErrors.excerpt
+  //       }
+  //       break
+  //     case 'imageUrl':
+  //       if (value && !isValidUrl(value)) {
+  //         newErrors.imageUrl = 'URL d\'image invalide'
+  //       } else {
+  //         delete newErrors.imageUrl
+  //       }
+  //       break
+  //     case 'source':
+  //       if (value && !isValidUrl(value)) {
+  //         newErrors.source = 'URL de source invalide'
+  //       } else {
+  //         delete newErrors.source
+  //       }
+  //       break
+  //   }
 
-  const handleSubmitArticle = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!validateForm()) {
-      return
-    }
+  //   setErrors(newErrors)
+  // }
 
-    setIsSubmitting(true)
-
+  const isValidUrl = (string: string) => {
     try {
-      const response = await fetch('/api/articles', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newArticle),
-      })
-
-      if (response.ok) {
-        await response.json()
-        setIsModalOpen(false)
-        setNewArticle({
-          title: '',
-          content: '',
-          excerpt: '',
-          category: 'ENVIRONMENT',
-          imageUrl: '',
-          source: ''
-        })
-        setErrors({})
-        mutate() // Revalider le cache SWR
-        toast.success('Article créé avec succès ! Il sera visible après modération.')
-      } else {
-        const errorData = await response.json()
-        toast.error(errorData.error || 'Erreur lors de la création de l\'article')
-      }
-    } catch (error) {
-      console.error('Erreur lors de la création de l\'article:', error)
-      toast.error('Erreur lors de la création de l\'article')
-    } finally {
-      setIsSubmitting(false)
+      new URL(string)
+      return true
+    } catch (_) {
+      return false
     }
   }
+
+  // Fonction de soumission d'article (non utilisée actuellement)
+  // const handleSubmitArticle = async (e: React.FormEvent) => {
+  //   e.preventDefault()
+    
+  //   if (!validateForm()) {
+  //     return
+  //   }
+
+  //   try {
+  //     const response = await fetch('/api/articles', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json'
+  //       },
+  //       body: JSON.stringify(formData)
+  //     })
+
+  //     const data = await response.json()
+
+  //     if (response.ok) {
+  //       toast.success('Article créé avec succès !')
+  //       closeModal()
+  //       fetchArticles()
+  //     } else {
+  //       toast.error(data.error || 'Erreur lors de la création de l\'article')
+  //     }
+  //   } catch (error) {
+  //     console.error('Erreur lors de la création de l\'article:', error)
+  //     toast.error('Erreur lors de la création de l\'article')
+  //   }
+  // }
 
   const closeModal = () => {
-    setIsModalOpen(false)
-    setNewArticle({
+    setShowCreateModal(false)
+    setFormData({
       title: '',
       content: '',
       excerpt: '',
@@ -240,39 +235,9 @@ export default function ArticlesPage() {
     setErrors({})
   }
 
-  const handleVote = async (articleId: string, value: number) => {
-    if (!session) {
-      toast.error('Vous devez être connecté pour voter')
-      router.push('/login')
-      return
-    }
-
-    try {
-      const response = await fetch(`/api/articles/${articleId}/vote`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ value }),
-      })
-
-      if (response.ok) {
-        // Mettre à jour le vote local
-        setUserVotes(prev => ({
-          ...prev,
-          [articleId]: prev[articleId] === value ? 0 : value
-        }))
-        
-        // Revalider le cache SWR pour mettre à jour les compteurs
-        mutate()
-      } else {
-        const errorData = await response.json()
-        toast.error(errorData.error || 'Erreur lors du vote')
-      }
-    } catch (error) {
-      console.error('Erreur lors du vote:', error)
-      toast.error('Erreur lors du vote')
-    }
+  const handleVote = async (_articleId: string, _value: number) => {
+    // Rediriger vers la page de connexion car il n'y a plus de système de session
+    router.push('/login')
   }
 
   const getCategoryLabel = (category: string) => {
@@ -295,15 +260,15 @@ export default function ArticlesPage() {
     switch (category) {
       case 'ENVIRONMENT': return 'bg-green-100 text-green-800'
       case 'SUSTAINABILITY': return 'bg-blue-100 text-blue-800'
-      case 'CLIMATE_CHANGE': return 'bg-orange-100 text-orange-800'
+      case 'CLIMATE_CHANGE': return 'bg-red-100 text-red-800'
       case 'BIODIVERSITY': return 'bg-purple-100 text-purple-800'
       case 'RENEWABLE_ENERGY': return 'bg-yellow-100 text-yellow-800'
       case 'CIRCULAR_ECONOMY': return 'bg-indigo-100 text-indigo-800'
       case 'GREEN_TECHNOLOGY': return 'bg-teal-100 text-teal-800'
-      case 'CONSERVATION': return 'bg-pink-100 text-pink-800'
-      case 'EDUCATION': return 'bg-cyan-100 text-cyan-800'
-      case 'POLICY': return 'bg-theme-tertiary text-theme-secondary'
-      default: return 'bg-theme-tertiary text-theme-secondary'
+      case 'CONSERVATION': return 'bg-orange-100 text-orange-800'
+      case 'EDUCATION': return 'bg-pink-100 text-pink-800'
+      case 'POLICY': return 'bg-gray-100 text-gray-800'
+      default: return 'bg-gray-100 text-gray-800'
     }
   }
 
@@ -316,365 +281,168 @@ export default function ArticlesPage() {
   }
 
   const getVoteCount = (votes: Vote[]) => {
-    return votes?.reduce((sum, vote) => sum + vote.value, 0) || 0
+    return votes.reduce((sum, vote) => sum + vote.value, 0)
+  }
+
+  const filteredArticles = articles.filter(article => {
+    const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         article.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (article.excerpt && article.excerpt.toLowerCase().includes(searchTerm.toLowerCase()))
+    
+    const matchesCategory = selectedCategory === 'all' || article.category === selectedCategory
+    
+    return matchesSearch && matchesCategory
+  })
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-theme-secondary flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
+      </div>
+    )
   }
 
   return (
-    <div className="bg-theme-secondary">
-      {/* Page Header */}
+    <div className="min-h-screen bg-theme-secondary">
+      {/* Header */}
       <div className="bg-theme-card shadow-theme-sm border-b border-theme-primary">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-col gap-4">
-            <div className="text-center sm:text-left">
-              <h1 className="text-2xl font-bold text-theme-primary">Articles Écologiques</h1>
-              <p className="text-theme-secondary">Découvrez des articles approfondis sur l&apos;écologie et le développement durable</p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-theme-primary">Articles</h1>
+              <p className="text-theme-secondary mt-2">
+                Découvrez nos articles sur l&apos;écologie et le développement durable
+              </p>
             </div>
-            <div className="flex justify-center sm:justify-start">
-              <button 
-                onClick={handleCreateArticle}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                Nouvel article
-              </button>
-            </div>
+            <button
+              onClick={handleCreateArticle}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              Nouvel article
+            </button>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Filtres */}
-        <div className="bg-theme-card rounded-lg shadow-sm border border-theme-primary p-6 mb-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-theme-secondary h-4 w-4" />
-                <input
-                  type="text"
-                  placeholder="Rechercher un article..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                />
-              </div>
+        <div className="bg-theme-card rounded-lg shadow-theme-sm border border-theme-primary p-6 mb-8">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-theme-secondary" />
+              <input
+                type="text"
+                placeholder="Rechercher un article..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-theme-primary rounded-lg bg-theme-card text-theme-primary placeholder-theme-secondary focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
             </div>
-
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative">
+              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-theme-secondary" />
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-theme-card text-theme-primary"
+                className="w-full pl-10 pr-4 py-2 border border-theme-primary rounded-lg bg-theme-card text-theme-primary focus:outline-none focus:ring-2 focus:ring-green-500 appearance-none"
               >
                 <option value="all">Toutes les catégories</option>
-                {availableCategories.map((category: { value: string; label: string; count: number }) => (
-                  <option key={category.value} value={category.value}>
-                    {getCategoryLabel(category.value)} ({category.count})
-                  </option>
-                ))}
+                <option value="ENVIRONMENT">Environnement</option>
+                <option value="SUSTAINABILITY">Développement durable</option>
+                <option value="CLIMATE_CHANGE">Changement climatique</option>
+                <option value="BIODIVERSITY">Biodiversité</option>
+                <option value="RENEWABLE_ENERGY">Énergies renouvelables</option>
+                <option value="CIRCULAR_ECONOMY">Économie circulaire</option>
+                <option value="GREEN_TECHNOLOGY">Technologies vertes</option>
+                <option value="CONSERVATION">Conservation</option>
+                <option value="EDUCATION">Éducation</option>
+                <option value="POLICY">Politique</option>
               </select>
             </div>
           </div>
         </div>
 
         {/* Liste des articles */}
-                    {isLoading ? (
+        {filteredArticles.length === 0 ? (
           <div className="text-center py-12">
-            <div className="text-theme-secondary">Chargement des articles...</div>
-          </div>
-        ) : articles.length === 0 ? (
-          <div className="text-center py-12">
-            <BookOpen className="h-12 w-12 text-theme-secondary mx-auto mb-4" />
+            <Eye className="h-12 w-12 text-theme-secondary mx-auto mb-4" />
             <h3 className="text-lg font-medium text-theme-primary mb-2">Aucun article trouvé</h3>
-            <p className="text-theme-secondary">Essayez de modifier vos filtres ou créez le premier article !</p>
+            <p className="text-theme-secondary">
+              {searchTerm || selectedCategory !== 'all' 
+                ? 'Essayez de modifier vos critères de recherche'
+                : 'Aucun article n\'a encore été publié'
+              }
+            </p>
           </div>
         ) : (
-          <div className="space-y-6">
-            {articles.map((article) => (
-              <div
-                key={article.id}
-                className="bg-theme-card rounded-lg shadow-sm border border-theme-primary overflow-hidden hover:shadow-md transition-shadow"
-              >
-                                                 <div className="flex flex-col md:flex-row h-full">
-                  {/* Image de l'article */}
-                  <div className="w-full md:w-64 h-48 md:h-auto flex-shrink-0">
+          <div className="grid gap-6">
+            {filteredArticles.map((article) => (
+              <article key={article.id} className="bg-theme-card rounded-lg shadow-theme-sm border border-theme-primary overflow-hidden">
+                <div className="md:flex">
+                  <div className="md:w-1/3">
                     <ArticleImage
                       src={article.imageUrl}
                       alt={article.title}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 256px"
-                      className="w-full h-full"
+                      className="w-full h-48 md:h-full object-cover"
+                      fill={false}
+                      width={400}
+                      height={300}
                     />
                   </div>
-
-                   {/* Contenu de l'article */}
-                   <div className="flex-1 p-6 flex flex-col">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(article.category)}`}>
-                            {getCategoryLabel(article.category)}
-                          </span>
+                  <div className="md:w-2/3 p-6">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(article.category)}`}>
+                        {getCategoryLabel(article.category)}
+                      </span>
+                    </div>
+                    
+                    <h2 className="text-xl font-bold text-theme-primary mb-2">
+                      <Link href={`/articles/${article.id}`} className="hover:text-green-600 transition-colors">
+                        {article.title}
+                      </Link>
+                    </h2>
+                    
+                    {article.excerpt && (
+                      <p className="text-theme-secondary mb-4 line-clamp-3">
+                        {article.excerpt}
+                      </p>
+                    )}
+                    
+                    <div className="flex items-center justify-between text-sm text-theme-secondary mb-4">
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1">
+                          <User className="h-4 w-4" />
+                          <span>{article.author.name || article.author.username}</span>
                         </div>
-                        
-                        <Link href={`/articles/${article.id}`}>
-                          <h2 className="text-xl font-semibold text-theme-primary mb-2 hover:text-green-600 transition-colors">
-                            {article.title.length > 80 
-                              ? `${article.title.substring(0, 80)}...` 
-                              : article.title
-                            }
-                          </h2>
-                        </Link>
-
-                        {article.excerpt && (
-                          <p className="text-theme-secondary mb-4 line-clamp-3">
-                            {article.excerpt.length > 150 
-                              ? `${article.excerpt.substring(0, 150)}...` 
-                              : article.excerpt
-                            }
-                          </p>
-                        )}
-
-                        <div className="flex items-center gap-4 text-sm text-theme-secondary mb-4">
-                          <div className="flex items-center gap-1">
-                            <User className="h-4 w-4" />
-                            <span>{article.author.name || article.author.username}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-4 w-4" />
-                            <span>{formatDate(article.publishedAt || article.createdAt)}</span>
-                          </div>
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-4 w-4" />
+                          <span>{formatDate(article.publishedAt || article.createdAt)}</span>
                         </div>
-
-
-                      </div>
-
-                      {/* Système de vote */}
-                      <div className="flex flex-col items-center gap-1 ml-4">
-                        <button 
-                          className={`p-2 rounded-lg transition-colors ${
-                            userVotes[article.id] === 1 
-                              ? 'text-orange-500 bg-orange-50 border border-orange-200' 
-                              : 'text-theme-secondary hover:text-orange-500 hover:bg-theme-primary border border-theme-primary'
-                          }`}
-                          onClick={() => handleVote(article.id, 1)}
-                        >
-                          <ChevronUp className="h-4 w-4" />
-                        </button>
-                        <span className={`text-sm font-medium ${
-                          getVoteCount(article.votes) > 0 ? 'text-orange-500' : 
-                          getVoteCount(article.votes) < 0 ? 'text-blue-500' : 'text-theme-primary'
-                        }`}>
-                          {getVoteCount(article.votes)}
-                        </span>
-                        <button 
-                          className={`p-2 rounded-lg transition-colors ${
-                            userVotes[article.id] === -1 
-                              ? 'text-blue-500 bg-blue-50 border border-blue-200' 
-                              : 'text-theme-secondary hover:text-blue-500 hover:bg-theme-primary border border-theme-primary'
-                          }`}
-                          onClick={() => handleVote(article.id, -1)}
-                        >
-                          <ChevronDown className="h-4 w-4" />
-                        </button>
                       </div>
                     </div>
-
-                                         <div className="mt-auto pt-4">
-                       <Link 
-                         href={`/articles/${article.id}`}
-                         className="inline-flex items-center text-green-600 hover:text-green-700 font-medium text-sm"
-                       >
-                         Lire la suite
-                         <span className="ml-1">→</span>
-                       </Link>
-                     </div>
-                   </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <button
+                          onClick={() => handleVote(article.id, 1)}
+                          className="flex items-center gap-1 text-theme-secondary hover:text-green-600 transition-colors"
+                        >
+                          <ThumbsUp className="h-4 w-4" />
+                          <span>{getVoteCount(article.votes)}</span>
+                        </button>
+                      </div>
+                      
+                      <Link
+                        href={`/articles/${article.id}`}
+                        className="text-green-600 hover:text-green-700 font-medium transition-colors"
+                      >
+                        Lire la suite →
+                      </Link>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              </article>
             ))}
-          </div>
-        )}
-
-        {/* Pagination */}
-        {pagination && pagination.totalPages > 1 && (
-          <div className="mt-8">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={pagination.totalPages}
-              onPageChange={setCurrentPage}
-            />
-          </div>
-        )}
-
-        {/* Modal de création d'article */}
-        {isModalOpen && (
-          <div 
-            className="fixed inset-0 bg-theme-overlay backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={closeModal} // Fermer en cliquant sur le backdrop
-          >
-            <div 
-              className="bg-theme-card rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()} // Empêcher la fermeture en cliquant sur la modale
-            >
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-theme-primary">Nouvel Article</h2>
-                  <button
-                    onClick={closeModal}
-                    className="text-theme-secondary hover:text-theme-primary transition-colors"
-                  >
-                    <X className="h-6 w-6" />
-                  </button>
-                </div>
-
-                <form onSubmit={handleSubmitArticle} className="space-y-6">
-                  <div>
-                    <label htmlFor="title" className="block text-sm font-medium text-theme-secondary mb-2">
-                      Titre *
-                    </label>
-                    <input
-                      type="text"
-                      id="title"
-                      value={newArticle.title}
-                      onChange={(e) => {
-                        setNewArticle(prev => ({ ...prev, title: e.target.value }))
-                        validateField('title', e.target.value)
-                      }}
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
-                        errors.title ? 'border-red-500' : 'border-theme-primary'
-                      }`}
-                      placeholder="Titre de votre article..."
-                      required
-                    />
-                    {errors.title && (
-                      <p className="mt-1 text-sm text-red-600">{errors.title}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label htmlFor="category" className="block text-sm font-medium text-theme-secondary mb-2">
-                      Catégorie *
-                    </label>
-                    <select
-                      id="category"
-                      value={newArticle.category}
-                      onChange={(e) => setNewArticle(prev => ({ ...prev, category: e.target.value as 'ENVIRONMENT' | 'SUSTAINABILITY' | 'CLIMATE_CHANGE' | 'BIODIVERSITY' | 'RENEWABLE_ENERGY' | 'CIRCULAR_ECONOMY' | 'GREEN_TECHNOLOGY' | 'CONSERVATION' | 'EDUCATION' | 'POLICY' }))}
-                      className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-theme-card text-theme-primary"
-                      required
-                    >
-                      <option value="ENVIRONMENT">Environnement</option>
-                      <option value="SUSTAINABILITY">Développement durable</option>
-                      <option value="CLIMATE_CHANGE">Changement climatique</option>
-                      <option value="BIODIVERSITY">Biodiversité</option>
-                      <option value="RENEWABLE_ENERGY">Énergies renouvelables</option>
-                      <option value="CIRCULAR_ECONOMY">Économie circulaire</option>
-                      <option value="GREEN_TECHNOLOGY">Technologies vertes</option>
-                      <option value="CONSERVATION">Conservation</option>
-                      <option value="EDUCATION">Éducation</option>
-                      <option value="POLICY">Politique</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label htmlFor="excerpt" className="block text-sm font-medium text-theme-secondary mb-2">
-                      Extrait *
-                    </label>
-                    <textarea
-                      id="excerpt"
-                      value={newArticle.excerpt}
-                      onChange={(e) => {
-                        setNewArticle(prev => ({ ...prev, excerpt: e.target.value }))
-                        validateField('excerpt', e.target.value)
-                      }}
-                      rows={3}
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none ${
-                        errors.excerpt ? 'border-red-500' : 'border-theme-primary'
-                      }`}
-                      placeholder="Résumé court de votre article..."
-                      required
-                    />
-                    {errors.excerpt && (
-                      <p className="mt-1 text-sm text-red-600">{errors.excerpt}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label htmlFor="content" className="block text-sm font-medium text-theme-secondary mb-2">
-                      Contenu *
-                    </label>
-                    <textarea
-                      id="content"
-                      value={newArticle.content}
-                      onChange={(e) => {
-                        setNewArticle(prev => ({ ...prev, content: e.target.value }))
-                        validateField('content', e.target.value)
-                      }}
-                      rows={8}
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none ${
-                        errors.content ? 'border-red-500' : 'border-theme-primary'
-                      }`}
-                      placeholder="Contenu détaillé de votre article..."
-                      required
-                    />
-                    {errors.content && (
-                      <p className="mt-1 text-sm text-red-600">{errors.content}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label htmlFor="imageUrl" className="block text-sm font-medium text-theme-secondary mb-2">
-                      URL de l&apos;image (optionnel)
-                    </label>
-                    <input
-                      type="url"
-                      id="imageUrl"
-                      value={newArticle.imageUrl}
-                      onChange={(e) => setNewArticle(prev => ({ ...prev, imageUrl: e.target.value }))}
-                      className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                      placeholder="https://..."
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="source" className="block text-sm font-medium text-theme-secondary mb-2">
-                      URL de la source (optionnel)
-                    </label>
-                    <input
-                      type="url"
-                      id="source"
-                      value={newArticle.source}
-                      onChange={(e) => setNewArticle(prev => ({ ...prev, source: e.target.value }))}
-                      className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                      placeholder="https://..."
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-end gap-3 pt-4">
-                    <button
-                      type="button"
-                      onClick={closeModal}
-                      className="px-4 py-2 text-theme-secondary bg-theme-primary hover:bg-theme-secondary rounded-lg transition-colors"
-                    >
-                      Annuler
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={isSubmitting || Object.keys(errors).length > 0}
-                      className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 disabled:bg-theme-secondary disabled:cursor-not-allowed rounded-lg transition-colors flex items-center gap-2"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          Publication...
-                        </>
-                      ) : (
-                        "Publier l'article"
-                      )}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
           </div>
         )}
       </div>

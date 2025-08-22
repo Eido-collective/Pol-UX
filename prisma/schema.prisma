@@ -64,6 +64,32 @@ enum RoleRequestStatus {
   REJECTED
 }
 
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  username      String    @unique
+  password      String?
+  role          UserRole  @default(EXPLORER)
+  emailConfirmed Boolean  @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  initiatives   Initiative[]
+  forumPosts    ForumPost[]
+  forumComments ForumComment[]
+  tips          Tip[]
+  articles      Article[]
+  votes         Vote[]
+  roleRequests  RoleRequest[]
+  processedRoleRequests RoleRequest[] @relation("AdminRoleRequests")
+  userTasks     UserTask[]
+  sessions      Session[]
+  accounts      Account[]
+}
+
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -89,32 +115,6 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
-  username      String    @unique
-  password      String?
-  role          UserRole  @default(EXPLORER)
-  emailConfirmed Boolean  @default(false)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  accounts      Account[]
-  sessions      Session[]
-  initiatives   Initiative[]
-  forumPosts    ForumPost[]
-  forumComments ForumComment[]
-  tips          Tip[]
-  articles      Article[]
-  votes         Vote[]
-  roleRequests  RoleRequest[]
-  processedRoleRequests RoleRequest[] @relation("AdminRoleRequests")
-  userTasks     UserTask[]
 }
 
 model VerificationToken {

@@ -1,17 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getServerSession } from '@/lib/auth-utils'
+import { Prisma } from '@prisma/client'
 
 // Force dynamic rendering for this API route
 export const dynamic = 'force-dynamic'
-import { Prisma } from '@prisma/client'
 
 // PUT - Mettre à jour une tâche (titre, description ou statut)
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = await params
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession()
     
     if (!session) {
       return NextResponse.json(
@@ -20,11 +18,13 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       )
     }
 
+    const { id } = await params
+
     // Vérifier que la tâche existe et appartient à l'utilisateur
     const existingTask = await prisma.userTask.findFirst({
       where: {
         id,
-        userId: session.user.id
+        userId: session.id
       }
     })
 
@@ -82,8 +82,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 // DELETE - Supprimer une tâche
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = await params
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession()
     
     if (!session) {
       return NextResponse.json(
@@ -92,11 +91,13 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       )
     }
 
+    const { id } = await params
+
     // Vérifier que la tâche existe et appartient à l'utilisateur
     const existingTask = await prisma.userTask.findFirst({
       where: {
         id,
-        userId: session.user.id
+        userId: session.id
       }
     })
 

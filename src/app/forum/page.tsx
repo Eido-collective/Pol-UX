@@ -3,11 +3,11 @@
 import { useState, useEffect, useMemo } from 'react'
 import { MessageSquare, ChevronUp, ChevronDown, Plus, Search, X } from 'lucide-react'
 import Link from 'next/link'
-import { useSession } from 'next-auth/react'
+import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import Pagination from '@/components/Pagination'
-import useSWR from 'swr'
+import { useForumPosts } from '@/hooks/useForumPosts'
 
 interface ForumPost {
   id: string
@@ -47,7 +47,7 @@ interface Vote {
 }
 
 export default function ForumPage() {
-  const { data: session } = useSession()
+  const session = useAuth()
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
@@ -57,13 +57,13 @@ export default function ForumPage() {
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1)
   
-  // Utilisation de SWR pour récupérer les posts
-  const { data: postsData, error, mutate } = useSWR(
-    `/api/forum/posts?page=${currentPage}&limit=10${selectedCategory !== 'all' ? `&category=${selectedCategory}` : ''}${searchTerm ? `&search=${searchTerm}` : ''}`
-  )
-  const posts = useMemo(() => postsData?.data || [], [postsData?.data])
-  const pagination = postsData?.pagination
-  const isLoading = !postsData && !error
+  // Utilisation du hook useForumPosts
+  const { posts, pagination, isLoading, error, mutate } = useForumPosts({
+    page: currentPage,
+    limit: 10,
+    search: searchTerm,
+    category: selectedCategory
+  })
   
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -108,12 +108,12 @@ export default function ForumPage() {
 
   // Charger les votes utilisateur quand les posts changent
   useEffect(() => {
-    if (posts && session?.user?.id) {
+    if (posts && session?.id) {
       const userVotesData: {[key: string]: number} = {}
       
       posts.forEach((post: ForumPost) => {
         if (post.votes) {
-          const userVote = post.votes.find((vote: Vote) => vote.userId === session.user.id)
+          const userVote = post.votes.find((vote: Vote) => vote.userId === session?.id)
           if (userVote) {
             userVotesData[post.id] = userVote.value
           }
@@ -122,7 +122,7 @@ export default function ForumPage() {
       
       setUserVotes(userVotesData)
     }
-  }, [posts, session?.user?.id])
+  }, [posts, session?.id])
 
   const getCategoryLabel = (category: string) => {
     switch (category) {
@@ -175,7 +175,7 @@ export default function ForumPage() {
   const handleVote = async (postId: string, value: number) => {
     if (!session) {
       toast.error('Vous devez être connecté pour voter')
-      window.location.href = '/login'
+      window.location.href = '/register'
       return
     }
 
@@ -208,11 +208,11 @@ export default function ForumPage() {
   }
 
   const handleCreatePost = () => {
-    if (!session) {
-      toast.error('Vous devez être connecté pour créer un post')
-      router.push('/login')
-      return
-    }
+          if (!session) {
+        toast.error('Vous devez être connecté pour créer un post')
+        router.push('/register')
+        return
+      }
     
     setIsModalOpen(true)
   }

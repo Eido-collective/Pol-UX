@@ -724,7 +724,7 @@ export const generateWelcomeEmail = (userName: string) => {
           </div>
 
           <div class="cta-section">
-            <a href="${process.env.NEXTAUTH_URL}/login" class="cta-button">
+            <a href="${process.env.NEXTAUTH_URL}" class="cta-button">
               <span>🚀</span>
               <span>Commencer l'exploration</span>
             </a>
