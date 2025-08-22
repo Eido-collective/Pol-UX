@@ -17,7 +17,7 @@ export async function GET() {
       )
     }
 
-    const userId = session.user.id
+    const userId = session.id
 
     // Vérifier les accomplissements
     const userStats = await prisma.$transaction([
@@ -98,7 +98,7 @@ export async function GET() {
         id: 'request-promotion',
         title: 'Demander une promotion de rôle',
         description: 'Accédez à plus de fonctionnalités',
-        completed: session.user.role !== 'EXPLORER',
+        completed: session.role !== 'EXPLORER',
         link: '/promotion',
         icon: 'user-plus',
         requiresRole: 'EXPLORER'
@@ -107,7 +107,7 @@ export async function GET() {
         id: 'complete-profile',
         title: 'Compléter votre profil',
         description: 'Ajoutez une photo et complétez vos informations',
-        completed: !!(session.user.name && session.user.username),
+        completed: !!(session.name && session.username),
         link: '/dashboard',
         icon: 'user'
       }

@@ -16,7 +16,7 @@ export async function GET() {
 
     const roleRequests = await prisma.roleRequest.findMany({
       where: {
-        userId: session.user.id
+        userId: session.id
       },
       include: {
         admin: {

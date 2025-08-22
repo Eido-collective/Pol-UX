@@ -8,26 +8,6 @@ import toast from 'react-hot-toast'
 import ArticleImage from '@/components/ArticleImage'
 import { useArticles } from '@/hooks/useArticles'
 
-interface Article {
-  id: string
-  title: string
-  content: string
-  excerpt?: string
-  category: string
-  imageUrl?: string
-  source?: string
-  publishedAt?: string
-  createdAt: string
-  author: {
-    name: string
-    username: string
-  }
-  votes: Vote[]
-  _count: {
-    votes: number
-  }
-}
-
 interface Vote {
   id: string
   value: number
@@ -37,21 +17,12 @@ interface Vote {
 export default function ArticlesPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const [currentPage, setCurrentPage] = useState(1)
+  const [currentPage] = useState(1)
   const [showCreateModal, setShowCreateModal] = useState(false)
-  const [formData, setFormData] = useState({
-    title: '',
-    content: '',
-    excerpt: '',
-    category: 'ENVIRONMENT',
-    imageUrl: '',
-    source: ''
-  })
-  const [errors, setErrors] = useState<{ [key: string]: string }>({})
   const router = useRouter()
 
   // Utilisation du hook useArticles
-  const { articles, pagination, isLoading, error, mutate } = useArticles({
+  const { articles, isLoading, error } = useArticles({
     page: currentPage,
     limit: 10,
     search: searchTerm,
@@ -101,141 +72,11 @@ export default function ArticlesPage() {
     router.push('/login')
   }
 
-  const validateForm = () => {
-    const newErrors: { [key: string]: string } = {}
-
-    if (!formData.title.trim()) {
-      newErrors.title = 'Le titre est obligatoire'
-    } else if (formData.title.length < 5) {
-      newErrors.title = 'Le titre doit contenir au moins 5 caractères'
-    }
-
-    if (!formData.content.trim()) {
-      newErrors.content = 'Le contenu est obligatoire'
-    } else if (formData.content.length < 50) {
-      newErrors.content = 'Le contenu doit contenir au moins 50 caractères'
-    }
-
-    if (formData.excerpt && formData.excerpt.length > 200) {
-      newErrors.excerpt = 'L\'extrait ne doit pas dépasser 200 caractères'
-    }
-
-    if (formData.imageUrl && !isValidUrl(formData.imageUrl)) {
-      newErrors.imageUrl = 'URL d\'image invalide'
-    }
-
-    if (formData.source && !isValidUrl(formData.source)) {
-      newErrors.source = 'URL de source invalide'
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  // Fonction de validation des champs (non utilisée actuellement)
-  // const validateField = (field: string, value: string) => {
-  //   const newErrors = { ...errors }
-
-  //   switch (field) {
-  //     case 'title':
-  //       if (!value.trim()) {
-  //         newErrors.title = 'Le titre est obligatoire'
-  //       } else if (value.length < 5) {
-  //         newErrors.title = 'Le titre doit contenir au moins 5 caractères'
-  //       } else {
-  //         delete newErrors.title
-  //       }
-  //       break
-  //     case 'content':
-  //       if (!value.trim()) {
-  //         newErrors.content = 'Le contenu est obligatoire'
-  //       } else if (value.length < 50) {
-  //         newErrors.content = 'Le contenu doit contenir au moins 50 caractères'
-  //       } else {
-  //         delete newErrors.content
-  //       }
-  //       break
-  //     case 'excerpt':
-  //       if (value && value.length > 200) {
-  //         newErrors.excerpt = 'L\'extrait ne doit pas dépasser 200 caractères'
-  //       } else {
-  //         delete newErrors.excerpt
-  //       }
-  //       break
-  //     case 'imageUrl':
-  //       if (value && !isValidUrl(value)) {
-  //         newErrors.imageUrl = 'URL d\'image invalide'
-  //       } else {
-  //         delete newErrors.imageUrl
-  //       }
-  //       break
-  //     case 'source':
-  //       if (value && !isValidUrl(value)) {
-  //         newErrors.source = 'URL de source invalide'
-  //       } else {
-  //         delete newErrors.source
-  //       }
-  //       break
-  //   }
-
-  //   setErrors(newErrors)
-  // }
-
-  const isValidUrl = (string: string) => {
-    try {
-      new URL(string)
-      return true
-    } catch (_) {
-      return false
-    }
-  }
-
-  // Fonction de soumission d'article (non utilisée actuellement)
-  // const handleSubmitArticle = async (e: React.FormEvent) => {
-  //   e.preventDefault()
-    
-  //   if (!validateForm()) {
-  //     return
-  //   }
-
-  //   try {
-  //     const response = await fetch('/api/articles', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json'
-  //       },
-  //       body: JSON.stringify(formData)
-  //     })
-
-  //     const data = await response.json()
-
-  //     if (response.ok) {
-  //       toast.success('Article créé avec succès !')
-  //       closeModal()
-  //       fetchArticles()
-  //     } else {
-  //       toast.error(data.error || 'Erreur lors de la création de l\'article')
-  //     }
-  //   } catch (error) {
-  //     console.error('Erreur lors de la création de l\'article:', error)
-  //     toast.error('Erreur lors de la création de l\'article')
-  //   }
-  // }
-
   const closeModal = () => {
     setShowCreateModal(false)
-    setFormData({
-      title: '',
-      content: '',
-      excerpt: '',
-      category: 'ENVIRONMENT',
-      imageUrl: '',
-      source: ''
-    })
-    setErrors({})
   }
 
-  const handleVote = async (_articleId: string, _value: number) => {
+  const handleVote = async () => {
     // Rediriger vers la page de connexion car il n'y a plus de système de session
     router.push('/login')
   }
@@ -424,7 +265,7 @@ export default function ArticlesPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
                         <button
-                          onClick={() => handleVote(article.id, 1)}
+                          onClick={() => handleVote()}
                           className="flex items-center gap-1 text-theme-secondary hover:text-green-600 transition-colors"
                         >
                           <ThumbsUp className="h-4 w-4" />

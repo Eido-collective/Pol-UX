@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
         title,
         content,
         category: category as ForumCategory,
-        authorId: session.user.id
+        authorId: session.id
       },
       include: {
         author: {

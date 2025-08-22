@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     // Vérifier si l'utilisateur a déjà une demande en attente
     const existingRequest = await prisma.roleRequest.findFirst({
       where: {
-        userId: session.user.id,
+        userId: session.id,
         status: 'PENDING'
       }
     })
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Vérifier que l'utilisateur ne demande pas un rôle inférieur ou égal
-    const currentRole = session.user.role
+    const currentRole = session.role
     if (currentRole === 'ADMIN' || 
         (currentRole === 'CONTRIBUTOR' && requestedRole === 'CONTRIBUTOR')) {
       return NextResponse.json(
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
       data: {
         requestedRole,
         reason: reason.trim(),
-        userId: session.user.id
+        userId: session.id
       },
       include: {
         user: {
@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession()
     
-    if (!session || session.user.role !== 'ADMIN') {
+    if (!session || session.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Accès non autorisé' },
         { status: 403 }

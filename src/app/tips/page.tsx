@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { Lightbulb, Search, ThumbsUp, ThumbsDown, Leaf, Zap, Car, Utensils, Droplets, ShoppingBag, Plus, X } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
@@ -11,24 +11,7 @@ import Pagination from '@/components/Pagination'
 import { useTips } from '@/hooks/useTips'
 import useSWR from 'swr'
 
-interface Tip {
-  id: string
-  title: string
-  content: string
-  category: string
-  imageUrl?: string
-  source?: string
-  createdAt: string
-  isPublished: boolean
-  author: {
-    name: string
-    username: string
-  }
-  votes: Vote[]
-  _count: {
-    votes: number
-  }
-}
+
 
 interface Vote {
   id: string
@@ -48,7 +31,7 @@ export default function TipsPage() {
   const [currentPage, setCurrentPage] = useState(1)
   
   // Utilisation du hook useTips
-  const { tips, pagination, isLoading, error, mutate } = useTips({
+  const { tips, pagination, isLoading, mutate } = useTips({
     page: currentPage,
     limit: 9,
     search: searchTerm,
@@ -73,12 +56,12 @@ export default function TipsPage() {
 
   // Charger les votes utilisateur quand les tips changent
   useEffect(() => {
-    if (tips && session?.id) {
+    if (tips && session?.user?.id) {
       const userVotesData: {[key: string]: number} = {}
       
-      tips.forEach((tip: Tip) => {
+      tips.forEach((tip) => {
         if (tip.votes) {
-          const userVote = tip.votes.find((vote: Vote) => vote.userId === session?.id)
+          const userVote = tip.votes.find((vote: Vote) => vote.userId === session?.user?.id)
           if (userVote) {
             userVotesData[tip.id] = userVote.value
           }
@@ -87,7 +70,7 @@ export default function TipsPage() {
       
       setUserVotes(userVotesData)
     }
-  }, [tips, session?.id])
+  }, [tips, session?.user?.id])
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -153,7 +136,7 @@ export default function TipsPage() {
       return
     }
     
-    if (session?.role === 'EXPLORER') {
+    if (session?.user?.role === 'EXPLORER') {
       toast.error('Vous devez être Contributeur ou Administrateur pour créer des conseils')
       router.push('/promotion')
       return
@@ -364,7 +347,7 @@ export default function TipsPage() {
           </div>
                  ) : (
            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-             {tips.map((tip: Tip) => (
+                           {tips.map((tip) => (
               <div
                 key={tip.id}
                 className="bg-theme-card rounded-lg shadow-sm border border-theme-primary overflow-hidden hover:shadow-md transition-shadow"

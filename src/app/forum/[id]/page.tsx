@@ -69,29 +69,32 @@ export default function ForumPostDetailPage() {
   const [commentToDelete, setCommentToDelete] = useState<string | null>(null)
 
   const fetchPost = useCallback(async () => {
+    if (!params.id) return
+
+    setLoading(true)
     try {
       const response = await fetch(`/api/forum/posts/${params.id}`)
       if (response.ok) {
         const data = await response.json()
         setPost(data.post)
         
-        // Charger les votes de l'utilisateur
-        if (session?.user?.id) {
+        // Charger les votes utilisateur
+                if (session?.id) {
           const userVotesData: {[key: string]: number} = {}
           
-          // Votes sur le post
+          // Votes du post
           if (data.post.votes) {
-            const userVote = data.post.votes.find((vote: Vote) => vote.userId === session?.id)
+            const userVote = data.post.votes.find((vote: Vote) => vote.userId === session.id)
             if (userVote) {
               userVotesData[data.post.id] = userVote.value
             }
           }
           
-          // Votes sur les commentaires
+          // Votes des commentaires
           if (data.post.comments) {
             data.post.comments.forEach((comment: Comment) => {
               if (comment.votes) {
-                const userVote = comment.votes.find((vote: Vote) => vote.userId === session?.id)
+                                 const userVote = comment.votes.find((vote: Vote) => vote.userId === session.id)
                 if (userVote) {
                   userVotesData[comment.id] = userVote.value
                 }
@@ -101,7 +104,7 @@ export default function ForumPostDetailPage() {
               if (comment.replies) {
                 comment.replies.forEach((reply: Reply) => {
                   if (reply.votes) {
-                    const userVote = reply.votes.find((vote: Vote) => vote.userId === session?.id)
+                                         const userVote = reply.votes.find((vote: Vote) => vote.userId === session.id)
                     if (userVote) {
                       userVotesData[reply.id] = userVote.value
                     }
@@ -114,8 +117,7 @@ export default function ForumPostDetailPage() {
           setUserVotes(userVotesData)
         }
       } else {
-        console.error('Erreur lors du chargement du post')
-        toast.error('Erreur lors du chargement du post')
+        toast.error('Post non trouvé')
       }
     } catch (error) {
       console.error('Erreur:', error)
@@ -123,7 +125,7 @@ export default function ForumPostDetailPage() {
     } finally {
       setLoading(false)
     }
-  }, [params.id, session?.user?.id])
+  }, [params.id, session?.id])
 
   useEffect(() => {
     if (params.id) {

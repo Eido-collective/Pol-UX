@@ -53,7 +53,7 @@ export default function ArticlePage() {
           const userVotesData: {[key: string]: number} = {}
           
           if (data.article.votes) {
-            const userVote = data.article.votes.find((vote: Vote) => vote.userId === session?.id)
+            const userVote = data.article.votes.find((vote: Vote) => vote.userId === session.id)
             if (userVote) {
               userVotesData[data.article.id] = userVote.value
             }
