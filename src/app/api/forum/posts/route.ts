@@ -31,16 +31,19 @@ export async function GET(request: NextRequest) {
 
     // Définir l'ordre de tri
     let orderBy: Prisma.ForumPostOrderByWithRelationInput
+    let shouldFetchAll = false
+    
     switch (sortBy) {
       case 'oldest':
         orderBy = { createdAt: 'asc' }
         break
       case 'mostVoted':
-        // Pour le tri par votes, on va d'abord récupérer les posts puis les trier côté serveur
-        orderBy = { createdAt: 'desc' } // Tri par défaut, sera modifié après
+        shouldFetchAll = true // Récupérer tous les posts pour le tri par score
+        orderBy = { createdAt: 'desc' } // Tri temporaire
         break
       case 'mostCommented':
-        orderBy = { createdAt: 'desc' } // Tri par défaut, sera modifié après
+        shouldFetchAll = true // Récupérer tous les posts pour le tri par commentaires
+        orderBy = { createdAt: 'desc' } // Tri temporaire
         break
       case 'newest':
       default:
@@ -48,50 +51,90 @@ export async function GET(request: NextRequest) {
         break
     }
 
-    let posts = await prisma.forumPost.findMany({
-      where,
-      include: {
-        author: {
-          select: {
-            name: true,
-            username: true
+    let posts
+    if (shouldFetchAll) {
+      // Récupérer tous les posts pour le tri par score ou commentaires
+      posts = await prisma.forumPost.findMany({
+        where,
+        include: {
+          author: {
+            select: {
+              name: true,
+              username: true
+            }
+          },
+          comments: {
+            where: { isPublished: true },
+            include: {
+              author: {
+                select: {
+                  name: true,
+                  username: true
+                }
+              },
+              votes: true
+            }
+          },
+          votes: true,
+          _count: {
+            select: {
+              comments: true,
+              votes: true
+            }
           }
         },
-        comments: {
-          where: { isPublished: true },
-          include: {
-            author: {
-              select: {
-                name: true,
-                username: true
-              }
-            },
-            votes: true
-          }
-        },
-        votes: true,
-        _count: {
-          select: {
-            comments: true,
-            votes: true
-          }
-        }
-      },
-      orderBy,
-      skip,
-      take: limit
-    })
-
-    // Appliquer le tri spécial si nécessaire
-    if (sortBy === 'mostVoted') {
-      posts = posts.sort((a, b) => {
-        const scoreA = a.votes.reduce((sum, vote) => sum + vote.value, 0)
-        const scoreB = b.votes.reduce((sum, vote) => sum + vote.value, 0)
-        return scoreB - scoreA
+        orderBy
       })
-    } else if (sortBy === 'mostCommented') {
-      posts = posts.sort((a, b) => {
-        return (b._count.comments || 0) - (a._count.comments || 0)
+
+      // Appliquer le tri approprié
+      if (sortBy === 'mostVoted') {
+        posts = posts.sort((a, b) => {
+          const scoreA = a.votes.reduce((sum, vote) => sum + vote.value, 0)
+          const scoreB = b.votes.reduce((sum, vote) => sum + vote.value, 0)
+          return scoreB - scoreA
+        })
+      } else if (sortBy === 'mostCommented') {
+        posts = posts.sort((a, b) => {
+          return (b._count.comments || 0) - (a._count.comments || 0)
+        })
+      }
+
+      // Appliquer la pagination après le tri
+      posts = posts.slice(skip, skip + limit)
+    } else {
+      // Récupération normale avec pagination
+      posts = await prisma.forumPost.findMany({
+        where,
+        include: {
+          author: {
+            select: {
+              name: true,
+              username: true
+            }
+          },
+          comments: {
+            where: { isPublished: true },
+            include: {
+              author: {
+                select: {
+                  name: true,
+                  username: true
+                }
+              },
+              votes: true
+            }
+          },
+          votes: true,
+          _count: {
+            select: {
+              comments: true,
+              votes: true
+            }
+          }
+        },
+        orderBy,
+        skip,
+        take: limit
       })
     }
 

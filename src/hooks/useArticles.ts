@@ -1,4 +1,5 @@
 import useSWR from 'swr'
+import { useMemo } from 'react'
 import { PaginatedResponse } from '@/lib/swr-config'
 
 export interface Article {
@@ -32,15 +33,17 @@ interface UseArticlesOptions {
   limit?: number
   search?: string
   category?: string
+  sortBy?: 'newest' | 'oldest' | 'mostVoted'
 }
 
 export function useArticles(options: UseArticlesOptions = {}) {
-  const { page = 1, limit = 10, search, category } = options
+  const { page = 1, limit = 10, search, category, sortBy = 'newest' } = options
   
   // Construire la clé de cache avec tous les paramètres
   const params = new URLSearchParams({
     page: page.toString(),
-    limit: limit.toString()
+    limit: limit.toString(),
+    sortBy: sortBy
   })
   
   if (search) params.append('search', search)
@@ -59,8 +62,11 @@ export function useArticles(options: UseArticlesOptions = {}) {
     }
   )
   
+  // Memoize articles to prevent infinite re-renders
+  const articles = useMemo(() => data?.data || [], [data?.data])
+  
   return {
-    articles: data?.data || [],
+    articles,
     pagination: data?.pagination,
     isLoading,
     error,

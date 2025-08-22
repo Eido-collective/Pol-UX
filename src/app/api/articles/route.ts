@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const category = searchParams.get('category')
     const search = searchParams.get('search')
+    const sortBy = searchParams.get('sortBy') || 'newest'
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '10')
     const skip = (page - 1) * limit
@@ -28,6 +29,52 @@ export async function GET(request: NextRequest) {
       ]
     }
 
+    // Si le tri par score est demandé, récupérer tous les articles d'abord
+    if (sortBy === 'mostVoted') {
+      const allArticles = await prisma.article.findMany({
+        where,
+        include: {
+          author: {
+            select: {
+              name: true,
+              username: true
+            }
+          },
+          votes: true,
+          _count: {
+            select: {
+              votes: true
+            }
+          }
+        },
+        orderBy: {
+          publishedAt: 'desc'
+        }
+      })
+
+      // Trier par score de votes
+      const sortedArticles = allArticles.sort((a, b) => {
+        const scoreA = a.votes.reduce((sum, vote) => sum + vote.value, 0)
+        const scoreB = b.votes.reduce((sum, vote) => sum + vote.value, 0)
+        return scoreB - scoreA // Tri décroissant
+      })
+
+      // Appliquer la pagination
+      const total = sortedArticles.length
+      const articles = sortedArticles.slice(skip, skip + limit)
+
+      return NextResponse.json({
+        data: articles,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit)
+        }
+      })
+    }
+
+    // Pour les autres tris, utiliser la requête normale avec pagination
     const [articles, total] = await Promise.all([
       prisma.article.findMany({
         where,
@@ -46,7 +93,7 @@ export async function GET(request: NextRequest) {
           }
         },
         orderBy: {
-          publishedAt: 'desc'
+          publishedAt: sortBy === 'oldest' ? 'asc' : 'desc'
         },
         skip,
         take: limit

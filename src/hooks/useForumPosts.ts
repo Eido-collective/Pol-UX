@@ -1,4 +1,5 @@
 import useSWR from 'swr'
+import { useMemo } from 'react'
 import { PaginatedResponse } from '@/lib/swr-config'
 
 export interface ForumPost {
@@ -57,8 +58,11 @@ export function useForumPosts(options: UseForumPostsOptions = {}) {
     }
   )
   
+  // Memoize posts to prevent infinite re-renders
+  const posts = useMemo(() => data?.data || [], [data?.data])
+  
   return {
-    posts: data?.data || [],
+    posts,
     pagination: data?.pagination,
     isLoading,
     error,

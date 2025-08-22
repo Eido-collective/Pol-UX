@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { ArrowLeft, ChevronUp, ChevronDown, User, Calendar, MessageSquare, Trash2, Send, Loader2 } from 'lucide-react'
@@ -69,6 +69,9 @@ export default function ForumPostDetailPage() {
   const [userVotes, setUserVotes] = useState<{[key: string]: number}>({})
   const [commentToDelete, setCommentToDelete] = useState<string | null>(null)
 
+  // Memoize the user ID to prevent infinite re-renders
+  const userId = useMemo(() => session?.user?.id, [session?.user?.id])
+
   const fetchPost = useCallback(async () => {
     if (!params.id) return
 
@@ -82,9 +85,8 @@ export default function ForumPostDetailPage() {
         setPost(data.post)
         
         // Charger les votes utilisateur
-        if (session?.user?.id) {
+        if (userId) {
           const userVotesData: {[key: string]: number} = {}
-          const userId = session.user.id
           
           // Votes du post
           if (data.post.votes) {
@@ -129,13 +131,13 @@ export default function ForumPostDetailPage() {
     } finally {
       setLoading(false)
     }
-  }, [params.id, session?.user?.id])
+  }, [params.id, userId])
 
   useEffect(() => {
     if (params.id) {
       fetchPost()
     }
-  }, [fetchPost, params.id, session?.user?.id])
+  }, [fetchPost, params.id, userId])
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -205,13 +207,11 @@ export default function ForumPostDetailPage() {
   }
 
   const handleVote = useCallback(async (type: 'post' | 'comment' | 'reply', id: string, value: number) => {
-    if (!session?.user) {
+    if (!userId) {
       toast.error('Vous devez être connecté pour voter')
       router.push('/login')
       return
     }
-
-    const userId = session.user.id
 
     try {
       // Mise à jour optimiste de l'interface
@@ -378,7 +378,7 @@ export default function ForumPostDetailPage() {
       console.error('Erreur lors du vote:', error)
       toast.error('Erreur lors du vote')
     }
-  }, [session?.user, userVotes, post, fetchPost, router])
+  }, [userId, userVotes, post, fetchPost, router])
 
   const handleDeleteComment = async (commentId: string) => {
     if (!session?.user) return

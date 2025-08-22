@@ -22,7 +22,7 @@ export default function ForumPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [sortBy, setSortBy] = useState<string>('mostVoted')
   const [userVotes, setUserVotes] = useState<{[key: string]: number}>({})
-  const [localPosts, setLocalPosts] = useState<Array<{
+  const [optimisticPosts, setOptimisticPosts] = useState<Array<{
     id: string
     title: string
     content: string
@@ -57,18 +57,21 @@ export default function ForumPage() {
 
   const { posts, pagination, isLoading, mutate } = useForumPosts(forumPostsOptions)
 
+  // Memoize the user ID to prevent infinite re-renders
+  const userId = useMemo(() => session?.user?.id, [session?.user?.id])
+
   const getVoteCount = useCallback((votes: Vote[]) => {
     return votes?.reduce((sum, vote) => sum + vote.value, 0) || 0
   }, [])
 
   // Charger les votes utilisateur quand les posts changent ou quand l'utilisateur change
   useEffect(() => {
-    if (posts && session?.user?.id) {
+    if (posts && userId) {
       const userVotesData: {[key: string]: number} = {}
       
       posts.forEach((post) => {
         if (post.votes) {
-          const userVote = post.votes.find((vote: Vote) => vote.userId === session?.user?.id)
+          const userVote = post.votes.find((vote: Vote) => vote.userId === userId)
           if (userVote) {
             userVotesData[post.id] = userVote.value
           }
@@ -77,12 +80,12 @@ export default function ForumPage() {
       
       setUserVotes(userVotesData)
     }
-  }, [posts, session?.user?.id])
+  }, [posts, userId])
 
-  // Mettre à jour les posts locaux quand les posts changent
+  // Mettre à jour les posts optimistes quand les posts changent
   useEffect(() => {
     if (posts) {
-      setLocalPosts(posts)
+      setOptimisticPosts(posts)
     }
   }, [posts])
 
@@ -167,13 +170,13 @@ export default function ForumPage() {
   }
 
   const handleVote = useCallback(async (postId: string, value: number) => {
-    if (!session?.user) {
+    if (!session?.user?.id) {
       toast.error('Vous devez être connecté pour voter')
       router.push('/login')
       return
     }
 
-    const userId = session.user.id
+    const currentUserId = session.user.id
 
     try {
       // Mise à jour optimiste de l'interface
@@ -186,22 +189,22 @@ export default function ForumPage() {
         [postId]: newVote
       }))
 
-      // Mettre à jour le score local immédiatement
-      setLocalPosts(prevPosts => {
+      // Mettre à jour le score optimiste immédiatement
+      setOptimisticPosts(prevPosts => {
         const updatedPosts = prevPosts.map(post => {
           if (post.id === postId) {
             // Créer une nouvelle liste de votes mise à jour
             let newVotes = [...(post.votes || [])]
             
             // Supprimer l'ancien vote de l'utilisateur s'il existe
-            newVotes = newVotes.filter(vote => vote.userId !== userId)
+            newVotes = newVotes.filter(vote => vote.userId !== currentUserId)
             
             // Ajouter le nouveau vote si différent de 0
             if (newVote !== 0) {
               newVotes.push({
                 id: `temp-${Date.now()}`,
                 value: newVote,
-                userId: userId
+                userId: currentUserId
               })
             }
             
@@ -230,17 +233,17 @@ export default function ForumPage() {
           [postId]: currentVote
         }))
         
-        setLocalPosts(prevPosts => {
+        setOptimisticPosts(prevPosts => {
           const updatedPosts = prevPosts.map(post => {
             if (post.id === postId) {
               let newVotes = [...(post.votes || [])]
-              newVotes = newVotes.filter(vote => vote.userId !== userId)
+              newVotes = newVotes.filter(vote => vote.userId !== currentUserId)
               
               if (currentVote !== 0) {
                 newVotes.push({
                   id: `temp-${Date.now()}`,
                   value: currentVote,
-                  userId: userId
+                  userId: currentUserId
                 })
               }
               
@@ -261,7 +264,7 @@ export default function ForumPage() {
       console.error('Erreur lors du vote:', error)
       toast.error('Erreur lors du vote')
     }
-  }, [session?.user, userVotes, router])
+  }, [userId, userVotes, router])
 
   const handleCreatePost = () => {
     if (!session?.user) {
@@ -440,14 +443,14 @@ export default function ForumPage() {
             <div className="text-center py-12">
               <div className="text-theme-secondary">Chargement des posts...</div>
             </div>
-          ) : localPosts.length === 0 ? (
-            <div className="text-center py-12">
-              <MessageSquare className="h-12 w-12 text-theme-secondary mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-theme-primary mb-2">Aucun post trouvé</h3>
-              <p className="text-theme-secondary">Essayez de modifier vos filtres ou créez le premier post !</p>
-            </div>
-          ) : (
-            localPosts.map((post) => (
+                     ) : optimisticPosts.length === 0 ? (
+             <div className="text-center py-12">
+               <MessageSquare className="h-12 w-12 text-theme-secondary mx-auto mb-4" />
+               <h3 className="text-lg font-medium text-theme-primary mb-2">Aucun post trouvé</h3>
+               <p className="text-theme-secondary">Essayez de modifier vos filtres ou créez le premier post !</p>
+             </div>
+           ) : (
+             optimisticPosts.map((post) => (
               <Link
                 key={post.id}
                 href={`/forum/${post.id}`}

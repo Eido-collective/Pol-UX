@@ -31,15 +31,17 @@ interface UseTipsOptions {
   limit?: number
   search?: string
   category?: string
+  sortBy?: string
 }
 
 export function useTips(options: UseTipsOptions = {}) {
-  const { page = 1, limit = 6, search, category } = options
+  const { page = 1, limit = 6, search, category, sortBy = 'mostVoted' } = options
   
   // Construire la clé de cache avec tous les paramètres
   const params = new URLSearchParams({
     page: page.toString(),
-    limit: limit.toString()
+    limit: limit.toString(),
+    sortBy: sortBy
   })
   
   if (search) params.append('search', search)
