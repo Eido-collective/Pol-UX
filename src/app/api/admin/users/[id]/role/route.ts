@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getServerSession } from '@/lib/auth-utils'
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession()
     
     if (!session || session.user.role !== 'ADMIN') {
       return NextResponse.json(
@@ -20,8 +19,7 @@ export async function PUT(
     const { id } = await params
     const { role } = await request.json()
 
-    // Validation du rôle
-    if (!['EXPLORER', 'CONTRIBUTOR', 'ADMIN'].includes(role)) {
+    if (!role || !['EXPLORER', 'CONTRIBUTOR', 'ADMIN'].includes(role)) {
       return NextResponse.json(
         { error: 'Rôle invalide' },
         { status: 400 }
@@ -30,22 +28,13 @@ export async function PUT(
 
     const user = await prisma.user.update({
       where: { id },
-      data: { role },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        username: true,
-        role: true,
-        createdAt: true
-      }
+      data: { role }
     })
 
-    return NextResponse.json({
-      message: 'Rôle utilisateur mis à jour avec succès',
-      user
+    return NextResponse.json({ 
+      message: 'Rôle mis à jour avec succès', 
+      user: { id: user.id, role: user.role } 
     })
-
   } catch (error) {
     console.error('Erreur lors de la mise à jour du rôle:', error)
     return NextResponse.json(

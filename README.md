@@ -9,7 +9,7 @@ Pol-UX est une plateforme web collaborative dédiée à la promotion d'événeme
 - **Carte interactive** : Visualisation des initiatives écologiques sur une carte
 - **Forum collaboratif** : Espace d'échange inspiré de Reddit
 - **Conseils écologiques** : Liste de conseils pratiques pour réduire son impact
-- **Inscription/Connexion** : Authentification avec NextAuth.js
+- **Inscription** : Authentification avec système personnalisé
 - **Administration** : Interface de gestion pour les administrateurs
 
 ### Rôles Utilisateurs
@@ -21,16 +21,43 @@ Pol-UX est une plateforme web collaborative dédiée à la promotion d'événeme
 - **Frontend** : Next.js 14, React, TypeScript, Tailwind CSS
 - **Backend** : Next.js API Routes, Prisma ORM
 - **Base de données** : PostgreSQL (NeonDB recommandé)
-- **Authentification** : NextAuth.js avec Google, GitHub
+- **Authentification** : Système de session sécurisé avec JWT et cookies HTTP-only
 - **Carte** : Leaflet.js pour la cartographie interactive
 - **Performance** : Optimisation EcoIndex, lazy loading, SSG
+
+## 🔐 Système d'Authentification
+
+**Nouveau** : Système de session complet et sécurisé mis en place !
+
+### ✅ Fonctionnalités
+- **Sessions persistantes** : Les utilisateurs restent connectés
+- **Cookies sécurisés** : HTTP-only, SameSite, expiration automatique
+- **Gestion des rôles** : Vérification des permissions côté serveur
+- **Nettoyage automatique** : Suppression des sessions expirées
+- **Protection CSRF** : Protection contre les attaques cross-site
+- **Validation email** : Confirmation obligatoire des adresses email
+
+### 🔧 Configuration requise
+```env
+# Clé secrète pour les JWT (obligatoire)
+JWT_SECRET="your-super-secret-jwt-key-change-this-in-production"
+
+# URL de l'application
+NEXTAUTH_URL="http://localhost:3000"
+```
+
+### 🛡️ Sécurité
+- Cookies HTTP-only (protection XSS)
+- Tokens de session uniques
+- Expiration automatique (7 jours)
+- Hachage des mots de passe avec bcrypt
+- Validation côté serveur
 
 ## 📋 Prérequis
 
 - Node.js 18+ 
 - npm ou yarn
 - Base de données PostgreSQL
-- Comptes développeur pour Google OAuth et GitHub OAuth
 
 ## 🛠️ Installation
 
@@ -55,15 +82,11 @@ cp .env.example .env.local
 # Database
 DATABASE_URL="postgresql://username:password@localhost:5432/polux"
 
-# NextAuth
-NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your-secret-key-here"
+# Authentification (obligatoire)
+JWT_SECRET="your-super-secret-jwt-key-change-this-in-production"
 
-# OAuth Providers
-GOOGLE_CLIENT_ID="your-google-client-id"
-GOOGLE_CLIENT_SECRET="your-google-client-secret"
-GITHUB_ID="your-github-client-id"
-GITHUB_SECRET="your-github-client-secret"
+# Application
+NEXTAUTH_URL="http://localhost:3000"
 ```
 
 4. **Configuration de la base de données**
@@ -89,25 +112,13 @@ Le site sera accessible sur [http://localhost:3000](http://localhost:3000)
 
 ### Modèles Principaux
 - **User** : Utilisateurs avec rôles (EXPLORER, CONTRIBUTOR, ADMIN)
+- **Session** : Sessions utilisateur sécurisées
+- **Account** : Comptes OAuth (pour évolutions futures)
 - **Initiative** : Événements et projets écologiques géolocalisés
 - **ForumPost** : Posts du forum avec catégories
 - **ForumComment** : Commentaires sur les posts
 - **Tip** : Conseils écologiques par catégorie
 - **Vote** : Système de votes pour posts et conseils
-
-## 🔧 Configuration OAuth
-
-### Google OAuth
-1. Aller sur [Google Cloud Console](https://console.cloud.google.com/)
-2. Créer un nouveau projet
-3. Activer l'API Google+ 
-4. Créer des identifiants OAuth 2.0
-5. Ajouter `http://localhost:3000/api/auth/callback/google` aux URIs de redirection
-
-### GitHub OAuth
-1. Aller dans les paramètres GitHub > Developer settings > OAuth Apps
-2. Créer une nouvelle application OAuth
-3. Ajouter `http://localhost:3000/api/auth/callback/github` comme callback URL
 
 ## 🚀 Déploiement
 
@@ -119,12 +130,17 @@ Le site sera accessible sur [http://localhost:3000](http://localhost:3000)
 ### Variables d'environnement de production
 ```env
 DATABASE_URL="your-production-database-url"
+JWT_SECRET="your-production-jwt-secret"
 NEXTAUTH_URL="https://your-domain.com"
-NEXTAUTH_SECRET="your-production-secret"
-GOOGLE_CLIENT_ID="your-production-google-client-id"
-GOOGLE_CLIENT_SECRET="your-production-google-client-secret"
-GITHUB_ID="your-production-github-client-id"
-GITHUB_SECRET="your-production-github-client-secret"
+```
+
+### Nettoyage des sessions
+```bash
+# Démarrer le service de nettoyage automatique
+npm run session:cleanup
+
+# Ou avec un intervalle personnalisé
+SESSION_CLEANUP_INTERVAL=30 npm run session:cleanup
 ```
 
 ## 📱 Fonctionnalités Principales
@@ -167,11 +183,12 @@ GITHUB_SECRET="your-production-github-client-secret"
 
 ## 🔒 Sécurité
 
-- Authentification sécurisée avec NextAuth.js
+- Authentification sécurisée avec système de session
 - Validation des données côté serveur
-- Protection CSRF
+- Protection CSRF et XSS
 - Hachage des mots de passe avec bcrypt
 - Headers de sécurité
+- Cookies HTTP-only
 
 ## 📊 Tests
 
@@ -206,6 +223,7 @@ Pour toute question ou problème :
 
 ## 🗺️ Roadmap
 
+- [x] Système de session sécurisé
 - [ ] Système de notifications
 - [ ] Application mobile
 - [ ] Intégration réseaux sociaux

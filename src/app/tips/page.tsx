@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { Lightbulb, Search, ThumbsUp, ThumbsDown, Leaf, Zap, Car, Utensils, Droplets, ShoppingBag, Plus, X } from 'lucide-react'
-import { useSession } from 'next-auth/react'
+import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 import TipImage from '@/components/TipImage'
 import Pagination from '@/components/Pagination'
+import { useTips } from '@/hooks/useTips'
 import useSWR from 'swr'
 
 interface Tip {
@@ -36,7 +37,7 @@ interface Vote {
 }
 
 export default function TipsPage() {
-  const { data: session } = useSession()
+  const session = useAuth()
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
@@ -46,13 +47,13 @@ export default function TipsPage() {
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1)
   
-  // Utilisation de SWR pour récupérer les tips
-  const { data: tipsData, error, mutate } = useSWR(
-    `/api/tips?page=${currentPage}&limit=9${selectedCategory !== 'all' ? `&category=${selectedCategory}` : ''}${searchTerm ? `&search=${searchTerm}` : ''}`
-  )
-  const tips = useMemo(() => tipsData?.data || [], [tipsData?.data])
-  const pagination = tipsData?.pagination
-  const isLoading = !tipsData && !error
+  // Utilisation du hook useTips
+  const { tips, pagination, isLoading, error, mutate } = useTips({
+    page: currentPage,
+    limit: 9,
+    search: searchTerm,
+    category: selectedCategory
+  })
   
   // Récupération des catégories disponibles
   const { data: categoriesData } = useSWR('/api/tips/categories')
@@ -72,12 +73,12 @@ export default function TipsPage() {
 
   // Charger les votes utilisateur quand les tips changent
   useEffect(() => {
-    if (tips && session?.user?.id) {
+    if (tips && session?.id) {
       const userVotesData: {[key: string]: number} = {}
       
       tips.forEach((tip: Tip) => {
         if (tip.votes) {
-          const userVote = tip.votes.find((vote: Vote) => vote.userId === session.user.id)
+          const userVote = tip.votes.find((vote: Vote) => vote.userId === session?.id)
           if (userVote) {
             userVotesData[tip.id] = userVote.value
           }
@@ -86,7 +87,7 @@ export default function TipsPage() {
       
       setUserVotes(userVotesData)
     }
-  }, [tips, session?.user?.id])
+  }, [tips, session?.id])
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -148,11 +149,11 @@ export default function TipsPage() {
   const handleCreateTip = () => {
     if (!session) {
       toast.error('Vous devez être connecté pour créer un conseil')
-      router.push('/login')
+      router.push('/register')
       return
     }
     
-    if (session.user.role === 'EXPLORER') {
+    if (session?.role === 'EXPLORER') {
       toast.error('Vous devez être Contributeur ou Administrateur pour créer des conseils')
       router.push('/promotion')
       return
@@ -251,7 +252,7 @@ export default function TipsPage() {
 
   const handleVote = async (tipId: string, value: number) => {
     if (!session) {
-      router.push('/login')
+      router.push('/register')
       return
     }
 

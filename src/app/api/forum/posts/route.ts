@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { Prisma, ForumCategory } from '@prisma/client'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getServerSession } from '@/lib/auth-utils'
 
 export async function GET(request: NextRequest) {
   try {
@@ -89,9 +88,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession()
     
-    if (!session?.user?.id) {
+    if (!session) {
       return NextResponse.json(
         { error: 'Vous devez être connecté pour créer un post' },
         { status: 401 }
@@ -101,35 +100,35 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { title, content, category } = body
 
-    // Validation des données
+    // Validation
     if (!title || !content || !category) {
       return NextResponse.json(
-        { error: 'Tous les champs sont obligatoires' },
+        { error: 'Tous les champs sont requis' },
         { status: 400 }
       )
     }
 
-    if (title.length < 5) {
+    if (title.length < 3 || title.length > 200) {
       return NextResponse.json(
-        { error: 'Le titre doit contenir au moins 5 caractères' },
+        { error: 'Le titre doit contenir entre 3 et 200 caractères' },
         { status: 400 }
       )
     }
 
-    if (content.length < 20) {
+    if (content.length < 10) {
       return NextResponse.json(
-        { error: 'Le contenu doit contenir au moins 20 caractères' },
+        { error: 'Le contenu doit contenir au moins 10 caractères' },
         { status: 400 }
       )
     }
 
+    // Créer le post
     const post = await prisma.forumPost.create({
       data: {
         title,
         content,
-        category,
+        category: category as ForumCategory,
         authorId: session.user.id
-        // isPublished est par défaut à true dans le schéma
       },
       include: {
         author: {
@@ -144,7 +143,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       message: 'Post créé avec succès',
       post
-    }, { status: 201 })
+    })
 
   } catch (error) {
     console.error('Erreur lors de la création du post:', error)

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getServerSession } from '@/lib/auth-utils'
 
 // Force dynamic rendering for this API route
 export const dynamic = 'force-dynamic'
@@ -9,7 +8,7 @@ export const dynamic = 'force-dynamic'
 // GET - Récupérer les tâches de l'utilisateur
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession()
     
     if (!session) {
       return NextResponse.json(
@@ -20,7 +19,7 @@ export async function GET() {
 
     const tasks = await prisma.userTask.findMany({
       where: {
-        userId: session.user.id
+        userId: session.id
       },
       orderBy: [
         { completed: 'asc' },
@@ -42,7 +41,7 @@ export async function GET() {
 // POST - Créer une nouvelle tâche
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession()
     
     if (!session) {
       return NextResponse.json(
@@ -70,7 +69,7 @@ export async function POST(request: NextRequest) {
 
     // Vérifier la limite de 5 tâches
     const existingTasksCount = await prisma.userTask.count({
-      where: { userId: session.user.id }
+      where: { userId: session.id }
     })
 
     if (existingTasksCount >= 5) {
@@ -84,7 +83,7 @@ export async function POST(request: NextRequest) {
       data: {
         title: title.trim(),
         description: description?.trim() || null,
-        userId: session.user.id
+        userId: session.id
       }
     })
 

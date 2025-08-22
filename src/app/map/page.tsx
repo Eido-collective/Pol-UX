@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import { MapPin, Search, Calendar, Users, Building, Plus, X, Info, Eye, Globe, Mail, Phone } from 'lucide-react'
-import { useSession } from 'next-auth/react'
+import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import Image from 'next/image'
@@ -43,7 +43,7 @@ interface Initiative {
 }
 
 export default function MapPage() {
-  const { data: session } = useSession()
+  const session = useAuth()
   const router = useRouter()
 
   const [searchTerm, setSearchTerm] = useState('')
@@ -243,13 +243,13 @@ export default function MapPage() {
   const cities = availableCities
 
   const handleCreateInitiative = () => {
-    if (!session) {
-      toast.error('Vous devez être connecté pour créer une initiative')
-      router.push('/login')
-      return
-    }
+          if (!session) {
+        toast.error('Vous devez être connecté pour créer une initiative')
+        router.push('/register')
+        return
+      }
     
-    if (session.user.role === 'EXPLORER') {
+    if (session.user?.role === 'EXPLORER') {
       toast.error('Vous devez être Contributeur ou Administrateur pour créer des initiatives')
       router.push('/promotion')
       return

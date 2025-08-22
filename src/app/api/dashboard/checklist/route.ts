@@ -1,15 +1,14 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { getServerSession } from 'next-auth'
+import { getServerSession } from '@/lib/auth-utils'
 
 // Force dynamic rendering for this API route
 export const dynamic = 'force-dynamic'
-import { authOptions } from '@/lib/auth'
 
 // GET - Récupérer la checklist de l'utilisateur
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession()
     
     if (!session) {
       return NextResponse.json(

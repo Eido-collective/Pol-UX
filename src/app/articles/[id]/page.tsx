@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
-import { useSession } from 'next-auth/react'
+import { useAuth } from '@/hooks/useAuth'
 import { ArrowLeft, ChevronUp, ChevronDown, User, Calendar, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
@@ -36,7 +36,7 @@ interface Vote {
 
 export default function ArticlePage() {
   const params = useParams()
-  const { data: session } = useSession()
+  const { user: session } = useAuth()
   const [article, setArticle] = useState<Article | null>(null)
   const [loading, setLoading] = useState(true)
   const [userVotes, setUserVotes] = useState<{[key: string]: number}>({})
@@ -49,11 +49,11 @@ export default function ArticlePage() {
         setArticle(data.article)
         
         // Charger les votes de l'utilisateur
-        if (session?.user?.id) {
+        if (session?.id) {
           const userVotesData: {[key: string]: number} = {}
           
           if (data.article.votes) {
-            const userVote = data.article.votes.find((vote: Vote) => vote.userId === session.user.id)
+            const userVote = data.article.votes.find((vote: Vote) => vote.userId === session?.id)
             if (userVote) {
               userVotesData[data.article.id] = userVote.value
             }
@@ -71,11 +71,11 @@ export default function ArticlePage() {
     } finally {
       setLoading(false)
     }
-  }, [params.id, session?.user?.id])
+  }, [params.id, session?.id])
 
   useEffect(() => {
     fetchArticle()
-  }, [fetchArticle])
+  }, [fetchArticle, session?.id])
 
   const handleVote = async (articleId: string, value: number) => {
     if (!session) {

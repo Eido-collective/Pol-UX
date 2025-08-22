@@ -133,3 +133,6 @@ coverage/
 *.tgz
 *.tar.gz
 data/
+
+scripts/
+scripts/*

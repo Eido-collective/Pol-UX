@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Leaf, Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, User, Mail, Lock, ArrowRight } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -15,126 +16,115 @@ export default function RegisterPage() {
   })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
+  const [errors, setErrors] = useState<{ [key: string]: string }>({})
+  const { register } = useAuth()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    })
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+    
+    // Effacer l'erreur du champ modifié
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }))
+    }
   }
 
   const validateForm = () => {
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.username || !formData.password) {
-      setError('Tous les champs sont obligatoires')
-      return false
+    const newErrors: { [key: string]: string } = {}
+
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = 'Le prénom est obligatoire'
     }
 
-    if (formData.password.length < 8) {
-      setError('Le mot de passe doit contenir au moins 8 caractères')
-      return false
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = 'Le nom est obligatoire'
     }
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('Les mots de passe ne correspondent pas')
-      return false
+    if (!formData.email) {
+              newErrors.email = 'L&apos;email est obligatoire'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+              newErrors.email = 'Format d&apos;email invalide'
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(formData.email)) {
-      setError('Adresse email invalide')
-      return false
+    if (!formData.username.trim()) {
+              newErrors.username = 'Le nom d&apos;utilisateur est obligatoire'
+    } else if (formData.username.length < 3) {
+              newErrors.username = 'Le nom d&apos;utilisateur doit contenir au moins 3 caractères'
     }
 
-    if (formData.username.length < 3) {
-      setError('Le nom d\'utilisateur doit contenir au moins 3 caractères')
-      return false
+    if (!formData.password) {
+      newErrors.password = 'Le mot de passe est obligatoire'
+    } else if (formData.password.length < 8) {
+      newErrors.password = 'Le mot de passe doit contenir au moins 8 caractères'
     }
 
-    return true
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'La confirmation du mot de passe est obligatoire'
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Les mots de passe ne correspondent pas'
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
-    setSuccess('')
-
+    
     if (!validateForm()) {
       return
     }
 
-    setIsLoading(true)
-
-    try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          username: formData.username,
-          password: formData.password,
-        }),
+    const success = await register({
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      username: formData.username,
+      password: formData.password
+    })
+    
+    if (success) {
+      // Réinitialiser le formulaire
+      setFormData({
+        firstName: '',
+        lastName: '',
+        email: '',
+        username: '',
+        password: '',
+        confirmPassword: ''
       })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        setError(data.error || 'Une erreur est survenue')
-      } else {
-        setSuccess(data.message || 'Compte créé avec succès ! Veuillez vérifier votre boîte email pour confirmer votre adresse.')
-        // Ne pas rediriger automatiquement, l'utilisateur doit confirmer son email
-      }
-    } catch (error) {
-      setError(`Une erreur est survenue: ${error}`)
-    } finally {
-      setIsLoading(false)
     }
   }
 
   return (
     <div className="min-h-screen bg-theme-secondary flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <div className="flex justify-center">
-            <Leaf className="h-12 w-12 text-green-600" />
+        <div>
+          <div className="mx-auto h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
+            <User className="h-6 w-6 text-green-600" />
           </div>
-                      <h2 className="mt-6 text-2xl md:text-3xl font-bold text-theme-primary">
-            Créer un compte Pol-UX
+          <h2 className="mt-6 text-center text-3xl font-bold text-theme-primary">
+            Créer votre compte
           </h2>
-          <p className="mt-2 text-sm text-theme-secondary">
-            Rejoignez la communauté écologique
-          </p>
           <p className="mt-2 text-center text-sm text-theme-secondary">
             Ou{' '}
-            <Link href="/login" className="font-medium text-green-600 hover:text-green-500">
-              connectez-vous à votre compte
+            <Link href="/login" className="font-medium text-green-600 hover:text-green-500 transition-colors">
+              connectez-vous à votre compte existant
             </Link>
           </p>
         </div>
 
-        <div className="bg-theme-card py-8 px-6 shadow-theme-lg rounded-lg border border-theme-primary">
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                {error}
-              </div>
-            )}
-
-            {success && (
-              <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-                {success}
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-theme-primary">
+                <label htmlFor="firstName" className="block text-sm font-medium text-theme-primary mb-2">
                   Prénom
                 </label>
                 <input
@@ -145,13 +135,18 @@ export default function RegisterPage() {
                   required
                   value={formData.firstName}
                   onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-theme-primary rounded-lg shadow-theme-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  placeholder="Votre prénom"
+                  className={`appearance-none relative block w-full px-3 py-3 border rounded-lg placeholder-theme-secondary text-theme-primary bg-theme-card focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors ${
+                    errors.firstName ? 'border-red-500' : 'border-theme-primary'
+                  }`}
+                  placeholder="Prénom"
                 />
+                {errors.firstName && (
+                  <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
+                )}
               </div>
 
               <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-theme-primary">
+                <label htmlFor="lastName" className="block text-sm font-medium text-theme-primary mb-2">
                   Nom
                 </label>
                 <input
@@ -162,51 +157,79 @@ export default function RegisterPage() {
                   required
                   value={formData.lastName}
                   onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-theme-primary rounded-lg shadow-theme-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  placeholder="Votre nom"
+                  className={`appearance-none relative block w-full px-3 py-3 border rounded-lg placeholder-theme-secondary text-theme-primary bg-theme-card focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors ${
+                    errors.lastName ? 'border-red-500' : 'border-theme-primary'
+                  }`}
+                  placeholder="Nom"
                 />
+                {errors.lastName && (
+                  <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
+                )}
               </div>
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-theme-primary">
+              <label htmlFor="email" className="block text-sm font-medium text-theme-primary mb-2">
                 Adresse email
               </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={formData.email}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-theme-primary rounded-lg shadow-theme-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                placeholder="votre@email.com"
-              />
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Mail className="h-5 w-5 text-theme-secondary" />
+                </div>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                  className={`appearance-none relative block w-full pl-10 pr-3 py-3 border rounded-lg placeholder-theme-secondary text-theme-primary bg-theme-card focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors ${
+                    errors.email ? 'border-red-500' : 'border-theme-primary'
+                  }`}
+                  placeholder="votre@email.com"
+                />
+              </div>
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+              )}
             </div>
 
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-theme-primary">
+              <label htmlFor="username" className="block text-sm font-medium text-theme-primary mb-2">
                 Nom d&apos;utilisateur
               </label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                autoComplete="username"
-                required
-                value={formData.username}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-theme-primary rounded-lg shadow-theme-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                placeholder="votre_username"
-              />
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <User className="h-5 w-5 text-theme-secondary" />
+                </div>
+                <input
+                  id="username"
+                  name="username"
+                  type="text"
+                  autoComplete="username"
+                  required
+                  value={formData.username}
+                  onChange={handleChange}
+                  className={`appearance-none relative block w-full pl-10 pr-3 py-3 border rounded-lg placeholder-theme-secondary text-theme-primary bg-theme-card focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors ${
+                    errors.username ? 'border-red-500' : 'border-theme-primary'
+                  }`}
+                  placeholder="nom_utilisateur"
+                />
+              </div>
+              {errors.username && (
+                <p className="mt-1 text-sm text-red-600">{errors.username}</p>
+              )}
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-theme-primary">
+              <label htmlFor="password" className="block text-sm font-medium text-theme-primary mb-2">
                 Mot de passe
               </label>
-              <div className="mt-1 relative">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-theme-secondary" />
+                </div>
                 <input
                   id="password"
                   name="password"
@@ -215,8 +238,10 @@ export default function RegisterPage() {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="block w-full px-3 py-2 border border-theme-primary rounded-lg shadow-theme-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 pr-10"
-                  placeholder="Au moins 8 caractères"
+                  className={`appearance-none relative block w-full pl-10 pr-12 py-3 border rounded-lg placeholder-theme-secondary text-theme-primary bg-theme-card focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors ${
+                    errors.password ? 'border-red-500' : 'border-theme-primary'
+                  }`}
+                  placeholder="Votre mot de passe"
                 />
                 <button
                   type="button"
@@ -224,19 +249,25 @@ export default function RegisterPage() {
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-5 w-5 text-theme-secondary" />
+                    <EyeOff className="h-5 w-5 text-theme-secondary hover:text-theme-primary transition-colors" />
                   ) : (
-                    <Eye className="h-5 w-5 text-theme-secondary" />
+                    <Eye className="h-5 w-5 text-theme-secondary hover:text-theme-primary transition-colors" />
                   )}
                 </button>
               </div>
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+              )}
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-theme-primary">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-theme-primary mb-2">
                 Confirmer le mot de passe
               </label>
-              <div className="mt-1 relative">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-theme-secondary" />
+                </div>
                 <input
                   id="confirmPassword"
                   name="confirmPassword"
@@ -245,7 +276,9 @@ export default function RegisterPage() {
                   required
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="block w-full px-3 py-2 border border-theme-primary rounded-lg shadow-theme-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 pr-10"
+                  className={`appearance-none relative block w-full pl-10 pr-12 py-3 border rounded-lg placeholder-theme-secondary text-theme-primary bg-theme-card focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors ${
+                    errors.confirmPassword ? 'border-red-500' : 'border-theme-primary'
+                  }`}
                   placeholder="Confirmez votre mot de passe"
                 />
                 <button
@@ -254,34 +287,41 @@ export default function RegisterPage() {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
                   {showConfirmPassword ? (
-                    <EyeOff className="h-5 w-5 text-theme-secondary" />
+                    <EyeOff className="h-5 w-5 text-theme-secondary hover:text-theme-primary transition-colors" />
                   ) : (
-                    <Eye className="h-5 w-5 text-theme-secondary" />
+                    <Eye className="h-5 w-5 text-theme-secondary hover:text-theme-primary transition-colors" />
                   )}
                 </button>
               </div>
+              {errors.confirmPassword && (
+                <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+              )}
             </div>
+          </div>
 
-            <div>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoading ? (
-                  <div className="flex items-center">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Création...
-                  </div>
-                ) : (
-                  'Créer mon compte'
-                )}
-              </button>
-            </div>
-          </form>
-        </div>
+          <div>
+            <button
+              type="submit"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+            >
+              <span className="absolute left-0 inset-y-0 flex items-center pl-3">
+                <ArrowRight className="h-5 w-5 text-green-500 group-hover:text-green-400 transition-colors" />
+              </span>
+              Créer mon compte
+            </button>
+          </div>
 
-
+          <div className="text-center text-sm text-theme-secondary">
+            En créant un compte, vous acceptez nos{' '}
+            <Link href="/terms" className="text-green-600 hover:text-green-500 transition-colors">
+                              conditions d&apos;utilisation
+            </Link>{' '}
+            et notre{' '}
+            <Link href="/privacy" className="text-green-600 hover:text-green-500 transition-colors">
+              politique de confidentialité
+            </Link>
+          </div>
+        </form>
       </div>
     </div>
   )

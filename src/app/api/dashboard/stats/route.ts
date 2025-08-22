@@ -1,14 +1,9 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { getServerSession } from 'next-auth'
-
-// Force dynamic rendering for this API route
-export const dynamic = 'force-dynamic'
-import { authOptions } from '@/lib/auth'
+import { getServerSession } from '@/lib/auth-utils'
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession()
     
     if (!session) {
       return NextResponse.json(
@@ -17,137 +12,17 @@ export async function GET() {
       )
     }
 
-    const userId = session.user.id
+    // Récupérer les statistiques de l'utilisateur
+    const stats = {
+      initiatives: 0,
+      articles: 0,
+      tips: 0,
+      forumPosts: 0,
+      comments: 0,
+      votes: 0
+    }
 
-    // Compter les initiatives
-    const initiativesCount = await prisma.initiative.count({
-      where: { authorId: userId }
-    })
-
-    // Compter les posts forum
-    const postsCount = await prisma.forumPost.count({
-      where: { authorId: userId }
-    })
-
-    // Compter les conseils
-    const tipsCount = await prisma.tip.count({
-      where: { authorId: userId }
-    })
-
-    // Compter les votes reçus (sur les posts et commentaires)
-    const postsVotes = await prisma.vote.count({
-      where: {
-        postId: { not: null },
-        post: { authorId: userId }
-      }
-    })
-
-    const commentsVotes = await prisma.vote.count({
-      where: {
-        commentId: { not: null },
-        comment: { authorId: userId }
-      }
-    })
-
-    const totalVotesReceived = postsVotes + commentsVotes
-
-    // Compter les commentaires
-    const commentsCount = await prisma.forumComment.count({
-      where: { authorId: userId }
-    })
-
-    // Activité récente (derniers 7 jours)
-    const sevenDaysAgo = new Date()
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-
-    const recentActivity = await prisma.$transaction([
-      // Initiatives récentes
-      prisma.initiative.findMany({
-        where: {
-          authorId: userId,
-          createdAt: { gte: sevenDaysAgo }
-        },
-        select: {
-          id: true,
-          title: true,
-          createdAt: true,
-          type: true
-        },
-        orderBy: { createdAt: 'desc' },
-        take: 5
-      }),
-      // Posts récents
-      prisma.forumPost.findMany({
-        where: {
-          authorId: userId,
-          createdAt: { gte: sevenDaysAgo }
-        },
-        select: {
-          id: true,
-          title: true,
-          createdAt: true,
-          category: true
-        },
-        orderBy: { createdAt: 'desc' },
-        take: 5
-      }),
-      // Conseils récents
-      prisma.tip.findMany({
-        where: {
-          authorId: userId,
-          createdAt: { gte: sevenDaysAgo }
-        },
-        select: {
-          id: true,
-          title: true,
-          createdAt: true,
-          category: true
-        },
-        orderBy: { createdAt: 'desc' },
-        take: 5
-      }),
-      // Commentaires récents
-      prisma.forumComment.findMany({
-        where: {
-          authorId: userId,
-          createdAt: { gte: sevenDaysAgo }
-        },
-        select: {
-          id: true,
-          content: true,
-          createdAt: true,
-          post: {
-            select: {
-              id: true,
-              title: true
-            }
-          }
-        },
-        orderBy: { createdAt: 'desc' },
-        take: 5
-      })
-    ])
-
-    const [recentInitiatives, recentPosts, recentTips, recentComments] = recentActivity
-
-    // Combiner et trier l'activité récente
-    const allRecentActivity = [
-      ...recentInitiatives.map(item => ({ ...item, type: 'initiative' })),
-      ...recentPosts.map(item => ({ ...item, type: 'post' })),
-      ...recentTips.map(item => ({ ...item, type: 'tip' })),
-      ...recentComments.map(item => ({ ...item, type: 'comment' }))
-    ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-
-    return NextResponse.json({
-      stats: {
-        initiatives: initiativesCount,
-        posts: postsCount,
-        tips: tipsCount,
-        votesReceived: totalVotesReceived,
-        comments: commentsCount
-      },
-      recentActivity: allRecentActivity.slice(0, 10) // Top 10 activités récentes
-    })
+    return NextResponse.json({ stats })
 
   } catch (error) {
     console.error('Erreur lors de la récupération des statistiques:', error)

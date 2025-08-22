@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
+import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
 import { CheckCircle, XCircle, Clock, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
@@ -18,7 +18,7 @@ interface RoleRequest {
 }
 
 export default function PromotionPage() {
-  const { data: session, status } = useSession()
+  const { user: session, loading: status } = useAuth()
   const router = useRouter()
   const [requestedRole, setRequestedRole] = useState('CONTRIBUTOR')
   const [reason, setReason] = useState('')
@@ -28,7 +28,7 @@ export default function PromotionPage() {
 
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.push('/login')
+      router.push('/register')
     } else if (status === 'authenticated') {
       fetchUserRequests()
     }
@@ -72,11 +72,11 @@ export default function PromotionPage() {
         toast.success('Demande de promotion envoyée avec succès !')
       } else {
         const errorData = await response.json()
-        toast.error(errorData.error || 'Erreur lors de l\'envoi de la demande')
+        toast.error(errorData.error || 'Erreur lors de l&apos;envoi de la demande')
       }
     } catch (error) {
       console.error('Erreur:', error)
-      toast.error('Erreur lors de l\'envoi de la demande')
+              toast.error('Erreur lors de l&apos;envoi de la demande')
     } finally {
       setSubmitting(false)
     }
@@ -145,8 +145,8 @@ export default function PromotionPage() {
           <AlertTriangle className="h-12 w-12 text-theme-secondary mx-auto mb-4" />
           <h1 className="text-xl font-semibold text-theme-primary mb-2">Accès refusé</h1>
           <p className="text-theme-secondary">Vous devez être connecté pour accéder à cette page.</p>
-          <Link href="/login" className="inline-block mt-4 text-green-600 hover:text-green-700">
-            Se connecter
+          <Link href="/register" className="inline-block mt-4 text-green-600 hover:text-green-700">
+            S&apos;inscrire
           </Link>
         </div>
       </div>

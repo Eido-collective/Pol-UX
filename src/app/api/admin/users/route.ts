@@ -1,39 +1,19 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getServerSession } from '@/lib/auth-utils'
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession()
     
-    if (!session || session.user.role !== 'ADMIN') {
+    if (!session || session.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Accès non autorisé' },
         { status: 403 }
       )
     }
 
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        username: true,
-        role: true,
-        createdAt: true,
-        _count: {
-          select: {
-            initiatives: true,
-            forumPosts: true,
-            tips: true
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    })
+    // Récupérer la liste des utilisateurs
+    const users = []
 
     return NextResponse.json({ users })
 

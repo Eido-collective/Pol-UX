@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
-import { useSession } from 'next-auth/react'
+import { useAuth } from '@/hooks/useAuth'
 import { ArrowLeft, ThumbsUp, ThumbsDown, User, Calendar, Lightbulb } from 'lucide-react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
@@ -34,7 +34,7 @@ interface Vote {
 
 export default function TipPage() {
   const params = useParams()
-  const { data: session } = useSession()
+  const { user: session } = useAuth()
   const [tip, setTip] = useState<Tip | null>(null)
   const [loading, setLoading] = useState(true)
   const [userVotes, setUserVotes] = useState<{[key: string]: number}>({})
@@ -51,7 +51,7 @@ export default function TipPage() {
           const userVotesData: {[key: string]: number} = {}
           
           if (data.tip.votes) {
-            const userVote = data.tip.votes.find((vote: Vote) => vote.userId === session.user.id)
+            const userVote = data.tip.votes.find((vote: Vote) => vote.userId === session?.id)
             if (userVote) {
               userVotesData[data.tip.id] = userVote.value
             }
