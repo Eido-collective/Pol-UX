@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, createContext, useContext } from 'react'
+import { useState, useEffect, createContext, useContext, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 
@@ -47,15 +47,27 @@ export function useAuth() {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<SessionUser | null>(null)
   const [loading, setLoading] = useState(true)
+  const [justLoggedOut, setJustLoggedOut] = useState(false)
   const router = useRouter()
 
   // Récupérer la session utilisateur
-  const fetchSession = async () => {
+  const fetchSession = useCallback(async () => {
     try {
       console.log('🔄 Récupération de la session...')
+      
+      // Si on vient de se déconnecter, ne pas récupérer la session
+      if (justLoggedOut) {
+        console.log('🚫 Déconnexion récente détectée, pas de récupération de session')
+        setUser(null)
+        setJustLoggedOut(false)
+        setLoading(false)
+        return
+      }
+      
       const response = await fetch('/api/auth/session', {
         method: 'GET',
-        credentials: 'include'
+        credentials: 'include',
+        cache: 'no-store' // Désactiver le cache pour éviter les problèmes
       })
 
       if (response.ok) {
@@ -68,7 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(null)
         }
       } else if (response.status === 401) {
-        console.log('🔒 Non authentifié (401)')
+        console.log('🔒 Non authentifié (401) - Nettoyage de l\'état')
         setUser(null)
       } else {
         console.log('❌ Erreur de réponse:', response.status)
@@ -80,7 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [justLoggedOut])
 
   // Connexion
   const login = async (email: string, password: string): Promise<boolean> => {
@@ -116,13 +128,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log('🔄 Déconnexion en cours...')
       
+      // Marquer qu'une déconnexion vient d'avoir lieu
+      setJustLoggedOut(true)
+      
+      // Appeler l'API de déconnexion pour supprimer la session côté serveur
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      })
+      
       // Nettoyer l'état utilisateur immédiatement
       setUser(null)
-      console.log('✅ Déconnexion réussie')
+      console.log('✅ Déconnexion réussie - État utilisateur mis à jour')
       toast.success('Déconnexion réussie')
-      
-      // Forcer le rafraîchissement de la session pour s'assurer que l'état est cohérent
-      await fetchSession()
       
       // Rediriger vers la page d'accueil
       router.push('/')
@@ -132,7 +150,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // Même en cas d'erreur, nettoyer l'état utilisateur localement
       setUser(null)
-      await fetchSession()
+      setJustLoggedOut(true)
       router.push('/')
     }
   }
@@ -172,7 +190,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Charger la session au montage du composant
   useEffect(() => {
     fetchSession()
-  }, [])
+  }, [fetchSession])
 
   // Effet pour nettoyer l'état quand l'utilisateur change
   useEffect(() => {
