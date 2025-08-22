@@ -57,7 +57,13 @@ export default function ForumPage() {
   // Mettre à jour les posts locaux quand les posts changent
   useEffect(() => {
     if (posts) {
-      setLocalPosts(posts)
+      // Trier les posts par score décroissant (comme Reddit)
+      const sortedPosts = [...posts].sort((a, b) => {
+        const scoreA = getVoteCount(a.votes)
+        const scoreB = getVoteCount(b.votes)
+        return scoreB - scoreA
+      })
+      setLocalPosts(sortedPosts)
     }
   }, [posts])
 

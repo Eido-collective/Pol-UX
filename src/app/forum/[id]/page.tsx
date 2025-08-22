@@ -539,7 +539,7 @@ export default function ForumPostDetailPage() {
 
           {/* Contenu du post */}
           <div className="prose max-w-none">
-            <div className="text-theme-secondary leading-relaxed whitespace-pre-wrap">
+            <div className="text-theme-secondary leading-relaxed whitespace-pre-wrap break-words">
               {post.content}
             </div>
           </div>
@@ -666,7 +666,7 @@ export default function ForumPostDetailPage() {
                    
                    {/* Contenu du commentaire */}
                    <div className="px-4 py-4">
-                     <div className="text-theme-secondary leading-relaxed">
+                     <div className="text-theme-secondary leading-relaxed break-words whitespace-pre-wrap">
                        {comment.content}
                      </div>
                    </div>
@@ -805,7 +805,7 @@ export default function ForumPostDetailPage() {
                               
                               {/* Contenu de la réponse */}
                               <div className="px-3 py-2">
-                                <div className="text-theme-secondary text-sm leading-relaxed">
+                                <div className="text-theme-secondary text-sm leading-relaxed break-words whitespace-pre-wrap">
                                   {reply.content}
                                 </div>
                               </div>
