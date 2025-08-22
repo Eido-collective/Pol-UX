@@ -78,7 +78,7 @@ export async function POST(
         postId: id,
         parentId: parentId || null,
         authorId: session.id,
-        // isPublished est par défaut à true dans le schéma
+        isPublished: true // S'assurer que le commentaire est publié
       },
       include: {
         author: {
@@ -89,6 +89,9 @@ export async function POST(
         }
       }
     })
+
+    // Debug: afficher les détails du commentaire créé
+    console.log(`Commentaire créé: ID=${comment.id}, isPublished=${comment.isPublished}, content="${comment.content.substring(0, 50)}..."`)
 
     return NextResponse.json({
       message: parentId 

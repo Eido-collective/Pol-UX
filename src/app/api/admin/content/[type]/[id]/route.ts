@@ -40,6 +40,18 @@ export async function PATCH(
           data: body
         })
         break
+      case 'forumComment':
+        result = await prisma.forumComment.update({
+          where: { id },
+          data: body
+        })
+        break
+      case 'forumPost':
+        result = await prisma.forumPost.update({
+          where: { id },
+          data: body
+        })
+        break
       default:
         return NextResponse.json(
           { error: 'Type de contenu non supporté' },

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { MessageSquare, ChevronUp, ChevronDown, Plus, Search, X } from 'lucide-react'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
@@ -8,10 +8,6 @@ import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import Pagination from '@/components/Pagination'
 import { useForumPosts } from '@/hooks/useForumPosts'
-
-
-
-
 
 interface Vote {
   id: string
@@ -26,17 +22,19 @@ export default function ForumPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [sortBy, setSortBy] = useState<string>('mostVoted')
   const [userVotes, setUserVotes] = useState<{[key: string]: number}>({})
+  const [localPosts, setLocalPosts] = useState<Array<{
+    id: string
+    title: string
+    content: string
+    category: string
+    createdAt: string
+    author: { name: string }
+    votes: Vote[]
+    _count?: { comments: number }
+  }>>([])
   
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1)
-  
-  // Utilisation du hook useForumPosts
-  const { posts, pagination, isLoading, mutate } = useForumPosts({
-    page: currentPage,
-    limit: 10,
-    search: searchTerm,
-    category: selectedCategory
-  })
   
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -47,6 +45,39 @@ export default function ForumPage() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<{[key: string]: string}>({})
+  
+  // Utilisation du hook useForumPosts
+  const { posts, pagination, isLoading, mutate } = useForumPosts({
+    page: currentPage,
+    limit: 10,
+    search: searchTerm,
+    category: selectedCategory
+  })
+
+  // Mettre à jour les posts locaux quand les posts changent
+  useEffect(() => {
+    if (posts) {
+      setLocalPosts(posts)
+    }
+  }, [posts])
+
+  // Charger les votes utilisateur une seule fois au montage et quand l'utilisateur change
+  useEffect(() => {
+    if (localPosts.length > 0 && session?.user?.id) {
+      const userVotesData: {[key: string]: number} = {}
+      
+      localPosts.forEach((post) => {
+        if (post.votes) {
+          const userVote = post.votes.find((vote: Vote) => vote.userId === session?.user?.id)
+          if (userVote) {
+            userVotesData[post.id] = userVote.value
+          }
+        }
+      })
+      
+      setUserVotes(userVotesData)
+    }
+  }, [localPosts, session?.user?.id])
 
   // Bloquer le scroll quand la modale est ouverte
   useEffect(() => {
@@ -78,24 +109,6 @@ export default function ForumPage() {
       document.removeEventListener('keydown', handleEscape)
     }
   }, [isModalOpen])
-
-  // Charger les votes utilisateur quand les posts changent
-  useEffect(() => {
-    if (posts && session?.user?.id) {
-      const userVotesData: {[key: string]: number} = {}
-      
-      posts.forEach((post) => {
-        if (post.votes) {
-          const userVote = post.votes.find((vote: Vote) => vote.userId === session?.user?.id)
-          if (userVote) {
-            userVotesData[post.id] = userVote.value
-          }
-        }
-      })
-      
-      setUserVotes(userVotesData)
-    }
-  }, [posts, session?.user?.id])
 
   const getCategoryLabel = (category: string) => {
     switch (category) {
@@ -145,14 +158,59 @@ export default function ForumPage() {
     return votes?.reduce((sum, vote) => sum + vote.value, 0) || 0
   }
 
-  const handleVote = async (postId: string, value: number) => {
-    if (!session) {
+  const handleVote = useCallback(async (postId: string, value: number) => {
+    if (!session?.user) {
       toast.error('Vous devez être connecté pour voter')
-      window.location.href = '/register'
+      router.push('/login')
       return
     }
 
+    const userId = session.user.id
+
     try {
+      // Mise à jour optimiste de l'interface
+      const currentVote = userVotes[postId] || 0
+      const newVote = currentVote === value ? 0 : value
+
+      // Mettre à jour le vote local immédiatement
+      setUserVotes(prev => ({
+        ...prev,
+        [postId]: newVote
+      }))
+
+      // Mettre à jour le score local immédiatement
+      setLocalPosts(prevPosts => 
+        prevPosts.map(post => {
+          if (post.id === postId) {
+            // Créer une nouvelle liste de votes mise à jour
+            let newVotes = [...(post.votes || [])]
+            
+            // Supprimer l'ancien vote de l'utilisateur s'il existe
+            newVotes = newVotes.filter(vote => vote.userId !== userId)
+            
+            // Ajouter le nouveau vote si différent de 0
+            if (newVote !== 0) {
+              newVotes.push({
+                id: `temp-${Date.now()}`,
+                value: newVote,
+                userId: userId
+              })
+            }
+            
+            return {
+              ...post,
+              votes: newVotes
+            }
+          }
+          return post
+        }).sort((a, b) => {
+          // Trier par score décroissant (comme Reddit)
+          const scoreA = getVoteCount(a.votes)
+          const scoreB = getVoteCount(b.votes)
+          return scoreB - scoreA
+        })
+      )
+
       const response = await fetch(`/api/forum/posts/${postId}/vote`, {
         method: 'POST',
         headers: {
@@ -161,16 +219,40 @@ export default function ForumPage() {
         body: JSON.stringify({ value }),
       })
 
-      if (response.ok) {
-        // Mettre à jour le vote local
+      if (!response.ok) {
+        // En cas d'erreur, revenir à l'état précédent
         setUserVotes(prev => ({
           ...prev,
-          [postId]: prev[postId] === value ? 0 : value
+          [postId]: currentVote
         }))
         
-        // Recharger les posts pour mettre à jour les compteurs
-        mutate()
-      } else {
+        setLocalPosts(prevPosts => 
+          prevPosts.map(post => {
+            if (post.id === postId) {
+              let newVotes = [...(post.votes || [])]
+              newVotes = newVotes.filter(vote => vote.userId !== userId)
+              
+              if (currentVote !== 0) {
+                newVotes.push({
+                  id: `temp-${Date.now()}`,
+                  value: currentVote,
+                  userId: userId
+                })
+              }
+              
+              return {
+                ...post,
+                votes: newVotes
+              }
+            }
+            return post
+          }).sort((a, b) => {
+            const scoreA = getVoteCount(a.votes)
+            const scoreB = getVoteCount(b.votes)
+            return scoreB - scoreA
+          })
+        )
+        
         const errorData = await response.json()
         toast.error(errorData.error || 'Erreur lors du vote')
       }
@@ -178,15 +260,15 @@ export default function ForumPage() {
       console.error('Erreur lors du vote:', error)
       toast.error('Erreur lors du vote')
     }
-  }
+  }, [session?.user, userVotes, router])
 
   const handleCreatePost = () => {
-          if (!session) {
-        toast.error('Vous devez être connecté pour créer un post')
-        router.push('/register')
-        return
-      }
-    
+    if (!session?.user) {
+      toast.error('Vous devez être connecté pour créer un post')
+      router.push('/login')
+      return
+    }
+  
     setIsModalOpen(true)
   }
 
@@ -348,8 +430,6 @@ export default function ForumPage() {
               <option value="mostVoted">Plus votés</option>
               <option value="mostCommented">Plus commentés</option>
             </select>
-
-
           </div>
         </div>
 
@@ -359,14 +439,14 @@ export default function ForumPage() {
             <div className="text-center py-12">
               <div className="text-theme-secondary">Chargement des posts...</div>
             </div>
-          ) : posts.length === 0 ? (
+          ) : localPosts.length === 0 ? (
             <div className="text-center py-12">
               <MessageSquare className="h-12 w-12 text-theme-secondary mx-auto mb-4" />
               <h3 className="text-lg font-medium text-theme-primary mb-2">Aucun post trouvé</h3>
               <p className="text-theme-secondary">Essayez de modifier vos filtres ou créez le premier post !</p>
             </div>
           ) : (
-            posts.map((post) => (
+            localPosts.map((post) => (
               <Link
                 key={post.id}
                 href={`/forum/${post.id}`}

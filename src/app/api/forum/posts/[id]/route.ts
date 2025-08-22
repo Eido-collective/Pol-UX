@@ -63,6 +63,14 @@ export async function GET(
       }
     })
 
+    // Debug: afficher le nombre de commentaires trouvés
+    console.log(`Post ${id}: ${post?.comments?.length || 0} commentaires publiés trouvés`)
+    if (post?.comments) {
+      post.comments.forEach((comment, index) => {
+        console.log(`Commentaire ${index + 1}: ID=${comment.id}, isPublished=${comment.isPublished}, content="${comment.content.substring(0, 50)}..."`)
+      })
+    }
+
     if (!post) {
       return NextResponse.json(
         { error: 'Post non trouvé' },

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { ArrowLeft, ChevronUp, ChevronDown, User, Calendar, MessageSquare, Trash2, Send, Loader2 } from 'lucide-react'
 import Link from 'next/link'
@@ -58,7 +58,8 @@ interface ForumPost {
 
 export default function ForumPostDetailPage() {
   const params = useParams()
-  const { user: session } = useAuth()
+  const session = useAuth()
+  const router = useRouter()
   const [post, setPost] = useState<ForumPost | null>(null)
   const [loading, setLoading] = useState(true)
   const [newComment, setNewComment] = useState('')
@@ -73,18 +74,21 @@ export default function ForumPostDetailPage() {
 
     setLoading(true)
     try {
-      const response = await fetch(`/api/forum/posts/${params.id}`)
+      const response = await fetch(`/api/forum/posts/${params.id}`, {
+        cache: 'no-store' // Forcer le rechargement sans cache
+      })
       if (response.ok) {
         const data = await response.json()
         setPost(data.post)
         
         // Charger les votes utilisateur
-                if (session?.id) {
+        if (session?.user?.id) {
           const userVotesData: {[key: string]: number} = {}
+          const userId = session.user.id
           
           // Votes du post
           if (data.post.votes) {
-            const userVote = data.post.votes.find((vote: Vote) => vote.userId === session.id)
+            const userVote = data.post.votes.find((vote: Vote) => vote.userId === userId)
             if (userVote) {
               userVotesData[data.post.id] = userVote.value
             }
@@ -94,7 +98,7 @@ export default function ForumPostDetailPage() {
           if (data.post.comments) {
             data.post.comments.forEach((comment: Comment) => {
               if (comment.votes) {
-                                 const userVote = comment.votes.find((vote: Vote) => vote.userId === session.id)
+                const userVote = comment.votes.find((vote: Vote) => vote.userId === userId)
                 if (userVote) {
                   userVotesData[comment.id] = userVote.value
                 }
@@ -104,7 +108,7 @@ export default function ForumPostDetailPage() {
               if (comment.replies) {
                 comment.replies.forEach((reply: Reply) => {
                   if (reply.votes) {
-                                         const userVote = reply.votes.find((vote: Vote) => vote.userId === session.id)
+                    const userVote = reply.votes.find((vote: Vote) => vote.userId === userId)
                     if (userVote) {
                       userVotesData[reply.id] = userVote.value
                     }
@@ -125,17 +129,17 @@ export default function ForumPostDetailPage() {
     } finally {
       setLoading(false)
     }
-  }, [params.id, session?.id])
+  }, [params.id, session?.user?.id])
 
   useEffect(() => {
     if (params.id) {
       fetchPost()
     }
-  }, [fetchPost, params.id])
+  }, [fetchPost, params.id, session?.user?.id])
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!newComment.trim() || !session) return
+    if (!newComment.trim() || !session?.user) return
 
     setSubmitting(true)
     try {
@@ -149,7 +153,10 @@ export default function ForumPostDetailPage() {
 
       if (response.ok) {
         setNewComment('')
-        fetchPost() // Recharger le post pour afficher le nouveau commentaire
+        // Attendre un peu avant de recharger pour s'assurer que la DB a bien enregistré
+        setTimeout(() => {
+          fetchPost() // Recharger le post pour afficher le nouveau commentaire
+        }, 500)
         toast.success('Commentaire ajouté avec succès !')
       } else {
         const errorData = await response.json()
@@ -165,7 +172,7 @@ export default function ForumPostDetailPage() {
 
   const handleSubmitReply = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!replyContent.trim() || !session || !replyingTo) return
+    if (!replyContent.trim() || !session?.user || !replyingTo) return
 
     setSubmitting(true)
     try {
@@ -197,17 +204,154 @@ export default function ForumPostDetailPage() {
     }
   }
 
-  const handleVote = async (type: 'post' | 'comment', id: string, value: number) => {
-    if (!session) {
+  const handleVote = useCallback(async (type: 'post' | 'comment' | 'reply', id: string, value: number) => {
+    if (!session?.user) {
       toast.error('Vous devez être connecté pour voter')
-      window.location.href = '/register'
+      router.push('/login')
       return
     }
 
+    const userId = session.user.id
+
     try {
+      // Mise à jour optimiste de l'interface
+      const currentVote = userVotes[id] || 0
+      const newVote = currentVote === value ? 0 : value
+
+      // Mettre à jour le vote local immédiatement
+      setUserVotes(prev => ({
+        ...prev,
+        [id]: newVote
+      }))
+
+      // Mise à jour optimiste du post ou commentaire
+      if (type === 'post' && post) {
+        setPost(prevPost => {
+          if (!prevPost) return prevPost
+          
+
+          
+          let newVotes = [...(prevPost.votes || [])]
+          newVotes = newVotes.filter(vote => vote.userId !== userId)
+          
+          if (newVote !== 0) {
+            newVotes.push({
+              id: `temp-${Date.now()}`,
+              value: newVote,
+              userId: userId
+            })
+          }
+          
+          return {
+            ...prevPost,
+            votes: newVotes
+          }
+        })
+             } else if (type === 'comment' && post) {
+         setPost(prevPost => {
+           if (!prevPost) return prevPost
+           
+           const updatedComments = prevPost.comments.map(comment => {
+             if (comment.id === id) {
+
+               
+               let newVotes = [...(comment.votes || [])]
+               newVotes = newVotes.filter(vote => vote.userId !== userId)
+               
+               if (newVote !== 0) {
+                 newVotes.push({
+                   id: `temp-${Date.now()}`,
+                   value: newVote,
+                   userId: userId
+                 })
+               }
+               
+               return {
+                 ...comment,
+                 votes: newVotes
+               }
+             }
+             return comment
+           })
+           
+                       // Trier les commentaires par score décroissant
+            updatedComments.sort((a, b) => {
+              const aVotes = getVoteCount(a.votes)
+              const bVotes = getVoteCount(b.votes)
+              return bVotes - aVotes
+            })
+            
+            // Trier aussi les réponses de chaque commentaire par score
+            updatedComments.forEach(comment => {
+              if (comment.replies && comment.replies.length > 0) {
+                comment.replies.sort((a, b) => {
+                  const aVotes = getVoteCount(a.votes)
+                  const bVotes = getVoteCount(b.votes)
+                  return bVotes - aVotes
+                })
+              }
+            })
+            
+                        return {
+              ...prevPost,
+              comments: updatedComments
+            }
+          })
+        } else if (type === 'reply' && post) {
+          setPost(prevPost => {
+            if (!prevPost) return prevPost
+            
+            const updatedComments = prevPost.comments.map(comment => {
+              const updatedReplies = comment.replies?.map(reply => {
+                if (reply.id === id) {
+
+                  
+                  let newVotes = [...(reply.votes || [])]
+                  newVotes = newVotes.filter(vote => vote.userId !== userId)
+                  
+                  if (newVote !== 0) {
+                    newVotes.push({
+                      id: `temp-${Date.now()}`,
+                      value: newVote,
+                      userId: userId
+                    })
+                  }
+                  
+                  return {
+                    ...reply,
+                    votes: newVotes
+                  }
+                }
+                return reply
+              })
+              
+              // Trier les réponses par score décroissant
+              if (updatedReplies && updatedReplies.length > 0) {
+                updatedReplies.sort((a, b) => {
+                  const aVotes = getVoteCount(a.votes)
+                  const bVotes = getVoteCount(b.votes)
+                  return bVotes - aVotes
+                })
+              }
+              
+              return {
+                ...comment,
+                replies: updatedReplies
+              }
+            })
+            
+            return {
+              ...prevPost,
+              comments: updatedComments
+            }
+          })
+        }
+
       const endpoint = type === 'post' 
         ? `/api/forum/posts/${id}/vote`
-        : `/api/forum/comments/${id}/vote`
+        : type === 'comment'
+        ? `/api/forum/comments/${id}/vote`
+        : `/api/forum/comments/${id}/vote` // Les réponses utilisent le même endpoint que les commentaires
 
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -217,16 +361,16 @@ export default function ForumPostDetailPage() {
         body: JSON.stringify({ value }),
       })
 
-      if (response.ok) {
-        // Mettre à jour le vote local
+      if (!response.ok) {
+        // En cas d'erreur, revenir à l'état précédent
         setUserVotes(prev => ({
           ...prev,
-          [id]: prev[id] === value ? 0 : value
+          [id]: currentVote
         }))
         
-        // Recharger le post pour mettre à jour les compteurs
+        // Recharger le post pour revenir à l'état correct
         fetchPost()
-      } else {
+        
         const errorData = await response.json()
         toast.error(errorData.error || 'Erreur lors du vote')
       }
@@ -234,10 +378,10 @@ export default function ForumPostDetailPage() {
       console.error('Erreur lors du vote:', error)
       toast.error('Erreur lors du vote')
     }
-  }
+  }, [session?.user, userVotes, post, fetchPost, router])
 
   const handleDeleteComment = async (commentId: string) => {
-    if (!session) return
+    if (!session?.user) return
 
     try {
       const response = await fetch(`/api/forum/comments/${commentId}/delete`, {
@@ -276,17 +420,23 @@ export default function ForumPostDetailPage() {
     if (!comments) return []
     
     const sorted = [...comments]
-    // Supprimer les variables et fonctions inutilisées
-    // const [sortBy, setSortBy] = useState<'newest' | 'mostVoted'>('mostVoted')
-    // if (sortBy === 'mostVoted') {
-    //   sorted.sort((a, b) => {
-    //     const aVotes = getVoteCount(a.votes)
-    //     const bVotes = getVoteCount(b.votes)
-    //     return bVotes - aVotes
-    //   })
-    // } else {
-      sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    // }
+    // Trier par score décroissant (comme Reddit)
+    sorted.sort((a, b) => {
+      const aVotes = getVoteCount(a.votes)
+      const bVotes = getVoteCount(b.votes)
+      return bVotes - aVotes
+    })
+    
+    // Trier aussi les réponses de chaque commentaire par score
+    sorted.forEach(comment => {
+      if (comment.replies && comment.replies.length > 0) {
+        comment.replies.sort((a, b) => {
+          const aVotes = getVoteCount(a.votes)
+          const bVotes = getVoteCount(b.votes)
+          return bVotes - aVotes
+        })
+      }
+    })
     
     return sorted
   }
@@ -502,7 +652,7 @@ export default function ForumPostDetailPage() {
                          </div>
                        </div>
                        {/* Bouton de suppression pour l'auteur ou l'admin */}
-                       {session && (session.id === comment.author.id || session.role === 'ADMIN') && (
+                       {session?.user && (session.user.id === comment.author.id || session.user.role === 'ADMIN') && (
                          <button
                            onClick={() => handleDeleteComment(comment.id)}
                            className="p-1 text-theme-secondary hover:text-red-600 transition-colors rounded"
@@ -640,7 +790,7 @@ export default function ForumPostDetailPage() {
                                       {formatDate(reply.createdAt)}
                                     </span>
                                     {/* Bouton de suppression pour l'auteur de la réponse ou l'admin */}
-                                    {session && (session.id === reply.author.id || session.role === 'ADMIN') && (
+                                    {session?.user && (session.user.id === reply.author.id || session.user.role === 'ADMIN') && (
                                       <button
                                         onClick={() => handleDeleteComment(reply.id)}
                                         className="p-1 text-theme-secondary hover:text-red-600 transition-colors rounded"
@@ -664,32 +814,32 @@ export default function ForumPostDetailPage() {
                               <div className="px-3 py-2 border-t border-theme-primary bg-theme-tertiary rounded-b-lg">
                                 <div className="flex items-center space-x-3">
                                   <div className="flex items-center space-x-1">
-                                    <button 
-                                      onClick={() => handleVote('comment', reply.id, 1)}
-                                      className={`p-1 rounded transition-colors ${
-                                        userVotes[reply.id] === 1 
-                                          ? 'text-orange-500 bg-orange-50' 
-                                          : 'text-theme-secondary hover:text-orange-500 hover:bg-theme-card'
-                                      }`}
-                                    >
-                                      <ChevronUp className="h-2 w-2" />
-                                    </button>
-                                    <span className={`text-xs font-medium ${
-                                      getVoteCount(reply.votes) > 0 ? 'text-orange-500' : 
-                                      getVoteCount(reply.votes) < 0 ? 'text-blue-500' : 'text-theme-primary'
-                                    }`}>
-                                      {getVoteCount(reply.votes)}
-                                    </span>
-                                    <button 
-                                      onClick={() => handleVote('comment', reply.id, -1)}
-                                      className={`p-1 rounded transition-colors ${
-                                        userVotes[reply.id] === -1 
-                                          ? 'text-blue-500 bg-blue-50' 
-                                          : 'text-theme-secondary hover:text-blue-500 hover:bg-theme-card'
-                                      }`}
-                                    >
-                                      <ChevronDown className="h-2 w-2" />
-                                    </button>
+                                                                         <button 
+                                       onClick={() => handleVote('reply', reply.id, 1)}
+                                       className={`p-1 rounded transition-colors ${
+                                         userVotes[reply.id] === 1 
+                                           ? 'text-orange-500 bg-orange-50' 
+                                           : 'text-theme-secondary hover:text-orange-500 hover:bg-theme-card'
+                                       }`}
+                                     >
+                                       <ChevronUp className="h-2 w-2" />
+                                     </button>
+                                     <span className={`text-xs font-medium ${
+                                       getVoteCount(reply.votes) > 0 ? 'text-orange-500' : 
+                                       getVoteCount(reply.votes) < 0 ? 'text-blue-500' : 'text-theme-primary'
+                                     }`}>
+                                       {getVoteCount(reply.votes)}
+                                     </span>
+                                     <button 
+                                       onClick={() => handleVote('reply', reply.id, -1)}
+                                       className={`p-1 rounded transition-colors ${
+                                         userVotes[reply.id] === -1 
+                                           ? 'text-blue-500 bg-blue-50' 
+                                           : 'text-theme-secondary hover:text-blue-500 hover:bg-theme-card'
+                                       }`}
+                                     >
+                                       <ChevronDown className="h-2 w-2" />
+                                     </button>
                                   </div>
                                 </div>
                               </div>
