@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Lightbulb, Search, ThumbsUp, ThumbsDown, Leaf, Zap, Car, Utensils, Droplets, ShoppingBag, Plus, X } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
@@ -125,9 +125,9 @@ export default function TipsPage() {
     })
   }
 
-  const getVoteCount = (votes: Vote[]) => {
+  const getVoteCount = useCallback((votes: Vote[]) => {
     return votes?.reduce((sum, vote) => sum + vote.value, 0) || 0
-  }
+  }, [])
 
   const handleCreateTip = () => {
     if (!session) {

@@ -412,11 +412,11 @@ export default function ForumPostDetailPage() {
     })
   }
 
-  const getVoteCount = (votes: Vote[]) => {
+  const getVoteCount = useCallback((votes: Vote[]) => {
     return votes?.reduce((sum, vote) => sum + vote.value, 0) || 0
-  }
+  }, [])
 
-  const getSortedComments = (comments: Comment[]) => {
+  const getSortedComments = useCallback((comments: Comment[]) => {
     if (!comments) return []
     
     const sorted = [...comments]
@@ -439,7 +439,7 @@ export default function ForumPostDetailPage() {
     })
     
     return sorted
-  }
+  }, [getVoteCount])
 
   const getCategoryColor = (category: string) => {
     switch (category) {

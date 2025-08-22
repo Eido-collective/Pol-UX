@@ -139,9 +139,9 @@ export default function TipPage() {
     })
   }
 
-  const getVoteCount = (votes: Vote[]) => {
+  const getVoteCount = useCallback((votes: Vote[]) => {
     return votes?.reduce((sum, vote) => sum + vote.value, 0) || 0
-  }
+  }, [])
 
   if (loading) {
     return (

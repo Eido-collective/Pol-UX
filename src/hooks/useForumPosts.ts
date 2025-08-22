@@ -30,14 +30,16 @@ interface UseForumPostsOptions {
   limit?: number
   search?: string
   category?: string
+  sortBy?: string
 }
 
 export function useForumPosts(options: UseForumPostsOptions = {}) {
-  const { page = 1, limit = 10, search, category } = options
+  const { page = 1, limit = 10, search, category, sortBy = 'newest' } = options
   
   const params = new URLSearchParams({
     page: page.toString(),
-    limit: limit.toString()
+    limit: limit.toString(),
+    sortBy: sortBy
   })
   
   if (search) params.append('search', search)

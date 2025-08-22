@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { MessageSquare, ChevronUp, ChevronDown, Plus, Search, X } from 'lucide-react'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
@@ -46,33 +46,27 @@ export default function ForumPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<{[key: string]: string}>({})
   
-  // Utilisation du hook useForumPosts
-  const { posts, pagination, isLoading, mutate } = useForumPosts({
+  // Utilisation du hook useForumPosts avec useMemo pour éviter les re-rendus inutiles
+  const forumPostsOptions = useMemo(() => ({
     page: currentPage,
     limit: 10,
     search: searchTerm,
-    category: selectedCategory
-  })
+    category: selectedCategory,
+    sortBy: sortBy
+  }), [currentPage, searchTerm, selectedCategory, sortBy])
 
-  // Mettre à jour les posts locaux quand les posts changent
-  useEffect(() => {
-    if (posts) {
-      // Trier les posts par score décroissant (comme Reddit)
-      const sortedPosts = [...posts].sort((a, b) => {
-        const scoreA = getVoteCount(a.votes)
-        const scoreB = getVoteCount(b.votes)
-        return scoreB - scoreA
-      })
-      setLocalPosts(sortedPosts)
-    }
-  }, [posts])
+  const { posts, pagination, isLoading, mutate } = useForumPosts(forumPostsOptions)
 
-  // Charger les votes utilisateur une seule fois au montage et quand l'utilisateur change
+  const getVoteCount = useCallback((votes: Vote[]) => {
+    return votes?.reduce((sum, vote) => sum + vote.value, 0) || 0
+  }, [])
+
+  // Charger les votes utilisateur quand les posts changent ou quand l'utilisateur change
   useEffect(() => {
-    if (localPosts.length > 0 && session?.user?.id) {
+    if (posts && session?.user?.id) {
       const userVotesData: {[key: string]: number} = {}
       
-      localPosts.forEach((post) => {
+      posts.forEach((post) => {
         if (post.votes) {
           const userVote = post.votes.find((vote: Vote) => vote.userId === session?.user?.id)
           if (userVote) {
@@ -83,7 +77,19 @@ export default function ForumPage() {
       
       setUserVotes(userVotesData)
     }
-  }, [localPosts, session?.user?.id])
+  }, [posts, session?.user?.id])
+
+  // Mettre à jour les posts locaux quand les posts changent
+  useEffect(() => {
+    if (posts) {
+      setLocalPosts(posts)
+    }
+  }, [posts])
+
+  // Recharger les données quand les filtres changent
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, selectedCategory, sortBy])
 
   // Bloquer le scroll quand la modale est ouverte
   useEffect(() => {
@@ -160,10 +166,6 @@ export default function ForumPage() {
     })
   }
 
-  const getVoteCount = (votes: Vote[]) => {
-    return votes?.reduce((sum, vote) => sum + vote.value, 0) || 0
-  }
-
   const handleVote = useCallback(async (postId: string, value: number) => {
     if (!session?.user) {
       toast.error('Vous devez être connecté pour voter')
@@ -185,8 +187,8 @@ export default function ForumPage() {
       }))
 
       // Mettre à jour le score local immédiatement
-      setLocalPosts(prevPosts => 
-        prevPosts.map(post => {
+      setLocalPosts(prevPosts => {
+        const updatedPosts = prevPosts.map(post => {
           if (post.id === postId) {
             // Créer une nouvelle liste de votes mise à jour
             let newVotes = [...(post.votes || [])]
@@ -209,13 +211,9 @@ export default function ForumPage() {
             }
           }
           return post
-        }).sort((a, b) => {
-          // Trier par score décroissant (comme Reddit)
-          const scoreA = getVoteCount(a.votes)
-          const scoreB = getVoteCount(b.votes)
-          return scoreB - scoreA
         })
-      )
+        return updatedPosts
+      })
 
       const response = await fetch(`/api/forum/posts/${postId}/vote`, {
         method: 'POST',
@@ -232,8 +230,8 @@ export default function ForumPage() {
           [postId]: currentVote
         }))
         
-        setLocalPosts(prevPosts => 
-          prevPosts.map(post => {
+        setLocalPosts(prevPosts => {
+          const updatedPosts = prevPosts.map(post => {
             if (post.id === postId) {
               let newVotes = [...(post.votes || [])]
               newVotes = newVotes.filter(vote => vote.userId !== userId)
@@ -252,12 +250,9 @@ export default function ForumPage() {
               }
             }
             return post
-          }).sort((a, b) => {
-            const scoreA = getVoteCount(a.votes)
-            const scoreB = getVoteCount(b.votes)
-            return scoreB - scoreA
           })
-        )
+          return updatedPosts
+        })
         
         const errorData = await response.json()
         toast.error(errorData.error || 'Erreur lors du vote')

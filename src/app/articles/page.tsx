@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Plus, Search, Filter, ThumbsUp, Calendar, User, Eye } from 'lucide-react'
@@ -121,9 +121,9 @@ export default function ArticlesPage() {
     })
   }
 
-  const getVoteCount = (votes: Vote[]) => {
+  const getVoteCount = useCallback((votes: Vote[]) => {
     return votes.reduce((sum, vote) => sum + vote.value, 0)
-  }
+  }, [])
 
   const filteredArticles = articles.filter(article => {
     const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
