@@ -1,4 +1,5 @@
 import useSWR from 'swr'
+import { useMemo } from 'react'
 import { PaginatedResponse } from '@/lib/swr-config'
 
 export interface ForumPost {
@@ -30,14 +31,16 @@ interface UseForumPostsOptions {
   limit?: number
   search?: string
   category?: string
+  sortBy?: string
 }
 
 export function useForumPosts(options: UseForumPostsOptions = {}) {
-  const { page = 1, limit = 10, search, category } = options
+  const { page = 1, limit = 10, search, category, sortBy = 'newest' } = options
   
   const params = new URLSearchParams({
     page: page.toString(),
-    limit: limit.toString()
+    limit: limit.toString(),
+    sortBy: sortBy
   })
   
   if (search) params.append('search', search)
@@ -55,8 +58,11 @@ export function useForumPosts(options: UseForumPostsOptions = {}) {
     }
   )
   
+  // Memoize posts to prevent infinite re-renders
+  const posts = useMemo(() => data?.data || [], [data?.data])
+  
   return {
-    posts: data?.data || [],
+    posts,
     pagination: data?.pagination,
     isLoading,
     error,

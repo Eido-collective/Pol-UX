@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { ArrowLeft, ThumbsUp, ThumbsDown, User, Calendar, Lightbulb } from 'lucide-react'
 import Link from 'next/link'
@@ -34,7 +34,8 @@ interface Vote {
 
 export default function TipPage() {
   const params = useParams()
-  const { user: session } = useAuth()
+  const router = useRouter()
+  const session = useAuth()
   const [tip, setTip] = useState<Tip | null>(null)
   const [loading, setLoading] = useState(true)
   const [userVotes, setUserVotes] = useState<{[key: string]: number}>({})
@@ -50,8 +51,9 @@ export default function TipPage() {
         setTip(data.tip)
         
         // Charger les votes utilisateur
-        if (session?.id && data.tip.votes) {
-          const userVote = data.tip.votes.find((vote: Vote) => vote.userId === session.id)
+        if (session?.user?.id && data.tip.votes) {
+          const userId = session.user.id
+          const userVote = data.tip.votes.find((vote: Vote) => vote.userId === userId)
           if (userVote) {
             setUserVotes(prev => ({
               ...prev,
@@ -68,19 +70,53 @@ export default function TipPage() {
     } finally {
       setLoading(false)
     }
-  }, [params.id, session?.id])
+  }, [params.id, session?.user?.id])
 
   useEffect(() => {
     fetchTip()
   }, [fetchTip])
 
-  const handleVote = async (tipId: string, value: number) => {
-    if (!session) {
+  const handleVote = useCallback(async (tipId: string, value: number) => {
+    if (!session?.user) {
       toast.error('Vous devez être connecté pour voter')
+      router.push('/login')
       return
     }
 
+    const userId = session.user.id
+
     try {
+      // Mise à jour optimiste de l'interface
+      const currentVote = userVotes[tipId] || 0
+      const newVote = currentVote === value ? 0 : value
+
+      // Mettre à jour le vote local immédiatement
+      setUserVotes(prev => ({
+        ...prev,
+        [tipId]: newVote
+      }))
+
+      // Mise à jour optimiste du tip
+      setTip(prevTip => {
+        if (!prevTip) return prevTip
+        
+        let newVotes = [...(prevTip.votes || [])]
+        newVotes = newVotes.filter(vote => vote.userId !== userId)
+        
+        if (newVote !== 0) {
+          newVotes.push({
+            id: `temp-${Date.now()}`,
+            value: newVote,
+            userId: userId
+          })
+        }
+        
+        return {
+          ...prevTip,
+          votes: newVotes
+        }
+      })
+
       const response = await fetch(`/api/tips/${tipId}/vote`, {
         method: 'POST',
         headers: {
@@ -89,13 +125,16 @@ export default function TipPage() {
         body: JSON.stringify({ value }),
       })
 
-      if (response.ok) {
+      if (!response.ok) {
+        // En cas d'erreur, revenir à l'état précédent
         setUserVotes(prev => ({
           ...prev,
-          [tipId]: prev[tipId] === value ? 0 : value
+          [tipId]: currentVote
         }))
+        
+        // Recharger le tip pour revenir à l'état correct
         fetchTip()
-      } else {
+        
         const errorData = await response.json()
         toast.error(errorData.error || 'Erreur lors du vote')
       }
@@ -103,7 +142,7 @@ export default function TipPage() {
       console.error('Erreur lors du vote:', error)
       toast.error('Erreur lors du vote')
     }
-  }
+  }, [session?.user, userVotes, fetchTip, router])
 
   const getCategoryLabel = (category: string) => {
     switch (category) {
@@ -139,9 +178,9 @@ export default function TipPage() {
     })
   }
 
-  const getVoteCount = (votes: Vote[]) => {
+  const getVoteCount = useCallback((votes: Vote[]) => {
     return votes?.reduce((sum, vote) => sum + vote.value, 0) || 0
-  }
+  }, [])
 
   if (loading) {
     return (

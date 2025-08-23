@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Lightbulb, Search, ThumbsUp, ThumbsDown, Leaf, Zap, Car, Utensils, Droplets, ShoppingBag, Plus, X } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
@@ -30,13 +30,16 @@ export default function TipsPage() {
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1)
   
-  // Utilisation du hook useTips
-  const { tips, pagination, isLoading, mutate } = useTips({
+  // Utilisation du hook useTips avec useMemo pour éviter les re-rendus inutiles
+  const tipsOptions = useMemo(() => ({
     page: currentPage,
     limit: 9,
     search: searchTerm,
-    category: selectedCategory
-  })
+    category: selectedCategory,
+    sortBy: sortBy
+  }), [currentPage, searchTerm, selectedCategory, sortBy])
+
+  const { tips, pagination, isLoading, mutate } = useTips(tipsOptions)
   
   // Récupération des catégories disponibles
   const { data: categoriesData } = useSWR('/api/tips/categories')
@@ -71,6 +74,22 @@ export default function TipsPage() {
       setUserVotes(userVotesData)
     }
   }, [tips, session?.user?.id])
+
+  // Handlers pour les filtres avec réinitialisation de page
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchTerm(value)
+    setCurrentPage(1)
+  }, [])
+
+  const handleCategoryChange = useCallback((value: string) => {
+    setSelectedCategory(value)
+    setCurrentPage(1)
+  }, [])
+
+  const handleSortChange = useCallback((value: string) => {
+    setSortBy(value)
+    setCurrentPage(1)
+  }, [])
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -125,9 +144,9 @@ export default function TipsPage() {
     })
   }
 
-  const getVoteCount = (votes: Vote[]) => {
+  const getVoteCount = useCallback((votes: Vote[]) => {
     return votes?.reduce((sum, vote) => sum + vote.value, 0) || 0
-  }
+  }, [])
 
   const handleCreateTip = () => {
     if (!session) {
@@ -233,13 +252,57 @@ export default function TipsPage() {
     setErrors({})
   }
 
-  const handleVote = async (tipId: string, value: number) => {
-    if (!session) {
-      router.push('/register')
+  const handleVote = useCallback(async (tipId: string, value: number) => {
+    if (!session?.user) {
+      toast.error('Vous devez être connecté pour voter')
+      router.push('/login')
       return
     }
 
+    const userId = session.user.id
+
     try {
+      // Mise à jour optimiste de l'interface
+      const currentVote = userVotes[tipId] || 0
+      const newVote = currentVote === value ? 0 : value
+
+      // Mettre à jour le vote local immédiatement
+      setUserVotes(prev => ({
+        ...prev,
+        [tipId]: newVote
+      }))
+
+      // Mise à jour optimiste des tips
+      mutate((currentData) => {
+        if (!currentData) return currentData
+        
+        const updatedTips = currentData.data.map(tip => {
+          if (tip.id === tipId) {
+            let newVotes = [...(tip.votes || [])]
+            newVotes = newVotes.filter(vote => vote.userId !== userId)
+            
+            if (newVote !== 0) {
+              newVotes.push({
+                id: `temp-${Date.now()}`,
+                value: newVote,
+                userId: userId
+              })
+            }
+            
+            return {
+              ...tip,
+              votes: newVotes
+            }
+          }
+          return tip
+        }, false) // false pour ne pas revalider immédiatement
+        
+        return {
+          ...currentData,
+          data: updatedTips
+        }
+      }, false)
+
       const response = await fetch(`/api/tips/${tipId}/vote`, {
         method: 'POST',
         headers: {
@@ -248,16 +311,16 @@ export default function TipsPage() {
         body: JSON.stringify({ value }),
       })
 
-      if (response.ok) {
-        // Mettre à jour le vote local
+      if (!response.ok) {
+        // En cas d'erreur, revenir à l'état précédent
         setUserVotes(prev => ({
           ...prev,
-          [tipId]: prev[tipId] === value ? 0 : value
+          [tipId]: currentVote
         }))
         
-        // Recharger les tips pour mettre à jour les compteurs
+        // Recharger les tips pour revenir à l'état correct
         mutate()
-      } else {
+        
         const errorData = await response.json()
         toast.error(errorData.error || 'Erreur lors du vote')
       }
@@ -265,27 +328,27 @@ export default function TipsPage() {
       console.error('Erreur lors du vote:', error)
       toast.error('Erreur lors du vote')
     }
-  }
+  }, [session?.user, userVotes, mutate, router])
 
   return (
     <div className="bg-theme-secondary">
-      {/* Page Header */}
+      {/* Header */}
       <div className="bg-theme-card shadow-theme-sm border-b border-theme-primary">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-col gap-4">
-            <div className="text-center sm:text-left">
-              <h1 className="text-2xl font-bold text-theme-primary">Conseils Écologiques</h1>
-              <p className="text-theme-secondary">Découvrez des astuces pour réduire votre impact environnemental</p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                     <div className="page-header-container">
+            <div>
+              <h1 className="text-3xl font-bold text-theme-primary">Conseils Écologiques</h1>
+              <p className="text-theme-secondary mt-2">
+                Découvrez des astuces pour réduire votre impact environnemental
+              </p>
             </div>
-            <div className="flex justify-center sm:justify-start">
-              <button 
-                onClick={handleCreateTip}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                Nouveau conseil
-              </button>
-            </div>
+            <button 
+              onClick={handleCreateTip}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              Nouveau conseil
+            </button>
           </div>
         </div>
       </div>
@@ -301,7 +364,7 @@ export default function TipsPage() {
                 type="text"
                 placeholder="Rechercher un conseil..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
               />
             </div>
@@ -310,7 +373,7 @@ export default function TipsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <select
                 value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
+                onChange={(e) => handleCategoryChange(e.target.value)}
                 className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-theme-card text-theme-primary"
               >
                 <option value="all">Toutes les catégories</option>
@@ -323,7 +386,7 @@ export default function TipsPage() {
 
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
+                onChange={(e) => handleSortChange(e.target.value)}
                 className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-theme-card text-theme-primary"
               >
                 <option value="mostVoted">Plus populaires</option>

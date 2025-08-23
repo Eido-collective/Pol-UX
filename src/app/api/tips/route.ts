@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const category = searchParams.get('category')
     const search = searchParams.get('search')
+    const sortBy = searchParams.get('sortBy') || 'mostVoted'
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '10')
     const skip = (page - 1) * limit
@@ -29,8 +30,30 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    const [tips, total] = await Promise.all([
-      prisma.tip.findMany({
+    // Définir l'ordre de tri
+    let orderBy: Prisma.TipOrderByWithRelationInput
+    let shouldFetchAll = false
+    
+    switch (sortBy) {
+      case 'oldest':
+        orderBy = { createdAt: 'asc' }
+        break
+      case 'newest':
+        orderBy = { createdAt: 'desc' }
+        break
+      case 'mostVoted':
+        shouldFetchAll = true // Récupérer tous les posts pour le tri par score
+        orderBy = { createdAt: 'desc' } // Tri temporaire
+        break
+      default:
+        orderBy = { createdAt: 'desc' }
+        break
+    }
+
+    let tips
+    if (shouldFetchAll) {
+      // Récupérer tous les posts pour le tri par score
+      tips = await prisma.tip.findMany({
         where,
         include: {
           author: {
@@ -46,14 +69,43 @@ export async function GET(request: NextRequest) {
             }
           }
         },
-        orderBy: {
-          createdAt: 'desc'
+        orderBy
+      })
+
+      // Trier tous les posts par score
+      tips = tips.sort((a, b) => {
+        const scoreA = a.votes.reduce((sum, vote) => sum + vote.value, 0)
+        const scoreB = b.votes.reduce((sum, vote) => sum + vote.value, 0)
+        return scoreB - scoreA
+      })
+
+      // Appliquer la pagination après le tri
+      tips = tips.slice(skip, skip + limit)
+    } else {
+      // Récupération normale avec pagination
+      tips = await prisma.tip.findMany({
+        where,
+        include: {
+          author: {
+            select: {
+              name: true,
+              username: true
+            }
+          },
+          votes: true,
+          _count: {
+            select: {
+              votes: true
+            }
+          }
         },
+        orderBy,
         skip,
         take: limit
-      }),
-      prisma.tip.count({ where })
-    ])
+      })
+    }
+
+    const total = await prisma.tip.count({ where })
 
     return NextResponse.json({
       data: tips,

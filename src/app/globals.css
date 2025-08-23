@@ -70,6 +70,11 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+button:hover, a:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
 /* Classes utilitaires pour les thèmes */
 .bg-theme-primary {
   background-color: var(--bg-primary) !important;
@@ -133,6 +138,7 @@ body {
 
 .invert {
   filter: invert(1) !important;
+  transition: filter 0.3s ease !important;
 }
 
 /* Transitions globales */
@@ -234,4 +240,49 @@ select[class*="bg-theme-"] {
 
 select[class*="text-theme-"] {
   color: var(--text-primary) !important;
+}
+
+/* Logo navbar dynamique */
+#logo-navbar {
+  filter: brightness(0) invert(1);
+  transition: filter 0.3s ease;
+}
+
+.theme-white #logo-navbar {
+  filter: brightness(0) invert(0);
+}
+
+/* Styles pour les bannières de pages - Layout responsive forcé */
+.page-header-container {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center !important;
+  gap: 1rem !important;
+}
+
+.page-header-container > div:first-child {
+  text-align: center !important;
+}
+
+.page-header-container > button {
+  align-self: center !important;
+}
+
+/* Sur desktop (sm et plus) */
+@media (min-width: 640px) {
+  .page-header-container {
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+    justify-content: space-between !important;
+  }
+  
+  .page-header-container > div:first-child {
+    text-align: left !important;
+  }
+  
+  .page-header-container > button {
+    align-self: flex-start !important;
+  }
 }

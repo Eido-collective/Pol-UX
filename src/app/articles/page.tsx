@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Plus, Search, Filter, ThumbsUp, Calendar, User, Eye } from 'lucide-react'
+import { Plus, Search, Filter, ThumbsUp, Calendar, User, Eye, ArrowUpDown } from 'lucide-react'
 import toast from 'react-hot-toast'
 import ArticleImage from '@/components/ArticleImage'
-import { useArticles } from '@/hooks/useArticles'
+import { useArticles, Article } from '@/hooks/useArticles'
+import { useAuth } from '@/hooks/useAuth'
 
 interface Vote {
   id: string
@@ -17,17 +18,55 @@ interface Vote {
 export default function ArticlesPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const [currentPage] = useState(1)
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'mostVoted'>('newest')
+  const [currentPage, setCurrentPage] = useState(1)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [userVotes, setUserVotes] = useState<{[key: string]: number}>({})
+  const [optimisticArticles, setOptimisticArticles] = useState<Article[]>([])
   const router = useRouter()
+  const session = useAuth()
+
+  // Memoize the user ID to prevent infinite re-renders
+  const userId = useMemo(() => session?.user?.id, [session?.user?.id])
 
   // Utilisation du hook useArticles
-  const { articles, isLoading, error } = useArticles({
+  const { articles, pagination, isLoading, error, mutate } = useArticles({
     page: currentPage,
     limit: 10,
     search: searchTerm,
-    category: selectedCategory
+    category: selectedCategory,
+    sortBy
   })
+
+  // Charger les votes utilisateur quand les articles changent ou quand l'utilisateur change
+  useEffect(() => {
+    if (articles && userId) {
+      const userVotesData: {[key: string]: number} = {}
+      
+      articles.forEach((article) => {
+        if (article.votes) {
+          const userVote = article.votes.find((vote: Vote) => vote.userId === userId)
+          if (userVote) {
+            userVotesData[article.id] = userVote.value
+          }
+        }
+      })
+      
+      setUserVotes(userVotesData)
+    }
+  }, [articles, userId])
+
+  // Mettre à jour les articles optimistes quand les articles changent
+  useEffect(() => {
+    if (articles) {
+      setOptimisticArticles(articles)
+    }
+  }, [articles])
+
+  // Réinitialiser la page quand les filtres changent
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, selectedCategory, sortBy])
 
   // Bloquer le scroll quand la modale est ouverte
   useEffect(() => {
@@ -76,10 +115,103 @@ export default function ArticlesPage() {
     setShowCreateModal(false)
   }
 
-  const handleVote = async () => {
-    // Rediriger vers la page de connexion car il n'y a plus de système de session
-    router.push('/login')
-  }
+  const handleVote = useCallback(async (articleId: string, value: number) => {
+    if (!userId) {
+      toast.error('Vous devez être connecté pour voter')
+      router.push('/login')
+      return
+    }
+
+    const currentVote = userVotes[articleId] || 0
+    const newVote = currentVote === value ? 0 : value
+
+    // Mise à jour optimiste de l'interface
+    setOptimisticArticles(prevArticles => {
+      const updatedArticles = prevArticles.map(article => {
+        if (article.id === articleId) {
+          // Créer une nouvelle liste de votes mise à jour
+          let newVotes = [...(article.votes || [])]
+          
+          // Supprimer l'ancien vote de l'utilisateur s'il existe
+          newVotes = newVotes.filter(vote => vote.userId !== userId)
+          
+          // Ajouter le nouveau vote si différent de 0
+          if (newVote !== 0) {
+            newVotes.push({
+              id: `temp-${Date.now()}`,
+              value: newVote,
+              userId: userId
+            })
+          }
+          
+          return {
+            ...article,
+            votes: newVotes
+          }
+        }
+        return article
+      })
+      return updatedArticles
+    })
+
+    // Mettre à jour les votes utilisateur
+    setUserVotes(prev => ({
+      ...prev,
+      [articleId]: newVote
+    }))
+
+    try {
+      const response = await fetch(`/api/articles/${articleId}/vote`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ value: newVote }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Erreur lors du vote')
+      }
+
+      // Revalider les données
+      mutate()
+      toast.success('Vote enregistré !')
+
+    } catch (error) {
+      console.error('Erreur lors du vote:', error)
+      toast.error('Erreur lors du vote')
+      
+      // Restaurer l'état précédent en cas d'erreur
+      setOptimisticArticles(prevArticles => {
+        const updatedArticles = prevArticles.map(article => {
+          if (article.id === articleId) {
+            let newVotes = [...(article.votes || [])]
+            newVotes = newVotes.filter(vote => vote.userId !== userId)
+            
+            if (currentVote !== 0) {
+              newVotes.push({
+                id: `temp-${Date.now()}`,
+                value: currentVote,
+                userId: userId
+              })
+            }
+            
+            return {
+              ...article,
+              votes: newVotes
+            }
+          }
+          return article
+        })
+        return updatedArticles
+      })
+
+      setUserVotes(prev => ({
+        ...prev,
+        [articleId]: currentVote
+      }))
+    }
+  }, [userId, userVotes, router, mutate])
 
   const getCategoryLabel = (category: string) => {
     switch (category) {
@@ -121,19 +253,9 @@ export default function ArticlesPage() {
     })
   }
 
-  const getVoteCount = (votes: Vote[]) => {
+  const getVoteCount = useCallback((votes: Vote[]) => {
     return votes.reduce((sum, vote) => sum + vote.value, 0)
-  }
-
-  const filteredArticles = articles.filter(article => {
-    const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         article.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (article.excerpt && article.excerpt.toLowerCase().includes(searchTerm.toLowerCase()))
-    
-    const matchesCategory = selectedCategory === 'all' || article.category === selectedCategory
-    
-    return matchesSearch && matchesCategory
-  })
+  }, [])
 
   if (isLoading) {
     return (
@@ -148,7 +270,7 @@ export default function ArticlesPage() {
       {/* Header */}
       <div className="bg-theme-card shadow-theme-sm border-b border-theme-primary">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex items-center justify-between">
+          <div className="page-header-container">
             <div>
               <h1 className="text-3xl font-bold text-theme-primary">Articles</h1>
               <p className="text-theme-secondary mt-2">
@@ -169,7 +291,7 @@ export default function ArticlesPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Filtres */}
         <div className="bg-theme-card rounded-lg shadow-theme-sm border border-theme-primary p-6 mb-8">
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid md:grid-cols-3 gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-theme-secondary" />
               <input
@@ -200,11 +322,23 @@ export default function ArticlesPage() {
                 <option value="POLICY">Politique</option>
               </select>
             </div>
+            <div className="relative">
+              <ArrowUpDown className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-theme-secondary" />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as 'newest' | 'oldest' | 'mostVoted')}
+                className="w-full pl-10 pr-4 py-2 border border-theme-primary rounded-lg bg-theme-card text-theme-primary focus:outline-none focus:ring-2 focus:ring-green-500 appearance-none"
+              >
+                <option value="newest">Plus récents</option>
+                <option value="oldest">Plus anciens</option>
+                <option value="mostVoted">Les mieux notés</option>
+              </select>
+            </div>
           </div>
         </div>
 
         {/* Liste des articles */}
-        {filteredArticles.length === 0 ? (
+        {optimisticArticles.length === 0 ? (
           <div className="text-center py-12">
             <Eye className="h-12 w-12 text-theme-secondary mx-auto mb-4" />
             <h3 className="text-lg font-medium text-theme-primary mb-2">Aucun article trouvé</h3>
@@ -217,7 +351,7 @@ export default function ArticlesPage() {
           </div>
         ) : (
           <div className="grid gap-6">
-            {filteredArticles.map((article) => (
+            {optimisticArticles.map((article) => (
               <article key={article.id} className="bg-theme-card rounded-lg shadow-theme-sm border border-theme-primary overflow-hidden">
                 <div className="md:flex">
                   <div className="md:w-1/3">
@@ -264,13 +398,19 @@ export default function ArticlesPage() {
                     
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <button
-                          onClick={() => handleVote()}
-                          className="flex items-center gap-1 text-theme-secondary hover:text-green-600 transition-colors"
-                        >
-                          <ThumbsUp className="h-4 w-4" />
-                          <span>{getVoteCount(article.votes)}</span>
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleVote(article.id, 1)}
+                            className={`flex items-center gap-1 transition-colors ${
+                              userVotes[article.id] === 1
+                                ? 'text-green-600'
+                                : 'text-theme-secondary hover:text-green-600'
+                            }`}
+                          >
+                            <ThumbsUp className="h-4 w-4" />
+                            <span>{getVoteCount(article.votes)}</span>
+                          </button>
+                        </div>
                       </div>
                       
                       <Link
@@ -284,6 +424,33 @@ export default function ArticlesPage() {
                 </div>
               </article>
             ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {pagination && pagination.totalPages > 1 && (
+          <div className="flex justify-center mt-8">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-2 rounded-lg border border-theme-primary text-theme-primary hover:bg-theme-primary hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Précédent
+              </button>
+              
+              <span className="px-3 py-2 text-theme-secondary">
+                Page {currentPage} sur {pagination.totalPages}
+              </span>
+              
+              <button
+                onClick={() => setCurrentPage(Math.min(pagination.totalPages, currentPage + 1))}
+                disabled={currentPage === pagination.totalPages}
+                className="px-3 py-2 rounded-lg border border-theme-primary text-theme-primary hover:bg-theme-primary hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Suivant
+              </button>
+            </div>
           </div>
         )}
       </div>
