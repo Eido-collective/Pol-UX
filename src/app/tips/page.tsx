@@ -332,23 +332,23 @@ export default function TipsPage() {
 
   return (
     <div className="bg-theme-secondary">
-      {/* Page Header */}
+      {/* Header */}
       <div className="bg-theme-card shadow-theme-sm border-b border-theme-primary">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-col gap-4">
-            <div className="text-center sm:text-left">
-              <h1 className="text-2xl font-bold text-theme-primary">Conseils Écologiques</h1>
-              <p className="text-theme-secondary">Découvrez des astuces pour réduire votre impact environnemental</p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                     <div className="page-header-container">
+            <div>
+              <h1 className="text-3xl font-bold text-theme-primary">Conseils Écologiques</h1>
+              <p className="text-theme-secondary mt-2">
+                Découvrez des astuces pour réduire votre impact environnemental
+              </p>
             </div>
-            <div className="flex justify-center sm:justify-start">
-              <button 
-                onClick={handleCreateTip}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                Nouveau conseil
-              </button>
-            </div>
+            <button 
+              onClick={handleCreateTip}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              Nouveau conseil
+            </button>
           </div>
         </div>
       </div>

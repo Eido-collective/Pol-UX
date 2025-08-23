@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { Plus, Search, Filter, ThumbsUp, Calendar, User, Eye, ArrowUpDown } from 'lucide-react'
 import toast from 'react-hot-toast'
 import ArticleImage from '@/components/ArticleImage'
-import { useArticles } from '@/hooks/useArticles'
+import { useArticles, Article } from '@/hooks/useArticles'
 import { useAuth } from '@/hooks/useAuth'
 
 interface Vote {
@@ -22,7 +22,7 @@ export default function ArticlesPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [userVotes, setUserVotes] = useState<{[key: string]: number}>({})
-  const [optimisticArticles, setOptimisticArticles] = useState<any[]>([])
+  const [optimisticArticles, setOptimisticArticles] = useState<Article[]>([])
   const router = useRouter()
   const session = useAuth()
 
@@ -270,7 +270,7 @@ export default function ArticlesPage() {
       {/* Header */}
       <div className="bg-theme-card shadow-theme-sm border-b border-theme-primary">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex items-center justify-between">
+          <div className="page-header-container">
             <div>
               <h1 className="text-3xl font-bold text-theme-primary">Articles</h1>
               <p className="text-theme-secondary mt-2">

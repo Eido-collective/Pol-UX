@@ -72,6 +72,10 @@ export default function ForumPostDetailPage() {
   // Memoize the user ID to prevent infinite re-renders
   const userId = useMemo(() => session?.user?.id, [session?.user?.id])
 
+  const getVoteCount = useCallback((votes: Vote[]) => {
+    return votes?.reduce((sum, vote) => sum + vote.value, 0) || 0
+  }, [])
+
   const fetchPost = useCallback(async () => {
     if (!params.id) return
 
@@ -378,7 +382,7 @@ export default function ForumPostDetailPage() {
       console.error('Erreur lors du vote:', error)
       toast.error('Erreur lors du vote')
     }
-  }, [userId, userVotes, post, fetchPost, router])
+  }, [userId, userVotes, post, fetchPost, router, getVoteCount])
 
   const handleDeleteComment = async (commentId: string) => {
     if (!session?.user) return
@@ -411,10 +415,6 @@ export default function ForumPostDetailPage() {
       minute: '2-digit'
     })
   }
-
-  const getVoteCount = useCallback((votes: Vote[]) => {
-    return votes?.reduce((sum, vote) => sum + vote.value, 0) || 0
-  }, [])
 
   const getSortedComments = useCallback((comments: Comment[]) => {
     if (!comments) return []
