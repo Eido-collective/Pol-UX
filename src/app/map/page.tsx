@@ -6,7 +6,6 @@ import { MapPin, Search, Calendar, Users, Building, Plus, X, Info, Eye, Globe, M
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
-import Image from 'next/image'
 import Pagination from '@/components/Pagination'
 import { useInitiatives, useCities } from '@/hooks/useInitiatives'
 
@@ -34,7 +33,6 @@ interface Initiative {
   website?: string
   contactEmail?: string
   contactPhone?: string
-  imageUrl?: string
   isPublished: boolean
   author: {
     name: string
@@ -101,8 +99,7 @@ export default function MapPage() {
     endDate: '',
     website: '',
     contactEmail: '',
-    contactPhone: '',
-    imageUrl: ''
+    contactPhone: ''
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<{[key: string]: string}>({})
@@ -128,8 +125,7 @@ export default function MapPage() {
       endDate: '',
       website: '',
       contactEmail: '',
-      contactPhone: '',
-      imageUrl: ''
+      contactPhone: ''
     })
     setErrors({})
   }
@@ -360,8 +356,7 @@ export default function MapPage() {
           endDate: '',
           website: '',
           contactEmail: '',
-          contactPhone: '',
-          imageUrl: ''
+          contactPhone: ''
         })
         setErrors({})
         fetchInitiatives() // Recharger les initiatives
@@ -841,19 +836,7 @@ export default function MapPage() {
                   />
                 </div>
 
-                <div>
-                  <label htmlFor="imageUrl" className="block text-sm font-medium text-theme-primary mb-2">
-                                         URL de l&apos;image
-                  </label>
-                  <input
-                    type="url"
-                    id="imageUrl"
-                    value={newInitiative.imageUrl}
-                    onChange={(e) => setNewInitiative(prev => ({ ...prev, imageUrl: e.target.value }))}
-                    className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    placeholder="https://..."
-                  />
-                </div>
+
 
                 <div className="flex items-center justify-end gap-3 pt-4">
                   <button
@@ -961,11 +944,12 @@ export default function MapPage() {
                 )}
 
                 {/* Dates */}
-                {(selectedInitiativeForDetails.startDate || selectedInitiativeForDetails.endDate) && (
+                {((selectedInitiativeForDetails.startDate?.trim() && selectedInitiativeForDetails.startDate !== 'null') || 
+                  (selectedInitiativeForDetails.endDate?.trim() && selectedInitiativeForDetails.endDate !== 'null')) && (
                   <div>
                     <h4 className="text-lg font-semibold text-theme-primary mb-3">Dates</h4>
                     <div className="bg-theme-tertiary rounded-xl p-6 border border-theme-primary space-y-3">
-                      {selectedInitiativeForDetails.startDate && (
+                      {selectedInitiativeForDetails.startDate?.trim() && selectedInitiativeForDetails.startDate !== 'null' && (
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-orange-100">
                             <Calendar className="h-4 w-4 text-orange-600" />
@@ -976,7 +960,7 @@ export default function MapPage() {
                           </div>
                         </div>
                       )}
-                      {selectedInitiativeForDetails.endDate && (
+                      {selectedInitiativeForDetails.endDate?.trim() && selectedInitiativeForDetails.endDate !== 'null' && (
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-orange-100">
                             <Calendar className="h-4 w-4 text-orange-600" />
@@ -992,11 +976,13 @@ export default function MapPage() {
                 )}
 
                 {/* Informations de contact */}
-                {(selectedInitiativeForDetails.website || selectedInitiativeForDetails.contactEmail || selectedInitiativeForDetails.contactPhone) && (
+                {((selectedInitiativeForDetails.website?.trim() && selectedInitiativeForDetails.website !== 'null') || 
+                  (selectedInitiativeForDetails.contactEmail?.trim() && selectedInitiativeForDetails.contactEmail !== 'null') || 
+                  (selectedInitiativeForDetails.contactPhone?.trim() && selectedInitiativeForDetails.contactPhone !== 'null')) && (
                   <div>
                     <h4 className="text-lg font-semibold text-theme-primary mb-3">Contact</h4>
                     <div className="bg-theme-tertiary rounded-xl p-6 border border-theme-primary space-y-4">
-                      {selectedInitiativeForDetails.website && (
+                      {selectedInitiativeForDetails.website?.trim() && selectedInitiativeForDetails.website !== 'null' && (
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-purple-100">
                             <Globe className="h-4 w-4 text-purple-600" />
@@ -1014,7 +1000,7 @@ export default function MapPage() {
                           </div>
                         </div>
                       )}
-                      {selectedInitiativeForDetails.contactEmail && (
+                      {selectedInitiativeForDetails.contactEmail?.trim() && selectedInitiativeForDetails.contactEmail !== 'null' && (
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-purple-100">
                             <Mail className="h-4 w-4 text-purple-600" />
@@ -1030,7 +1016,7 @@ export default function MapPage() {
                           </div>
                         </div>
                       )}
-                      {selectedInitiativeForDetails.contactPhone && (
+                      {selectedInitiativeForDetails.contactPhone?.trim() && selectedInitiativeForDetails.contactPhone !== 'null' && (
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-purple-100">
                             <Phone className="h-4 w-4 text-purple-600" />
@@ -1067,23 +1053,7 @@ export default function MapPage() {
                   </div>
                 </div>
 
-                {/* Image */}
-                {selectedInitiativeForDetails.imageUrl && (
-                  <div>
-                    <h4 className="text-lg font-semibold text-theme-primary mb-3">Image</h4>
-                    <div className="bg-theme-tertiary rounded-xl p-6 border border-theme-primary">
-                      <div className="relative w-full h-64 rounded-xl overflow-hidden shadow-lg">
-                        <Image 
-                          src={selectedInitiativeForDetails.imageUrl} 
-                          alt={selectedInitiativeForDetails.title}
-                          fill
-                          sizes="(max-width: 768px) 100vw, 576px"
-                          className="object-cover"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
+
 
                 {/* Boutons d'action */}
                 <div className="flex items-center justify-between pt-6 border-t border-theme-primary">

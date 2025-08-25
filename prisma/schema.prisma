@@ -69,7 +69,6 @@ model User {
   name          String?
   email         String    @unique
   emailVerified DateTime?
-  image         String?
   username      String    @unique
   password      String?
   role          UserRole  @default(EXPLORER)
@@ -156,7 +155,6 @@ model Initiative {
   website     String?
   contactEmail String?
   contactPhone String?
-  imageUrl    String?
   isPublished Boolean        @default(true)
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
@@ -205,7 +203,6 @@ model Tip {
   title       String
   content     String
   category    TipCategory
-  imageUrl    String?
   source      String?
   isPublished Boolean    @default(true)
   createdAt   DateTime   @default(now())
@@ -222,7 +219,6 @@ model Article {
   content     String         @db.Text
   excerpt     String?
   category    ArticleCategory
-  imageUrl    String?
   source      String?
   isPublished Boolean        @default(true)
   publishedAt DateTime?      @default(now())

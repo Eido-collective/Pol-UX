@@ -193,7 +193,6 @@ Les températures moyennes en France ont augmenté de 1,7°C depuis 1900, un ryt
 La France, avec sa riche biodiversité, a un rôle crucial à jouer dans la protection de l'environnement. Chaque action locale compte dans cette lutte globale.`,
       excerpt: 'Analyse approfondie des conséquences du réchauffement climatique sur les écosystèmes français et les solutions pour y faire face.',
       category: 'CLIMATE_CHANGE',
-      imageUrl: 'https://images.unsplash.com/photo-1569163136547-3c23a60a1c2d?w=800&h=400&fit=crop',
       authorId: user1.id,
       publishedAt: new Date('2024-01-15')
     },
@@ -232,7 +231,6 @@ La France, avec sa riche biodiversité, a un rôle crucial à jouer dans la prot
 La transition vers les énergies renouvelables est en marche et s'accélère. Chaque citoyen peut contribuer en installant des panneaux solaires, en choisissant un fournisseur d'énergie verte ou en investissant dans des projets citoyens.`,
       excerpt: 'Découvrez comment les énergies renouvelables révolutionnent la production électrique et contribuent à la transition écologique.',
       category: 'RENEWABLE_ENERGY',
-      imageUrl: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=800&h=400&fit=crop',
       authorId: admin.id,
       publishedAt: new Date('2024-02-20')
     },
@@ -275,7 +273,6 @@ La transition vers les énergies renouvelables est en marche et s'accélère. Ch
 L'économie circulaire n'est pas seulement un concept, c'est une réalité qui se développe partout en France. Chaque citoyen peut participer en privilégiant les produits durables, en réparant plutôt qu'en jetant, et en triant ses déchets.`,
       excerpt: 'Découvrez comment l\'économie circulaire transforme notre modèle économique pour un avenir plus durable.',
       category: 'CIRCULAR_ECONOMY',
-      imageUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=400&fit=crop',
       authorId: user1.id,
       publishedAt: new Date('2024-03-10')
     },

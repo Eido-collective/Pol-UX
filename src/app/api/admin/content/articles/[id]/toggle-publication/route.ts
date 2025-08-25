@@ -11,7 +11,25 @@ export async function PATCH(
 
     const article = await prisma.article.update({
       where: { id },
-      data: { isPublished }
+      data: { isPublished },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        excerpt: true,
+        category: true,
+        source: true,
+        isPublished: true,
+        createdAt: true,
+        author: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            email: true
+          }
+        }
+      }
     })
 
     return NextResponse.json({ article })

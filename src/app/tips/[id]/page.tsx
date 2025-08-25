@@ -3,17 +3,16 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
-import { ArrowLeft, ThumbsUp, ThumbsDown, User, Calendar, Lightbulb } from 'lucide-react'
+import { ArrowLeft, ThumbsUp, ThumbsDown, User, Calendar } from 'lucide-react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
-import TipImage from '@/components/TipImage'
+
 
 interface Tip {
   id: string
   title: string
   content: string
   category: string
-  imageUrl?: string
   source?: string
   createdAt: string
   author: {
@@ -219,19 +218,6 @@ export default function TipPage() {
 
         {/* Conseil principal */}
         <div className="bg-theme-card rounded-lg shadow-theme-sm border border-theme-primary overflow-hidden">
-          {/* Image du conseil */}
-          <div className="w-full h-80 md:h-96">
-            <TipImage
-              src={tip.imageUrl}
-              alt={tip.title}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1024px"
-              priority={true}
-              className="w-full h-full"
-              fallbackIcon={<Lightbulb className="h-24 w-24 text-green-600" />}
-            />
-          </div>
-
           <div className="p-6">
             {/* En-tête du conseil */}
             <div className="mb-6">

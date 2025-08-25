@@ -8,7 +8,6 @@ export interface Article {
   content: string
   excerpt?: string
   category: string
-  imageUrl?: string
   source?: string
   publishedAt?: string
   createdAt: string

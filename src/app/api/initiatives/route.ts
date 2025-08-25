@@ -97,8 +97,7 @@ export async function POST(request: NextRequest) {
       endDate,
       website,
       contactEmail,
-      contactPhone,
-      imageUrl
+      contactPhone
     } = body
 
     // Validation des données
@@ -124,7 +123,6 @@ export async function POST(request: NextRequest) {
         website,
         contactEmail,
         contactPhone,
-        imageUrl,
         authorId: session.id
         // isPublished est par défaut à true dans le schéma
       },

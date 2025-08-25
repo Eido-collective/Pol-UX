@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { ArrowLeft, ChevronUp, ChevronDown, User, Calendar, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
-import ArticleImage from '@/components/ArticleImage'
+
 
 interface Article {
   id: string
@@ -14,7 +14,6 @@ interface Article {
   content: string
   excerpt?: string
   category: string
-  imageUrl?: string
   source?: string
   publishedAt?: string
   createdAt: string
@@ -190,19 +189,6 @@ export default function ArticlePage() {
 
         {/* Article principal */}
         <div className="bg-theme-card rounded-lg shadow-theme-sm border border-theme-primary overflow-hidden">
-          {/* Image de l'article */}
-          <div className="w-full h-80 md:h-96">
-            <ArticleImage
-              src={article.imageUrl}
-              alt={article.title}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1024px"
-              priority={true}
-              className="w-full h-full"
-              fallbackIcon={<BookOpen className="h-24 w-24 text-green-600" />}
-            />
-          </div>
-
           <div className="p-6">
             {/* En-tête de l'article */}
             <div className="mb-6">

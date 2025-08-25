@@ -4,7 +4,14 @@ import { prisma } from '@/lib/prisma'
 export async function GET() {
   try {
     const initiatives = await prisma.initiative.findMany({
-      include: {
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        type: true,
+        city: true,
+        isPublished: true,
+        createdAt: true,
         author: {
           select: {
             id: true,

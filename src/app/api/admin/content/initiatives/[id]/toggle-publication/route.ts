@@ -11,7 +11,24 @@ export async function PATCH(
 
     const initiative = await prisma.initiative.update({
       where: { id },
-      data: { isPublished }
+      data: { isPublished },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        type: true,
+        city: true,
+        isPublished: true,
+        createdAt: true,
+        author: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            email: true
+          }
+        }
+      }
     })
 
     return NextResponse.json({ initiative })
