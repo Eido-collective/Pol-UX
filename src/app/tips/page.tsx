@@ -214,12 +214,16 @@ export default function TipsPage() {
       newErrors.title = 'Le titre est obligatoire'
     } else if (newTip.title.trim().length < 5) {
       newErrors.title = 'Le titre doit contenir au moins 5 caractères'
+    } else if (newTip.title.trim().length > 200) {
+      newErrors.title = 'Le titre ne peut pas dépasser 200 caractères'
     }
     
     if (!newTip.content.trim()) {
       newErrors.content = 'Le contenu est obligatoire'
     } else if (newTip.content.trim().length < 20) {
       newErrors.content = 'Le contenu doit contenir au moins 20 caractères'
+    } else if (newTip.content.trim().length > 2000) {
+      newErrors.content = 'Le contenu ne peut pas dépasser 2000 caractères'
     }
     
     setErrors(newErrors)
@@ -234,6 +238,8 @@ export default function TipsPage() {
         newErrors.title = 'Le titre est obligatoire'
       } else if (value.trim().length < 5) {
         newErrors.title = 'Le titre doit contenir au moins 5 caractères'
+      } else if (value.trim().length > 200) {
+        newErrors.title = 'Le titre ne peut pas dépasser 200 caractères'
       } else {
         delete newErrors.title
       }
@@ -244,6 +250,8 @@ export default function TipsPage() {
         newErrors.content = 'Le contenu est obligatoire'
       } else if (value.trim().length < 20) {
         newErrors.content = 'Le contenu doit contenir au moins 20 caractères'
+      } else if (value.trim().length > 2000) {
+        newErrors.content = 'Le contenu ne peut pas dépasser 2000 caractères'
       } else {
         delete newErrors.content
       }
@@ -574,6 +582,7 @@ export default function TipsPage() {
                        errors.title ? 'border-red-500' : 'border-theme-primary'
                      }`}
                      placeholder="Titre de votre conseil..."
+                     maxLength={200}
                      required
                    />
                    {errors.title && (
@@ -614,6 +623,7 @@ export default function TipsPage() {
                         validateField('content', e.target.value)
                       }}
                      rows={6}
+                     maxLength={2000}
                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none ${
                        errors.content ? 'border-red-500' : 'border-theme-primary'
                      }`}
@@ -638,6 +648,7 @@ export default function TipsPage() {
                     onChange={(e) => setNewTip(prev => ({ ...prev, source: e.target.value }))}
                     className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                     placeholder="https://..."
+                    maxLength={200}
                   />
                 </div>
 

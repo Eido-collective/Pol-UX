@@ -263,24 +263,34 @@ export default function MapPage() {
       newErrors.title = 'Le titre est obligatoire'
     } else if (newInitiative.title.trim().length < 5) {
       newErrors.title = 'Le titre doit contenir au moins 5 caractères'
+    } else if (newInitiative.title.trim().length > 200) {
+      newErrors.title = 'Le titre ne peut pas dépasser 200 caractères'
     }
     
     if (!newInitiative.description.trim()) {
       newErrors.description = 'La description est obligatoire'
     } else if (newInitiative.description.trim().length < 20) {
       newErrors.description = 'La description doit contenir au moins 20 caractères'
+    } else if (newInitiative.description.trim().length > 1000) {
+      newErrors.description = 'La description ne peut pas dépasser 1000 caractères'
     }
 
     if (!newInitiative.address.trim()) {
       newErrors.address = "L'adresse est obligatoire"
+    } else if (newInitiative.address.trim().length > 200) {
+      newErrors.address = "L'adresse ne peut pas dépasser 200 caractères"
     }
 
     if (!newInitiative.city.trim()) {
       newErrors.city = 'La ville est obligatoire'
+    } else if (newInitiative.city.trim().length > 100) {
+      newErrors.city = 'La ville ne peut pas dépasser 100 caractères'
     }
 
     if (!newInitiative.postalCode.trim()) {
       newErrors.postalCode = 'Le code postal est obligatoire'
+    } else if (newInitiative.postalCode.trim().length > 10) {
+      newErrors.postalCode = 'Le code postal ne peut pas dépasser 10 caractères'
     }
     
     setErrors(newErrors)
@@ -295,6 +305,8 @@ export default function MapPage() {
         newErrors.title = 'Le titre est obligatoire'
       } else if (value.trim().length < 5) {
         newErrors.title = 'Le titre doit contenir au moins 5 caractères'
+      } else if (value.trim().length > 200) {
+        newErrors.title = 'Le titre ne peut pas dépasser 200 caractères'
       } else {
         delete newErrors.title
       }
@@ -305,6 +317,8 @@ export default function MapPage() {
         newErrors.description = 'La description est obligatoire'
       } else if (value.trim().length < 20) {
         newErrors.description = 'La description doit contenir au moins 20 caractères'
+      } else if (value.trim().length > 1000) {
+        newErrors.description = 'La description ne peut pas dépasser 1000 caractères'
       } else {
         delete newErrors.description
       }
@@ -313,6 +327,8 @@ export default function MapPage() {
     if (field === 'address') {
       if (!value.trim()) {
         newErrors.address = "L'adresse est obligatoire"
+      } else if (value.trim().length > 200) {
+        newErrors.address = "L'adresse ne peut pas dépasser 200 caractères"
       } else {
         delete newErrors.address
       }
@@ -321,6 +337,8 @@ export default function MapPage() {
     if (field === 'city') {
       if (!value.trim()) {
         newErrors.city = 'La ville est obligatoire'
+      } else if (value.trim().length > 100) {
+        newErrors.city = 'La ville ne peut pas dépasser 100 caractères'
       } else {
         delete newErrors.city
       }
@@ -329,6 +347,8 @@ export default function MapPage() {
     if (field === 'postalCode') {
       if (!value.trim()) {
         newErrors.postalCode = 'Le code postal est obligatoire'
+      } else if (value.trim().length > 10) {
+        newErrors.postalCode = 'Le code postal ne peut pas dépasser 10 caractères'
       } else {
         delete newErrors.postalCode
       }
@@ -675,20 +695,21 @@ export default function MapPage() {
                   <label htmlFor="title" className="block text-sm font-medium text-theme-primary mb-2">
                     Titre *
                   </label>
-                  <input
-                    type="text"
-                    id="title"
-                    value={newInitiative.title}
-                    onChange={(e) => {
-                      setNewInitiative(prev => ({ ...prev, title: e.target.value }))
-                      validateField('title', e.target.value)
-                    }}
-                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
-                      errors.title ? 'border-red-500' : 'border-theme-primary'
-                    }`}
-                    placeholder="Titre de l'initiative"
-                    required
-                  />
+                                     <input
+                     type="text"
+                     id="title"
+                     value={newInitiative.title}
+                     onChange={(e) => {
+                       setNewInitiative(prev => ({ ...prev, title: e.target.value }))
+                       validateField('title', e.target.value)
+                     }}
+                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                       errors.title ? 'border-red-500' : 'border-theme-primary'
+                     }`}
+                     placeholder="Titre de l'initiative"
+                     maxLength={200}
+                     required
+                   />
                   {errors.title && (
                     <p className="text-red-500 text-sm mt-1">{errors.title}</p>
                   )}
@@ -716,20 +737,21 @@ export default function MapPage() {
                   <label htmlFor="description" className="block text-sm font-medium text-theme-primary mb-2">
                     Description *
                   </label>
-                  <textarea
-                    id="description"
-                    value={newInitiative.description}
-                    onChange={(e) => {
-                      setNewInitiative(prev => ({ ...prev, description: e.target.value }))
-                      validateField('description', e.target.value)
-                    }}
-                    rows={4}
-                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none ${
-                      errors.description ? 'border-red-500' : 'border-theme-primary'
-                    }`}
-                    placeholder="Description de l'initiative"
-                    required
-                  />
+                                     <textarea
+                     id="description"
+                     value={newInitiative.description}
+                     onChange={(e) => {
+                       setNewInitiative(prev => ({ ...prev, description: e.target.value }))
+                       validateField('description', e.target.value)
+                     }}
+                     rows={4}
+                     maxLength={1000}
+                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none ${
+                       errors.description ? 'border-red-500' : 'border-theme-primary'
+                     }`}
+                     placeholder="Description de l'initiative"
+                     required
+                   />
                   {errors.description && (
                     <p className="text-red-500 text-sm mt-1">{errors.description}</p>
                   )}
@@ -739,20 +761,21 @@ export default function MapPage() {
                   <label htmlFor="address" className="block text-sm font-medium text-theme-primary mb-2">
                     Adresse *
                   </label>
-                  <input
-                    type="text"
-                    id="address"
-                    value={newInitiative.address}
-                    onChange={(e) => {
-                      setNewInitiative(prev => ({ ...prev, address: e.target.value }))
-                      validateField('address', e.target.value)
-                    }}
-                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
-                      errors.address ? 'border-red-500' : 'border-theme-primary'
-                    }`}
-                    placeholder="Adresse complète"
-                    required
-                  />
+                                     <input
+                     type="text"
+                     id="address"
+                     value={newInitiative.address}
+                     onChange={(e) => {
+                       setNewInitiative(prev => ({ ...prev, address: e.target.value }))
+                       validateField('address', e.target.value)
+                     }}
+                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                       errors.address ? 'border-red-500' : 'border-theme-primary'
+                     }`}
+                     placeholder="Adresse complète"
+                     maxLength={200}
+                     required
+                   />
                   {errors.address && (
                     <p className="text-red-500 text-sm mt-1">{errors.address}</p>
                   )}
@@ -763,20 +786,21 @@ export default function MapPage() {
                     <label htmlFor="city" className="block text-sm font-medium text-theme-primary mb-2">
                       Ville *
                     </label>
-                    <input
-                      type="text"
-                      id="city"
-                      value={newInitiative.city}
-                      onChange={(e) => {
-                        setNewInitiative(prev => ({ ...prev, city: e.target.value }))
-                        validateField('city', e.target.value)
-                      }}
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
-                        errors.city ? 'border-red-500' : 'border-theme-primary'
-                      }`}
-                      placeholder="Ville"
-                      required
-                    />
+                                         <input
+                       type="text"
+                       id="city"
+                       value={newInitiative.city}
+                       onChange={(e) => {
+                         setNewInitiative(prev => ({ ...prev, city: e.target.value }))
+                         validateField('city', e.target.value)
+                       }}
+                       className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                         errors.city ? 'border-red-500' : 'border-theme-primary'
+                       }`}
+                       placeholder="Ville"
+                       maxLength={100}
+                       required
+                     />
                     {errors.city && (
                       <p className="text-red-500 text-sm mt-1">{errors.city}</p>
                     )}
@@ -786,20 +810,21 @@ export default function MapPage() {
                     <label htmlFor="postalCode" className="block text-sm font-medium text-theme-primary mb-2">
                       Code postal *
                     </label>
-                    <input
-                      type="text"
-                      id="postalCode"
-                      value={newInitiative.postalCode}
-                      onChange={(e) => {
-                        setNewInitiative(prev => ({ ...prev, postalCode: e.target.value }))
-                        validateField('postalCode', e.target.value)
-                      }}
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
-                        errors.postalCode ? 'border-red-500' : 'border-theme-primary'
-                      }`}
-                      placeholder="75001"
-                      required
-                    />
+                                         <input
+                       type="text"
+                       id="postalCode"
+                       value={newInitiative.postalCode}
+                       onChange={(e) => {
+                         setNewInitiative(prev => ({ ...prev, postalCode: e.target.value }))
+                         validateField('postalCode', e.target.value)
+                       }}
+                       className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                         errors.postalCode ? 'border-red-500' : 'border-theme-primary'
+                       }`}
+                       placeholder="75001"
+                       maxLength={10}
+                       required
+                     />
                     {errors.postalCode && (
                       <p className="text-red-500 text-sm mt-1">{errors.postalCode}</p>
                     )}
@@ -838,42 +863,45 @@ export default function MapPage() {
                   <label htmlFor="website" className="block text-sm font-medium text-theme-primary mb-2">
                     Site web
                   </label>
-                  <input
-                    type="url"
-                    id="website"
-                    value={newInitiative.website}
-                    onChange={(e) => setNewInitiative(prev => ({ ...prev, website: e.target.value }))}
-                    className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    placeholder="https://..."
-                  />
+                                     <input
+                     type="url"
+                     id="website"
+                     value={newInitiative.website}
+                     onChange={(e) => setNewInitiative(prev => ({ ...prev, website: e.target.value }))}
+                     className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                     placeholder="https://..."
+                     maxLength={200}
+                   />
                 </div>
 
                 <div>
                   <label htmlFor="contactEmail" className="block text-sm font-medium text-theme-primary mb-2">
                     Email de contact
                   </label>
-                  <input
-                    type="email"
-                    id="contactEmail"
-                    value={newInitiative.contactEmail}
-                    onChange={(e) => setNewInitiative(prev => ({ ...prev, contactEmail: e.target.value }))}
-                    className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    placeholder="contact@example.com"
-                  />
+                                     <input
+                     type="email"
+                     id="contactEmail"
+                     value={newInitiative.contactEmail}
+                     onChange={(e) => setNewInitiative(prev => ({ ...prev, contactEmail: e.target.value }))}
+                     className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                     placeholder="contact@example.com"
+                     maxLength={100}
+                   />
                 </div>
 
                 <div>
                   <label htmlFor="contactPhone" className="block text-sm font-medium text-theme-primary mb-2">
                     Téléphone de contact
                   </label>
-                  <input
-                    type="tel"
-                    id="contactPhone"
-                    value={newInitiative.contactPhone}
-                    onChange={(e) => setNewInitiative(prev => ({ ...prev, contactPhone: e.target.value }))}
-                    className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    placeholder="+33 1 23 45 67 89"
-                  />
+                                     <input
+                     type="tel"
+                     id="contactPhone"
+                     value={newInitiative.contactPhone}
+                     onChange={(e) => setNewInitiative(prev => ({ ...prev, contactPhone: e.target.value }))}
+                     className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                     placeholder="+33 1 23 45 67 89"
+                     maxLength={20}
+                   />
                 </div>
 
 

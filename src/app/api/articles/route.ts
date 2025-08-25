@@ -164,6 +164,28 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Validation des longueurs
+    if (title.length > 200) {
+      return NextResponse.json(
+        { error: 'Le titre ne peut pas dépasser 200 caractères' },
+        { status: 400 }
+      )
+    }
+
+    if (content.length > 10000) {
+      return NextResponse.json(
+        { error: 'Le contenu ne peut pas dépasser 10000 caractères' },
+        { status: 400 }
+      )
+    }
+
+    if (excerpt && excerpt.length > 500) {
+      return NextResponse.json(
+        { error: 'L\'extrait ne peut pas dépasser 500 caractères' },
+        { status: 400 }
+      )
+    }
+
     const article = await prisma.article.create({
       data: {
         title,

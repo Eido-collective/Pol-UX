@@ -149,18 +149,24 @@ export default function ArticlesPage() {
       newErrors.title = 'Le titre est obligatoire'
     } else if (newArticle.title.trim().length < 5) {
       newErrors.title = 'Le titre doit contenir au moins 5 caractères'
+    } else if (newArticle.title.trim().length > 200) {
+      newErrors.title = 'Le titre ne peut pas dépasser 200 caractères'
     }
     
     if (!newArticle.content.trim()) {
       newErrors.content = 'Le contenu est obligatoire'
     } else if (newArticle.content.trim().length < 50) {
       newErrors.content = 'Le contenu doit contenir au moins 50 caractères'
+    } else if (newArticle.content.trim().length > 10000) {
+      newErrors.content = 'Le contenu ne peut pas dépasser 10000 caractères'
     }
     
     if (!newArticle.excerpt.trim()) {
       newErrors.excerpt = 'L\'extrait est obligatoire'
     } else if (newArticle.excerpt.trim().length < 20) {
       newErrors.excerpt = 'L\'extrait doit contenir au moins 20 caractères'
+    } else if (newArticle.excerpt.trim().length > 500) {
+      newErrors.excerpt = 'L\'extrait ne peut pas dépasser 500 caractères'
     }
     
     setErrors(newErrors)
@@ -175,6 +181,8 @@ export default function ArticlesPage() {
         newErrors.title = 'Le titre est obligatoire'
       } else if (value.trim().length < 5) {
         newErrors.title = 'Le titre doit contenir au moins 5 caractères'
+      } else if (value.trim().length > 200) {
+        newErrors.title = 'Le titre ne peut pas dépasser 200 caractères'
       } else {
         delete newErrors.title
       }
@@ -185,6 +193,8 @@ export default function ArticlesPage() {
         newErrors.content = 'Le contenu est obligatoire'
       } else if (value.trim().length < 50) {
         newErrors.content = 'Le contenu doit contenir au moins 50 caractères'
+      } else if (value.trim().length > 10000) {
+        newErrors.content = 'Le contenu ne peut pas dépasser 10000 caractères'
       } else {
         delete newErrors.content
       }
@@ -195,6 +205,8 @@ export default function ArticlesPage() {
         newErrors.excerpt = 'L\'extrait est obligatoire'
       } else if (value.trim().length < 20) {
         newErrors.excerpt = 'L\'extrait doit contenir au moins 20 caractères'
+      } else if (value.trim().length > 500) {
+        newErrors.excerpt = 'L\'extrait ne peut pas dépasser 500 caractères'
       } else {
         delete newErrors.excerpt
       }
@@ -603,6 +615,7 @@ export default function ArticlesPage() {
                         errors.title ? 'border-red-500' : 'border-theme-primary'
                       }`}
                       placeholder="Titre de votre article"
+                      maxLength={200}
                       required
                     />
                     {errors.title && (
@@ -646,6 +659,7 @@ export default function ArticlesPage() {
                         validateField('excerpt', e.target.value)
                       }}
                       rows={3}
+                      maxLength={500}
                       className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none ${
                         errors.excerpt ? 'border-red-500' : 'border-theme-primary'
                       }`}
@@ -669,6 +683,7 @@ export default function ArticlesPage() {
                         validateField('content', e.target.value)
                       }}
                       rows={8}
+                      maxLength={10000}
                       className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none ${
                         errors.content ? 'border-red-500' : 'border-theme-primary'
                       }`}

@@ -188,9 +188,10 @@ export default function ContactPage() {
                   id="name"
                   name="name"
                   required
+                  maxLength={100}
                   value={formData.name}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   placeholder="Votre nom"
                 />
               </div>
@@ -204,9 +205,10 @@ export default function ContactPage() {
                   id="email"
                   name="email"
                   required
+                  maxLength={100}
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   placeholder="votre@email.com"
                 />
               </div>
@@ -221,9 +223,10 @@ export default function ContactPage() {
                 id="subject"
                 name="subject"
                 required
+                maxLength={200}
                 value={formData.subject}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 placeholder="Sujet de votre message"
               />
             </div>
@@ -236,10 +239,11 @@ export default function ContactPage() {
                 id="message"
                 name="message"
                 required
+                maxLength={2000}
                 rows={6}
                 value={formData.message}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
                 placeholder="Votre message..."
               />
             </div>
@@ -251,7 +255,7 @@ export default function ContactPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`w-full py-3 px-6 rounded-lg font-semibold transition-colors ${
+              className={`w-full py-3 px-4 border border-transparent text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 flex items-center justify-center ${
                 isSubmitting
                   ? 'bg-theme-secondary text-theme-primary cursor-not-allowed'
                   : 'bg-green-600 text-white hover:bg-green-700'
@@ -259,12 +263,12 @@ export default function ContactPage() {
             >
               {isSubmitting ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                   Envoi en cours...
                 </>
               ) : (
                 <>
-                  <Send className="h-4 w-4" />
+                  <Send className="h-4 w-4 mr-2" />
                   Envoyer le message
                 </>
               )}

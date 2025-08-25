@@ -99,7 +99,7 @@ export default function LoginPage() {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  className={`appearance-none relative block w-full pl-10 pr-3 py-3 border rounded-lg placeholder-theme-secondary text-theme-primary bg-theme-card focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors ${
+                  className={`appearance-none relative block w-full pl-7 pr-3 py-2 border rounded-lg placeholder-theme-secondary text-theme-primary bg-theme-card focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors ${
                     errors.email ? 'border-red-500' : 'border-theme-primary'
                   }`}
                   placeholder="votre@email.com"
@@ -126,7 +126,7 @@ export default function LoginPage() {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className={`appearance-none relative block w-full pl-10 pr-12 py-3 border rounded-lg placeholder-theme-secondary text-theme-primary bg-theme-card focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors ${
+                  className={`appearance-none relative block w-full pl-7 pr-3 py-2 border rounded-lg placeholder-theme-secondary text-theme-primary bg-theme-card focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors ${
                     errors.password ? 'border-red-500' : 'border-theme-primary'
                   }`}
                   placeholder="Votre mot de passe"
@@ -154,9 +154,6 @@ export default function LoginPage() {
               type="submit"
               className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
             >
-              <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                <ArrowRight className="h-5 w-5 text-green-500 group-hover:text-green-400 transition-colors" />
-              </span>
               Se connecter
             </button>
           </div>

@@ -170,6 +170,21 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Validation des longueurs
+    if (title.length > 200) {
+      return NextResponse.json(
+        { error: 'Le titre ne peut pas dépasser 200 caractères' },
+        { status: 400 }
+      )
+    }
+
+    if (content.length > 2000) {
+      return NextResponse.json(
+        { error: 'Le contenu ne peut pas dépasser 2000 caractères' },
+        { status: 400 }
+      )
+    }
+
     const tip = await prisma.tip.create({
       data: {
         title,

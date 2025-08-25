@@ -41,6 +41,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    if (reason.trim().length > 1000) {
+      return NextResponse.json(
+        { error: 'La raison ne peut pas dépasser 1000 caractères' },
+        { status: 400 }
+      )
+    }
+
     // Vérifier si l'utilisateur a déjà une demande en attente
     const existingRequest = await prisma.roleRequest.findFirst({
       where: {

@@ -108,6 +108,42 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Validation des longueurs
+    if (title.length > 200) {
+      return NextResponse.json(
+        { error: 'Le titre ne peut pas dépasser 200 caractères' },
+        { status: 400 }
+      )
+    }
+
+    if (description.length > 1000) {
+      return NextResponse.json(
+        { error: 'La description ne peut pas dépasser 1000 caractères' },
+        { status: 400 }
+      )
+    }
+
+    if (address.length > 200) {
+      return NextResponse.json(
+        { error: 'L\'adresse ne peut pas dépasser 200 caractères' },
+        { status: 400 }
+      )
+    }
+
+    if (city.length > 100) {
+      return NextResponse.json(
+        { error: 'La ville ne peut pas dépasser 100 caractères' },
+        { status: 400 }
+      )
+    }
+
+    if (postalCode.length > 10) {
+      return NextResponse.json(
+        { error: 'Le code postal ne peut pas dépasser 10 caractères' },
+        { status: 400 }
+      )
+    }
+
     const initiative = await prisma.initiative.create({
       data: {
         title,
