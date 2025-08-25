@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Plus, Search, Filter, ThumbsUp, Calendar, User, Eye, ArrowUpDown } from 'lucide-react'
+import { Plus, Search, Filter, ThumbsUp, Calendar, User, Eye, ArrowUpDown, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 import ArticleImage from '@/components/ArticleImage'
 import { useArticles, Article } from '@/hooks/useArticles'
@@ -21,6 +21,15 @@ export default function ArticlesPage() {
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'mostVoted'>('newest')
   const [currentPage, setCurrentPage] = useState(1)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [newArticle, setNewArticle] = useState({
+    title: '',
+    content: '',
+    excerpt: '',
+    category: 'ENVIRONMENT',
+    imageUrl: ''
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errors, setErrors] = useState<{[key: string]: string}>({})
   const [userVotes, setUserVotes] = useState<{[key: string]: number}>({})
   const [optimisticArticles, setOptimisticArticles] = useState<Article[]>([])
   const router = useRouter()
@@ -107,12 +116,128 @@ export default function ArticlesPage() {
   }, [error])
 
   const handleCreateArticle = () => {
-    // Rediriger vers la page de connexion car il n'y a plus de système de session
-    router.push('/login')
+    if (!session?.user) {
+      toast.error('Vous devez être connecté pour créer un article')
+      router.push('/login')
+      return
+    }
+    
+    // Vérifier le rôle de l'utilisateur
+    if (session.user.role === 'EXPLORER') {
+      toast.error('Vous devez être Contributeur ou Administrateur pour créer des articles')
+      router.push('/promotion')
+      return
+    }
+    
+    setShowCreateModal(true)
   }
 
   const closeModal = () => {
     setShowCreateModal(false)
+    setNewArticle({
+      title: '',
+      content: '',
+      excerpt: '',
+      category: 'ENVIRONMENT',
+      imageUrl: ''
+    })
+    setErrors({})
+  }
+
+  const validateForm = () => {
+    const newErrors: {[key: string]: string} = {}
+    
+    if (!newArticle.title.trim()) {
+      newErrors.title = 'Le titre est obligatoire'
+    } else if (newArticle.title.trim().length < 5) {
+      newErrors.title = 'Le titre doit contenir au moins 5 caractères'
+    }
+    
+    if (!newArticle.content.trim()) {
+      newErrors.content = 'Le contenu est obligatoire'
+    } else if (newArticle.content.trim().length < 50) {
+      newErrors.content = 'Le contenu doit contenir au moins 50 caractères'
+    }
+    
+    if (!newArticle.excerpt.trim()) {
+      newErrors.excerpt = 'L\'extrait est obligatoire'
+    } else if (newArticle.excerpt.trim().length < 20) {
+      newErrors.excerpt = 'L\'extrait doit contenir au moins 20 caractères'
+    }
+    
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const validateField = (field: string, value: string) => {
+    const newErrors = { ...errors }
+    
+    if (field === 'title') {
+      if (!value.trim()) {
+        newErrors.title = 'Le titre est obligatoire'
+      } else if (value.trim().length < 5) {
+        newErrors.title = 'Le titre doit contenir au moins 5 caractères'
+      } else {
+        delete newErrors.title
+      }
+    }
+    
+    if (field === 'content') {
+      if (!value.trim()) {
+        newErrors.content = 'Le contenu est obligatoire'
+      } else if (value.trim().length < 50) {
+        newErrors.content = 'Le contenu doit contenir au moins 50 caractères'
+      } else {
+        delete newErrors.content
+      }
+    }
+    
+    if (field === 'excerpt') {
+      if (!value.trim()) {
+        newErrors.excerpt = 'L\'extrait est obligatoire'
+      } else if (value.trim().length < 20) {
+        newErrors.excerpt = 'L\'extrait doit contenir au moins 20 caractères'
+      } else {
+        delete newErrors.excerpt
+      }
+    }
+    
+    setErrors(newErrors)
+  }
+
+  const handleSubmitArticle = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!validateForm()) {
+      return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      const response = await fetch('/api/articles', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newArticle),
+      })
+
+      if (response.ok) {
+        await response.json()
+        closeModal()
+        mutate() // Recharger les articles
+        toast.success('Article publié avec succès ! Il sera visible après modération.')
+      } else {
+        const errorData = await response.json()
+        toast.error(errorData.error || 'Erreur lors de la publication de l\'article')
+      }
+    } catch (error) {
+      console.error('Erreur lors de la publication de l\'article:', error)
+      toast.error('Erreur lors de la publication de l\'article')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleVote = useCallback(async (articleId: string, value: number) => {
@@ -450,6 +575,167 @@ export default function ArticlesPage() {
               >
                 Suivant
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de création d'article */}
+        {showCreateModal && (
+          <div 
+            className="fixed inset-0 bg-theme-overlay backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={closeModal}
+          >
+            <div 
+              className="bg-theme-card rounded-lg shadow-theme-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-bold text-theme-primary">Nouvel Article</h2>
+                  <button
+                    onClick={closeModal}
+                    className="text-theme-secondary hover:text-theme-primary transition-colors"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleSubmitArticle} className="space-y-6">
+                  <div>
+                    <label htmlFor="title" className="block text-sm font-medium text-theme-primary mb-2">
+                      Titre *
+                    </label>
+                    <input
+                      type="text"
+                      id="title"
+                      value={newArticle.title}
+                      onChange={(e) => {
+                        setNewArticle(prev => ({ ...prev, title: e.target.value }))
+                        validateField('title', e.target.value)
+                      }}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                        errors.title ? 'border-red-500' : 'border-theme-primary'
+                      }`}
+                      placeholder="Titre de votre article"
+                      required
+                    />
+                    {errors.title && (
+                      <p className="text-red-500 text-sm mt-1">{errors.title}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="category" className="block text-sm font-medium text-theme-primary mb-2">
+                      Catégorie *
+                    </label>
+                    <select
+                      id="category"
+                      value={newArticle.category}
+                      onChange={(e) => setNewArticle(prev => ({ ...prev, category: e.target.value }))}
+                      className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-theme-card text-theme-primary"
+                      required
+                    >
+                      <option value="ENVIRONMENT">Environnement</option>
+                      <option value="SUSTAINABILITY">Développement durable</option>
+                      <option value="CLIMATE_CHANGE">Changement climatique</option>
+                      <option value="BIODIVERSITY">Biodiversité</option>
+                      <option value="RENEWABLE_ENERGY">Énergies renouvelables</option>
+                      <option value="CIRCULAR_ECONOMY">Économie circulaire</option>
+                      <option value="GREEN_TECHNOLOGY">Technologies vertes</option>
+                      <option value="CONSERVATION">Conservation</option>
+                      <option value="EDUCATION">Éducation</option>
+                      <option value="POLICY">Politique</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="excerpt" className="block text-sm font-medium text-theme-primary mb-2">
+                      Extrait *
+                    </label>
+                    <textarea
+                      id="excerpt"
+                      value={newArticle.excerpt}
+                      onChange={(e) => {
+                        setNewArticle(prev => ({ ...prev, excerpt: e.target.value }))
+                        validateField('excerpt', e.target.value)
+                      }}
+                      rows={3}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none ${
+                        errors.excerpt ? 'border-red-500' : 'border-theme-primary'
+                      }`}
+                      placeholder="Résumé de votre article..."
+                      required
+                    />
+                    {errors.excerpt && (
+                      <p className="text-red-500 text-sm mt-1">{errors.excerpt}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="content" className="block text-sm font-medium text-theme-primary mb-2">
+                      Contenu *
+                    </label>
+                    <textarea
+                      id="content"
+                      value={newArticle.content}
+                      onChange={(e) => {
+                        setNewArticle(prev => ({ ...prev, content: e.target.value }))
+                        validateField('content', e.target.value)
+                      }}
+                      rows={8}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none ${
+                        errors.content ? 'border-red-500' : 'border-theme-primary'
+                      }`}
+                      placeholder="Contenu de votre article..."
+                      required
+                    />
+                    {errors.content && (
+                      <p className="text-red-500 text-sm mt-1">{errors.content}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="imageUrl" className="block text-sm font-medium text-theme-primary mb-2">
+                      URL de l&apos;image
+                    </label>
+                    <input
+                      type="url"
+                      id="imageUrl"
+                      value={newArticle.imageUrl}
+                      onChange={(e) => setNewArticle(prev => ({ ...prev, imageUrl: e.target.value }))}
+                      className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      placeholder="https://..."
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-end gap-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={closeModal}
+                      className="px-4 py-2 text-theme-secondary bg-theme-tertiary hover:bg-theme-primary rounded-lg transition-colors"
+                    >
+                      Annuler
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting || Object.keys(errors).length > 0}
+                      className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 disabled:bg-theme-secondary disabled:cursor-not-allowed rounded-lg transition-colors flex items-center gap-2"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Publication...
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="h-4 w-4" />
+                          Publier l&apos;article
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
         )}

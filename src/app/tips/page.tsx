@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { Lightbulb, Search, ThumbsUp, ThumbsDown, Leaf, Zap, Car, Utensils, Droplets, ShoppingBag, Plus, X } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
@@ -45,6 +45,12 @@ export default function TipsPage() {
   const { data: categoriesData } = useSWR('/api/tips/categories')
   const availableCategories = categoriesData?.categories || []
   
+  // Memoize the user ID to prevent infinite re-renders
+  const userId = useMemo(() => session?.user?.id, [session?.user?.id])
+  
+  // Use ref to track processed tips to prevent infinite loops
+  const processedTipsRef = useRef<string>('')
+  
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newTip, setNewTip] = useState({
@@ -56,24 +62,62 @@ export default function TipsPage() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<{[key: string]: string}>({})
+  
+  // Bloquer le scroll quand la modale est ouverte
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+
+    // Nettoyer lors du démontage du composant
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isModalOpen])
+
+  // Fermer la modale avec Échap
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isModalOpen) {
+        closeModal()
+      }
+    }
+
+    if (isModalOpen) {
+      document.addEventListener('keydown', handleEscape)
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isModalOpen])
 
   // Charger les votes utilisateur quand les tips changent
   useEffect(() => {
-    if (tips && session?.user?.id) {
-      const userVotesData: {[key: string]: number} = {}
+    if (tips && userId) {
+      // Create a unique key for the current tips state
+      const tipsKey = `${tips.length}-${tips.map(tip => tip.id).join(',')}-${userId}`
       
-      tips.forEach((tip) => {
-        if (tip.votes) {
-          const userVote = tip.votes.find((vote: Vote) => vote.userId === session?.user?.id)
-          if (userVote) {
-            userVotesData[tip.id] = userVote.value
+      // Only process if we haven't processed this exact state before
+      if (processedTipsRef.current !== tipsKey) {
+        const userVotesData: {[key: string]: number} = {}
+        
+        tips.forEach((tip) => {
+          if (tip.votes) {
+            const userVote = tip.votes.find((vote: Vote) => vote.userId === userId)
+            if (userVote) {
+              userVotesData[tip.id] = userVote.value
+            }
           }
-        }
-      })
-      
-      setUserVotes(userVotesData)
+        })
+        
+        setUserVotes(userVotesData)
+        processedTipsRef.current = tipsKey
+      }
     }
-  }, [tips, session?.user?.id])
+  }, [tips, userId])
 
   // Handlers pour les filtres avec réinitialisation de page
   const handleSearchChange = useCallback((value: string) => {
@@ -508,8 +552,9 @@ export default function TipsPage() {
 
        {/* Modal de création de conseil */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-theme-overlay backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-theme-card/95 backdrop-blur-sm rounded-lg shadow-theme-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-theme-overlay backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        onClick={closeModal}>
+          <div className="bg-theme-card rounded-lg shadow-theme-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-theme-primary">Nouveau Conseil</h2>
