@@ -97,12 +97,11 @@ export async function POST(request: NextRequest) {
       endDate,
       website,
       contactEmail,
-      contactPhone,
-      imageUrl
+      contactPhone
     } = body
 
     // Validation des données
-    if (!title || !description || !type || !latitude || !longitude || !address || !city) {
+    if (!title || !description || !type || !latitude || !longitude || !address || !city || !postalCode) {
       return NextResponse.json(
         { error: 'Tous les champs obligatoires doivent être remplis' },
         { status: 400 }
@@ -124,7 +123,6 @@ export async function POST(request: NextRequest) {
         website,
         contactEmail,
         contactPhone,
-        imageUrl,
         authorId: session.id
         // isPublished est par défaut à true dans le schéma
       },

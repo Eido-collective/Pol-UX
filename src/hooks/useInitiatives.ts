@@ -15,7 +15,6 @@ export interface Initiative {
   website?: string
   contactEmail?: string
   contactPhone?: string
-  imageUrl?: string
   isPublished: boolean
   author: {
     name: string

@@ -4,7 +4,13 @@ import { prisma } from '@/lib/prisma'
 export async function GET() {
   try {
     const posts = await prisma.forumPost.findMany({
-      include: {
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        category: true,
+        isPublished: true,
+        createdAt: true,
         author: {
           select: {
             id: true,

@@ -11,7 +11,24 @@ export async function PATCH(
 
     const tip = await prisma.tip.update({
       where: { id },
-      data: { isPublished }
+      data: { isPublished },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        category: true,
+        source: true,
+        isPublished: true,
+        createdAt: true,
+        author: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            email: true
+          }
+        }
+      }
     })
 
     return NextResponse.json({ tip })

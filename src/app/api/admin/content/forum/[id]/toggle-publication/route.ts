@@ -11,7 +11,23 @@ export async function PATCH(
 
     const post = await prisma.forumPost.update({
       where: { id },
-      data: { isPublished }
+      data: { isPublished },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        category: true,
+        isPublished: true,
+        createdAt: true,
+        author: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            email: true
+          }
+        }
+      }
     })
 
     return NextResponse.json({ post })

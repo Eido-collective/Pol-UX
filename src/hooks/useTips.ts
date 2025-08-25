@@ -6,7 +6,6 @@ export interface Tip {
   title: string
   content: string
   category: string
-  imageUrl?: string
   source?: string
   publishedAt?: string
   createdAt: string

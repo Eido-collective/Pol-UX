@@ -140,10 +140,10 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { title, content, excerpt, category, imageUrl, source } = body
+    const { title, content, excerpt, category, source } = body
 
     // Validation des données
-    if (!title || !content || !category) {
+    if (!title || !content || !excerpt || !category) {
       return NextResponse.json(
         { error: 'Tous les champs obligatoires doivent être remplis' },
         { status: 400 }
@@ -170,7 +170,6 @@ export async function POST(request: NextRequest) {
         content,
         excerpt,
         category,
-        imageUrl,
         source,
         authorId: session.id
         // isPublished et publishedAt sont par défaut gérés dans le schéma

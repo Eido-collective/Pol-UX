@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Plus, Search, Filter, ThumbsUp, Calendar, User, Eye, ArrowUpDown, X } from 'lucide-react'
 import toast from 'react-hot-toast'
-import ArticleImage from '@/components/ArticleImage'
+
 import { useArticles, Article } from '@/hooks/useArticles'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -25,8 +25,7 @@ export default function ArticlesPage() {
     title: '',
     content: '',
     excerpt: '',
-    category: 'ENVIRONMENT',
-    imageUrl: ''
+    category: 'ENVIRONMENT'
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<{[key: string]: string}>({})
@@ -138,8 +137,7 @@ export default function ArticlesPage() {
       title: '',
       content: '',
       excerpt: '',
-      category: 'ENVIRONMENT',
-      imageUrl: ''
+      category: 'ENVIRONMENT'
     })
     setErrors({})
   }
@@ -478,18 +476,7 @@ export default function ArticlesPage() {
           <div className="grid gap-6">
             {optimisticArticles.map((article) => (
               <article key={article.id} className="bg-theme-card rounded-lg shadow-theme-sm border border-theme-primary overflow-hidden">
-                <div className="md:flex">
-                  <div className="md:w-1/3">
-                    <ArticleImage
-                      src={article.imageUrl}
-                      alt={article.title}
-                      className="w-full h-48 md:h-full object-cover"
-                      fill={false}
-                      width={400}
-                      height={300}
-                    />
-                  </div>
-                  <div className="md:w-2/3 p-6">
+                <div className="p-6">
                     <div className="flex items-center gap-2 mb-2">
                       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(article.category)}`}>
                         {getCategoryLabel(article.category)}
@@ -545,7 +532,6 @@ export default function ArticlesPage() {
                         Lire la suite →
                       </Link>
                     </div>
-                  </div>
                 </div>
               </article>
             ))}
@@ -694,19 +680,7 @@ export default function ArticlesPage() {
                     )}
                   </div>
 
-                  <div>
-                    <label htmlFor="imageUrl" className="block text-sm font-medium text-theme-primary mb-2">
-                      URL de l&apos;image
-                    </label>
-                    <input
-                      type="url"
-                      id="imageUrl"
-                      value={newArticle.imageUrl}
-                      onChange={(e) => setNewArticle(prev => ({ ...prev, imageUrl: e.target.value }))}
-                      className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                      placeholder="https://..."
-                    />
-                  </div>
+
 
                   <div className="flex items-center justify-end gap-3 pt-4">
                     <button

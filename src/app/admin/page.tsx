@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { Shield, Users, FileText, MessageSquare, MapPin, Lightbulb, Eye, EyeOff, Trash2, CheckCircle, XCircle, X } from 'lucide-react'
 import toast from 'react-hot-toast'
-import Image from 'next/image'
 
 // Type definitions
 interface AdminArticle {
@@ -14,7 +13,6 @@ interface AdminArticle {
   content: string
   excerpt?: string
   category: string
-  imageUrl?: string
   source?: string
   isPublished: boolean
   createdAt: string
@@ -42,7 +40,6 @@ interface AdminTip {
   title: string
   content: string
   category: string
-  imageUrl?: string
   source?: string
   isPublished: boolean
   createdAt: string
@@ -189,7 +186,9 @@ export default function AdminPage() {
       
       switch (activeTab) {
         case 'articles':
-          const articlesResponse = await fetch('/api/admin/content/articles')
+          const articlesResponse = await fetch('/api/admin/content/articles', {
+            headers: { 'Cache-Control': 'no-cache' }
+          })
           if (articlesResponse.ok) {
             const articlesData = await articlesResponse.json()
             setArticles(articlesData.articles || [])
@@ -197,7 +196,9 @@ export default function AdminPage() {
           break
           
         case 'forum':
-          const forumResponse = await fetch('/api/admin/content/forum')
+          const forumResponse = await fetch('/api/admin/content/forum', {
+            headers: { 'Cache-Control': 'no-cache' }
+          })
           if (forumResponse.ok) {
             const forumData = await forumResponse.json()
             setForumPosts(forumData.posts || [])
@@ -205,7 +206,9 @@ export default function AdminPage() {
           break
           
         case 'tips':
-          const tipsResponse = await fetch('/api/admin/content/tips')
+          const tipsResponse = await fetch('/api/admin/content/tips', {
+            headers: { 'Cache-Control': 'no-cache' }
+          })
           if (tipsResponse.ok) {
             const tipsData = await tipsResponse.json()
             setTips(tipsData.tips || [])
@@ -213,7 +216,9 @@ export default function AdminPage() {
           break
           
         case 'initiatives':
-          const initiativesResponse = await fetch('/api/admin/content/initiatives')
+          const initiativesResponse = await fetch('/api/admin/content/initiatives', {
+            headers: { 'Cache-Control': 'no-cache' }
+          })
           if (initiativesResponse.ok) {
             const initiativesData = await initiativesResponse.json()
             setInitiatives(initiativesData.initiatives || [])
@@ -303,18 +308,13 @@ export default function AdminPage() {
 
         if (response.ok) {
           toast.success('Élément supprimé avec succès')
-          // Forcer le rechargement avec un délai pour éviter les problèmes de cache
-          setTimeout(() => {
-            loadTableData()
-          }, 100)
+          // Supprimer l'élément de l'état local
+          removeFromLocalState(confirmAction.contentType, confirmAction.id)
         } else {
           toast.error('Erreur lors de la suppression')
         }
       } else if (confirmAction.type === 'unpublish' || confirmAction.type === 'publish') {
         const newStatus = confirmAction.type === 'publish'
-        
-        // Mise à jour optimiste de l'état local
-        updateLocalState(confirmAction.contentType, confirmAction.id, { isPublished: newStatus })
         
         const response = await fetch(`/api/admin/content/${confirmAction.contentType}/${confirmAction.id}/toggle-publication`, {
           method: 'PATCH',
@@ -323,19 +323,26 @@ export default function AdminPage() {
         })
 
         if (response.ok) {
+          const responseData = await response.json()
           toast.success(`Contenu ${newStatus ? 'publié' : 'dépublié'} avec succès`)
-          // Recharger les données pour s'assurer de la cohérence
-          setTimeout(() => {
-            loadTableData()
-          }, 100)
+          
+          // Mettre à jour l'état local avec les données retournées par l'API
+          // Les APIs retournent des propriétés différentes selon le type de contenu
+          const updatedItem = responseData.article || responseData.tip || responseData.initiative || responseData.post
+          if (updatedItem) {
+            updateLocalStateWithData(confirmAction.contentType, updatedItem)
+          }
+          
+          // Pas besoin de recharger les données car nous avons déjà les bonnes données de l'API
         } else {
           toast.error(`Erreur lors de la ${newStatus ? 'publication' : 'dépublier'}`)
-          // Annuler la mise à jour optimiste en cas d'erreur
-          loadTableData()
         }
       }
 
-      closeConfirmModal()
+      // Fermer la modale après un petit délai pour que l'utilisateur puisse voir le message
+      setTimeout(() => {
+        closeConfirmModal()
+      }, 1000)
     } catch (error) {
       console.error('Erreur:', error)
       toast.error('Erreur lors de l\'action')
@@ -344,28 +351,48 @@ export default function AdminPage() {
     }
   }
 
-  // Fonction pour mettre à jour l'état local de manière optimiste
-  const updateLocalState = (contentType: string, id: string, updates: Partial<AdminArticle | AdminTip | AdminInitiative | AdminForumPost>) => {
+
+
+  // Fonction pour mettre à jour l'état local avec les données complètes de l'API
+  const updateLocalStateWithData = (contentType: string, updatedItem: AdminArticle | AdminTip | AdminInitiative | AdminForumPost) => {
     switch (contentType) {
       case 'articles':
         setArticles(prev => prev.map((item: AdminArticle) => 
-          item.id === id ? { ...item, ...updates } : item
+          item.id === updatedItem.id ? updatedItem as AdminArticle : item
         ))
         break
       case 'tips':
         setTips(prev => prev.map((item: AdminTip) => 
-          item.id === id ? { ...item, ...updates } : item
+          item.id === updatedItem.id ? updatedItem as AdminTip : item
         ))
         break
       case 'initiatives':
         setInitiatives(prev => prev.map((item: AdminInitiative) => 
-          item.id === id ? { ...item, ...updates } : item
+          item.id === updatedItem.id ? updatedItem as AdminInitiative : item
         ))
         break
       case 'forum':
         setForumPosts(prev => prev.map((item: AdminForumPost) => 
-          item.id === id ? { ...item, ...updates } : item
+          item.id === updatedItem.id ? updatedItem as AdminForumPost : item
         ))
+        break
+    }
+  }
+
+  // Fonction pour supprimer un élément de l'état local
+  const removeFromLocalState = (contentType: string, id: string) => {
+    switch (contentType) {
+      case 'articles':
+        setArticles(prev => prev.filter((item: AdminArticle) => item.id !== id))
+        break
+      case 'tips':
+        setTips(prev => prev.filter((item: AdminTip) => item.id !== id))
+        break
+      case 'initiatives':
+        setInitiatives(prev => prev.filter((item: AdminInitiative) => item.id !== id))
+        break
+      case 'forum':
+        setForumPosts(prev => prev.filter((item: AdminForumPost) => item.id !== id))
         break
     }
   }
@@ -376,13 +403,13 @@ export default function AdminPage() {
 
     // Demander confirmation pour toutes les actions
     if (currentStatus) {
-      openConfirmModal('unpublish', type, id, item.title || 'cet élément')
+      openConfirmModal('unpublish', type, id, 'title' in item ? item.title : 'cet élément')
     } else {
-      openConfirmModal('publish', type, id, item.title || 'cet élément')
+      openConfirmModal('publish', type, id, 'title' in item ? item.title : 'cet élément')
     }
   }
 
-  const getCurrentItem = (type: string, id: string): AdminArticle | AdminTip | AdminInitiative | null => {
+  const getCurrentItem = (type: string, id: string): AdminArticle | AdminTip | AdminInitiative | AdminForumPost | null => {
     switch (type) {
       case 'articles':
         return articles.find((a: AdminArticle) => a.id === id) || null
@@ -390,6 +417,8 @@ export default function AdminPage() {
         return tips.find((t: AdminTip) => t.id === id) || null
       case 'initiatives':
         return initiatives.find((i: AdminInitiative) => i.id === id) || null
+      case 'forum':
+        return forumPosts.find((p: AdminForumPost) => p.id === id) || null
       default:
         return null
     }
@@ -398,7 +427,7 @@ export default function AdminPage() {
   const handleDelete = async (type: string, id: string) => {
     const item = getCurrentItem(type, id)
     if (item) {
-      openConfirmModal('delete', type, id, item.title || 'cet élément')
+      openConfirmModal('delete', type, id, 'title' in item ? item.title : 'cet élément')
     }
   }
 
@@ -1240,18 +1269,6 @@ export default function AdminPage() {
                 <div>
                   <label className="block text-sm font-medium text-theme-secondary mb-1">Raison de la demande</label>
                   <p className="text-theme-primary bg-theme-tertiary p-4 rounded-md">{selectedItem.reason}</p>
-                </div>
-              )}
-
-              {/* Image */}
-              {'imageUrl' in selectedItem && selectedItem.imageUrl && (
-                <div>
-                  <label className="block text-sm font-medium text-theme-secondary mb-1">Image</label>
-                  <Image 
-                    src={selectedItem.imageUrl} 
-                    alt={'title' in selectedItem ? selectedItem.title : 'Image'}
-                    className="max-w-full h-auto rounded-md"
-                  />
                 </div>
               )}
             </div>

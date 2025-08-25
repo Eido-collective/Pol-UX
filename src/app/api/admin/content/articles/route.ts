@@ -4,7 +4,15 @@ import { prisma } from '@/lib/prisma'
 export async function GET() {
   try {
     const articles = await prisma.article.findMany({
-      include: {
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        excerpt: true,
+        category: true,
+        source: true,
+        isPublished: true,
+        createdAt: true,
         author: {
           select: {
             id: true,

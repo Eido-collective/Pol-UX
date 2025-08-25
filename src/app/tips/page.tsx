@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
-import TipImage from '@/components/TipImage'
+
 import Pagination from '@/components/Pagination'
 import { useTips } from '@/hooks/useTips'
 import useSWR from 'swr'
@@ -57,7 +57,6 @@ export default function TipsPage() {
     title: '',
     content: '',
     category: 'WASTE_REDUCTION',
-    imageUrl: '',
     source: ''
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -274,7 +273,7 @@ export default function TipsPage() {
       if (response.ok) {
         await response.json()
         setIsModalOpen(false)
-        setNewTip({ title: '', content: '', category: 'WASTE_REDUCTION', imageUrl: '', source: '' })
+        setNewTip({ title: '', content: '', category: 'WASTE_REDUCTION', source: '' })
         setErrors({})
         mutate() // Recharger les tips
         toast.success('Conseil publié avec succès ! Il sera visible après modération.')
@@ -292,7 +291,7 @@ export default function TipsPage() {
 
   const closeModal = () => {
     setIsModalOpen(false)
-    setNewTip({ title: '', content: '', category: 'WASTE_REDUCTION', imageUrl: '', source: '' })
+    setNewTip({ title: '', content: '', category: 'WASTE_REDUCTION', source: '' })
     setErrors({})
   }
 
@@ -459,14 +458,6 @@ export default function TipsPage() {
                 key={tip.id}
                 className="bg-theme-card rounded-lg shadow-sm border border-theme-primary overflow-hidden hover:shadow-md transition-shadow"
               >
-                <TipImage
-                  src={tip.imageUrl}
-                  alt={tip.title}
-                  width={500}
-                  height={500}
-                  className="h-48 w-full"
-                />
-                
                 <div className="p-6">
                   <div className="flex items-center gap-2 mb-3">
                     <div className={`p-2 rounded-lg ${getCategoryColor(tip.category)}`}>
@@ -634,19 +625,7 @@ export default function TipsPage() {
                    )}
                  </div>
 
-                <div>
-                  <label htmlFor="imageUrl" className="block text-sm font-medium text-theme-secondary mb-2">
-                    URL de l&apos;image (optionnel)
-                  </label>
-                  <input
-                    type="url"
-                    id="imageUrl"
-                    value={newTip.imageUrl}
-                    onChange={(e) => setNewTip(prev => ({ ...prev, imageUrl: e.target.value }))}
-                    className="w-full px-3 py-2 border border-theme-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    placeholder="https://..."
-                  />
-                </div>
+
 
                 <div>
                   <label htmlFor="source" className="block text-sm font-medium text-theme-secondary mb-2">
