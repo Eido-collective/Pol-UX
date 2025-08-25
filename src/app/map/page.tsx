@@ -95,6 +95,7 @@ export default function MapPage() {
     longitude: 0,
     address: '',
     city: '',
+    postalCode: '',
     startDate: '',
     endDate: '',
     website: '',
@@ -121,6 +122,7 @@ export default function MapPage() {
       longitude: 0,
       address: '',
       city: '',
+      postalCode: '',
       startDate: '',
       endDate: '',
       website: '',
@@ -276,6 +278,10 @@ export default function MapPage() {
     if (!newInitiative.city.trim()) {
       newErrors.city = 'La ville est obligatoire'
     }
+
+    if (!newInitiative.postalCode.trim()) {
+      newErrors.postalCode = 'Le code postal est obligatoire'
+    }
     
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -319,6 +325,14 @@ export default function MapPage() {
         delete newErrors.city
       }
     }
+
+    if (field === 'postalCode') {
+      if (!value.trim()) {
+        newErrors.postalCode = 'Le code postal est obligatoire'
+      } else {
+        delete newErrors.postalCode
+      }
+    }
     
     setErrors(newErrors)
   }
@@ -352,6 +366,7 @@ export default function MapPage() {
           longitude: 0,
           address: '',
           city: '',
+          postalCode: '',
           startDate: '',
           endDate: '',
           website: '',
@@ -743,27 +758,52 @@ export default function MapPage() {
                   )}
                 </div>
 
-                <div>
-                  <label htmlFor="city" className="block text-sm font-medium text-theme-primary mb-2">
-                    Ville *
-                  </label>
-                  <input
-                    type="text"
-                    id="city"
-                    value={newInitiative.city}
-                    onChange={(e) => {
-                      setNewInitiative(prev => ({ ...prev, city: e.target.value }))
-                      validateField('city', e.target.value)
-                    }}
-                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
-                      errors.city ? 'border-red-500' : 'border-theme-primary'
-                    }`}
-                    placeholder="Ville"
-                    required
-                  />
-                  {errors.city && (
-                    <p className="text-red-500 text-sm mt-1">{errors.city}</p>
-                  )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="city" className="block text-sm font-medium text-theme-primary mb-2">
+                      Ville *
+                    </label>
+                    <input
+                      type="text"
+                      id="city"
+                      value={newInitiative.city}
+                      onChange={(e) => {
+                        setNewInitiative(prev => ({ ...prev, city: e.target.value }))
+                        validateField('city', e.target.value)
+                      }}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                        errors.city ? 'border-red-500' : 'border-theme-primary'
+                      }`}
+                      placeholder="Ville"
+                      required
+                    />
+                    {errors.city && (
+                      <p className="text-red-500 text-sm mt-1">{errors.city}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="postalCode" className="block text-sm font-medium text-theme-primary mb-2">
+                      Code postal *
+                    </label>
+                    <input
+                      type="text"
+                      id="postalCode"
+                      value={newInitiative.postalCode}
+                      onChange={(e) => {
+                        setNewInitiative(prev => ({ ...prev, postalCode: e.target.value }))
+                        validateField('postalCode', e.target.value)
+                      }}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                        errors.postalCode ? 'border-red-500' : 'border-theme-primary'
+                      }`}
+                      placeholder="75001"
+                      required
+                    />
+                    {errors.postalCode && (
+                      <p className="text-red-500 text-sm mt-1">{errors.postalCode}</p>
+                    )}
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

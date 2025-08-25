@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
     } = body
 
     // Validation des données
-    if (!title || !description || !type || !latitude || !longitude || !address || !city) {
+    if (!title || !description || !type || !latitude || !longitude || !address || !city || !postalCode) {
       return NextResponse.json(
         { error: 'Tous les champs obligatoires doivent être remplis' },
         { status: 400 }

@@ -17,10 +17,26 @@ export async function POST(request: NextRequest) {
 
     const { requestedRole, reason } = await request.json()
 
+    // Validation des champs obligatoires
+    if (!requestedRole || !reason) {
+      return NextResponse.json(
+        { error: 'Tous les champs sont obligatoires' },
+        { status: 400 }
+      )
+    }
+
     // Validation du rôle demandé
     if (!['CONTRIBUTOR', 'ADMIN'].includes(requestedRole)) {
       return NextResponse.json(
         { error: 'Rôle invalide' },
+        { status: 400 }
+      )
+    }
+
+    // Validation de la raison
+    if (reason.trim().length < 10) {
+      return NextResponse.json(
+        { error: 'La raison doit contenir au moins 10 caractères' },
         { status: 400 }
       )
     }

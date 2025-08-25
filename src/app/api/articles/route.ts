@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
     const { title, content, excerpt, category, source } = body
 
     // Validation des données
-    if (!title || !content || !category) {
+    if (!title || !content || !excerpt || !category) {
       return NextResponse.json(
         { error: 'Tous les champs obligatoires doivent être remplis' },
         { status: 400 }

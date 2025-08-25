@@ -66,11 +66,11 @@ enum RoleRequestStatus {
 
 model User {
   id            String    @id @default(cuid())
-  name          String?
+  name          String
   email         String    @unique
   emailVerified DateTime?
   username      String    @unique
-  password      String?
+  password      String
   role          UserRole  @default(EXPLORER)
   emailConfirmed Boolean  @default(false)
   createdAt     DateTime  @default(now())
@@ -217,7 +217,7 @@ model Article {
   id          String         @id @default(cuid())
   title       String
   content     String         @db.Text
-  excerpt     String?
+  excerpt     String
   category    ArticleCategory
   source      String?
   isPublished Boolean        @default(true)
@@ -255,7 +255,7 @@ model Vote {
 model UserTask {
   id          String   @id @default(cuid())
   title       String
-  description String?
+  description String
   completed   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
