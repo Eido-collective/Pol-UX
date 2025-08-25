@@ -646,7 +646,7 @@ export default function MapPage() {
           onClick={closeModal}
         >
           <div 
-            className="bg-theme-card rounded-lg shadow-theme-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            className="bg-theme-card rounded-lg shadow-theme-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-6">
@@ -855,7 +855,7 @@ export default function MapPage() {
                   />
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex items-center justify-end gap-3 pt-4">
                   <button
                     type="button"
                     onClick={closeModal}

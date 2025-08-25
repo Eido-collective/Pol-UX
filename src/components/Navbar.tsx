@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import ThemeToggle from './ThemeToggle'
 import LogoutConfirmation from './LogoutConfirmation'
-import { User, LogOut, Settings, MapPin, MessageSquare, Lightbulb, FileText, ChevronDown } from 'lucide-react'
+import { User, LogOut, Settings, MapPin, MessageSquare, Lightbulb, FileText, ChevronDown, Shield } from 'lucide-react'
 import { useTheme } from '@/hooks/useTheme'
 import Image from 'next/image'
 
@@ -124,14 +124,27 @@ export default function Navbar() {
                 <p className="text-xs text-green-600 capitalize">{user.role.toLowerCase()}</p>
               </div>
               
-              <Link 
-                href="/dashboard" 
-                className="flex items-center space-x-3 px-4 py-3 text-theme-secondary hover:text-theme-primary hover:bg-theme-secondary transition-colors rounded-lg"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <Settings className="h-5 w-5" />
-                <span className="text-base font-medium">Tableau de bord</span>
-              </Link>
+                             {(user.role === 'ADMIN' || user.role === 'CONTRIBUTOR') && (
+                 <Link 
+                   href="/dashboard" 
+                   className="flex items-center space-x-3 px-4 py-3 text-theme-secondary hover:text-theme-primary hover:bg-theme-secondary transition-colors rounded-lg"
+                   onClick={() => setIsMenuOpen(false)}
+                 >
+                   <Settings className="h-5 w-5" />
+                   <span className="text-base font-medium">Tableau de bord</span>
+                 </Link>
+               )}
+               
+               {user.role === 'ADMIN' && (
+                 <Link 
+                   href="/admin" 
+                   className="flex items-center space-x-3 px-4 py-3 text-theme-secondary hover:text-theme-primary hover:bg-theme-secondary transition-colors rounded-lg"
+                   onClick={() => setIsMenuOpen(false)}
+                 >
+                   <Shield className="h-5 w-5" />
+                   <span className="text-base font-medium">Administration</span>
+                 </Link>
+               )}
               
               <button
                 onClick={handleLogoutClick}
@@ -221,14 +234,27 @@ export default function Navbar() {
                       <p className="text-xs text-green-600 capitalize">{user.role.toLowerCase()}</p>
                     </div>
                     
-                    <Link 
-                      href="/dashboard" 
-                      className="flex items-center space-x-2 px-4 py-2 text-sm text-theme-secondary hover:bg-theme-secondary transition-colors"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <Settings className="h-4 w-4" />
-                      <span>Tableau de bord</span>
-                    </Link>
+                                         {(user.role === 'ADMIN' || user.role === 'CONTRIBUTOR') && (
+                       <Link 
+                         href="/dashboard" 
+                         className="flex items-center space-x-2 px-4 py-2 text-sm text-theme-secondary hover:bg-theme-secondary transition-colors"
+                         onClick={() => setIsMenuOpen(false)}
+                       >
+                         <Settings className="h-4 w-4" />
+                         <span>Tableau de bord</span>
+                       </Link>
+                     )}
+                     
+                     {user.role === 'ADMIN' && (
+                       <Link 
+                         href="/admin" 
+                         className="flex items-center space-x-2 px-4 py-2 text-sm text-theme-secondary hover:bg-theme-secondary transition-colors"
+                         onClick={() => setIsMenuOpen(false)}
+                       >
+                         <Shield className="h-4 w-4" />
+                         <span>Administration</span>
+                       </Link>
+                     )}
                     
                     <button
                       onClick={handleLogoutClick}
